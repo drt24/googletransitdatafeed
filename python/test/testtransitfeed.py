@@ -2723,6 +2723,67 @@ class TimeConversionHelpersTestCase(unittest.TestCase):
     else:
       self.fail("Should have thrown ValueError")
 
+class GetHeadwayTimesTestCase(unittest.TestCase):
+  """Test for GetHeadwayStartTimes and GetHeadwayStopTimes"""
+  def setUp(self):
+    problems = TestFailureProblemReporter(self)
+    schedule = transitfeed.Schedule(problem_reporter=problems)
+    self.schedule = schedule
+    schedule.AddAgency("Agency", "http://iflyagency.com",
+                       "America/Los_Angeles")
+    service_period = schedule.GetDefaultServicePeriod()
+    service_period.SetStartDate("20080101")
+    service_period.SetEndDate("20090101")
+    service_period.SetWeekdayService(True)
+    self.stop1 = schedule.AddStop(lng=140.01, lat=0, name="140.01,0")
+    self.stop2 = schedule.AddStop(lng=140.02, lat=0, name="140.02,0")
+    self.stop3 = schedule.AddStop(lng=140.03, lat=0, name="140.03,0")
+    self.stop4 = schedule.AddStop(lng=140.04, lat=0, name="140.04,0")
+    self.stop5 = schedule.AddStop(lng=140.05, lat=0, name="140.05,0")
+    self.route1 = schedule.AddRoute("1", "One", "Bus")
+
+    self.trip1 = self.route1.AddTrip(schedule, "trip 1", trip_id="trip1")
+    # add different types of stop times
+    self.trip1.AddStopTime(self.stop1, arrival_time="17:00:00", departure_time="17:01:00") # both arrival and departure time
+    self.trip1.AddStopTime(self.stop2, schedule=schedule) # non timed
+    self.trip1.AddStopTime(self.stop3, stop_time="17:45:00") # only stop_time
+
+    # add headways starting before the trip
+    self.trip1.AddHeadwayPeriod("16:00:00","18:00:00",1800) # each 30 min
+    self.trip1.AddHeadwayPeriod("18:00:00","20:00:00",2700) # each 45 min
+
+  def testGetHeadwayStartTimes(self):
+    start_times = self.trip1.GetHeadwayStartTimes()
+    self.assertEqual(
+        ["16:00:00", "16:30:00", "17:00:00", "17:30:00",
+         "18:00:00", "18:45:00", "19:30:00"],
+        [transitfeed.FormatSecondsSinceMidnight(secs) for secs in start_times])
+
+  def testGetHeadwayStopTimes(self):
+    stoptimes_list = self.trip1.GetHeadwayStopTimes()
+    arrival_secs = []
+    departure_secs = []
+    for stoptimes in stoptimes_list:
+      arrival_secs.append([st.arrival_secs for st in stoptimes])
+      departure_secs.append([st.departure_secs for st in stoptimes])
+
+    self.assertEqual(([57600,None,60300],[59400,None,62100],[61200,None,63900],
+                      [63000,None,65700],[64800,None,67500],[67500,None,70200],
+                      [70200,None,72900]),
+                     tuple(arrival_secs))
+    self.assertEqual(([57660,None,60300],[59460,None,62100],[61260,None,63900],
+                      [63060,None,65700],[64860,None,67500],[67560,None,70200],
+                      [70260,None,72900]),
+                     tuple(departure_secs))
+
+    # test if stoptimes are created with same parameters than the ones from the original trip
+    stoptimes = self.trip1.GetStopTimes()
+    for stoptimes_clone in stoptimes_list:
+      self.assertEqual(len(stoptimes_clone), len(stoptimes))
+      for st_clone, st in zip(stoptimes_clone, stoptimes):
+        for name in st.__slots__:
+          if name not in ('arrival_secs', 'departure_secs'):
+            self.assertEqual(getattr(st, name), getattr(st_clone, name))
 
 if __name__ == '__main__':
   unittest.main()

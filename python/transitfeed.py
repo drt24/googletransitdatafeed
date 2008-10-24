@@ -1237,6 +1237,41 @@ class Trip(object):
                                  stop_sequence=row[7]))
     return stop_times
 
+  def GetHeadwayStopTimes(self, problems=None):
+    """Return a list of StopTime objects for each headway-based run.
+
+    Returns:
+      a list of list of StopTime objects. Each list of StopTime objects
+      represents one run. If this trip doesn't have headways returns an empty
+      list.
+    """
+    stoptimes_list = [] # list of stoptime lists to be returned
+    stoptime_pattern = self.GetStopTimes()
+    first_secs = stoptime_pattern[0].arrival_secs # first time of the trip
+    # for each start time of a headway run
+    for run_secs in self.GetHeadwayStartTimes():
+      # stop time list for a headway run
+      stoptimes = []
+      # go through the pattern and generate stoptimes
+      for st in stoptime_pattern:
+        arrival_secs, departure_secs = None, None # default value if the stoptime is not timepoint
+        if st.arrival_secs != None:
+          arrival_secs = st.arrival_secs - first_secs + run_secs
+        if st.departure_secs != None:
+          departure_secs = st.departure_secs - first_secs + run_secs
+        # append stoptime
+        stoptimes.append(StopTime(problems=problems, stop=st.stop,
+                                  arrival_secs=arrival_secs,
+                                  departure_secs=departure_secs,
+                                  stop_headsign=st.stop_headsign,
+                                  pickup_type=st.pickup_type,
+                                  drop_off_type=st.drop_off_type,
+                                  shape_dist_traveled=st.shape_dist_traveled,
+                                  stop_sequence=st.stop_sequence))
+      # add stoptimes to the stoptimes_list
+      stoptimes_list.append ( stoptimes )
+    return stoptimes_list
+
   def GetStartTime(self, problems=default_problem_reporter):
     """Return the first time of the trip. TODO: For trips defined by frequency
     return the first time of the first trip."""
@@ -1253,6 +1288,23 @@ class Trip(object):
       problems.InvalidValue('departure_time', '',
                             'The first stop_time in trip %s is missing '
                             'times.' % self.trip_id)
+
+  def GetHeadwayStartTimes(self):
+    """Return a list of start time for each headway-based run.
+    
+    Returns:
+      a sorted list of seconds since midnight, the start time of each run. If
+      this trip doesn't have headways returns an empty list."""
+    start_times = []
+    # for each headway period of the trip
+    for start_secs, end_secs, headway_secs in self.GetHeadwayPeriodTuples():
+      # reset run secs to the start of the timeframe
+      run_secs = start_secs
+      while run_secs < end_secs:
+        start_times.append(run_secs)
+        # increment current run secs by headway secs
+        run_secs += headway_secs
+    return start_times
 
   def GetEndTime(self, problems=default_problem_reporter):
     """Return the last time of the trip. TODO: For trips defined by frequency
