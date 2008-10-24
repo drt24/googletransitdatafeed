@@ -167,6 +167,11 @@ class ProblemReporterBase:
                    context=context, context2=self._context, type=TYPE_WARNING)
     self._Report(e)
 
+  def UsedStation(self, stop_id, stop_name, context=None):
+    e = UsedStation(stop_id=stop_id, stop_name=stop_name,
+                    context=context, context2=self._context, type=TYPE_ERROR)
+    self._Report(e)
+
   def ExpirationDate(self, expiration, context=None):
     e = ExpirationDate(expiration=expiration, context=context,
                        context2=self._context, type=TYPE_WARNING)
@@ -323,6 +328,10 @@ class DuplicateID(ExceptionWithContext):
 
 class UnusedStop(ExceptionWithContext):
   ERROR_TEXT = "%(stop_name)s (ID %(stop_id)s) isn't used in any trips"
+
+class UsedStation(ExceptionWithContext):
+  ERROR_TEXT = "%(stop_name)s (ID %(stop_id)s) has location_type=1 " \
+               "(station) so it should not appear in stop_times"
 
 class ExpirationDate(ExceptionWithContext):
   def FormatProblem(self, d=None):
@@ -592,6 +601,18 @@ class Stop(object):
       if value and not IsValidURL(value):
         problems.InvalidValue('stop_url', value)
         del self.stop_url
+    elif name == 'location_type':
+      if value == '':
+        self.location_type = 0
+      else:
+        try:
+          self.location_type = int(value)
+        except (ValueError, TypeError):
+          problems.InvalidValue('location_type', value)
+          del self.location_type
+        else:
+          if self.location_type not in (0, 1):
+            problems.InvalidValue('location_type', value)
 
   def __getitem__(self, name):
     """Return a unicode or str representation of name or "" if not set."""
@@ -682,6 +703,11 @@ class Stop(object):
         self.stop_name.strip().lower() == self.stop_desc.strip().lower()):
       problems.InvalidValue('stop_desc', self.stop_desc,
                             'stop_desc should not be the same as stop_name')
+
+    if self.parent_station and self.location_type != 0:
+      problems.InvalidValue('parent_station', self.parent_station,
+                            'Only stops with location_type=0 may have a '
+                            'parent_station')
 
 
 class Route(object):
@@ -2768,7 +2794,8 @@ class Schedule:
 
     # TODO: Check Trip fields against valid values
 
-    # Check for stops that aren't referenced by any trips
+    # Check for stops that aren't referenced by any trips and broken
+    # parent_station references.
     for stop in self.stops.values():
       if validate_children:
         stop.Validate(problems)
@@ -2776,11 +2803,31 @@ class Schedule:
       cursor.execute("SELECT count(*) FROM stop_times WHERE stop_id=? LIMIT 1",
                      (stop.stop_id,))
       count = cursor.fetchone()[0]
-      if count == 0:
-        problems.UnusedStop(stop.stop_id, stop.stop_name)
+      if stop.location_type == 0:
+        if count == 0:
+          problems.UnusedStop(stop.stop_id, stop.stop_name)
+        if stop.parent_station:
+          if stop.parent_station not in self.stops:
+            problems.InvalidValue("parent_station", stop.parent_station,
+                                  "parent_station '%s' not found for stop_id "
+                                  "'%s' in stops.txt" % (stop.parent_station,
+                                                         stop.stop_id))
+          elif self.stops[stop.parent_station].location_type != 1:
+            problems.InvalidValue("parent_station", stop.parent_station,
+                                  "parent_station '%s' of stop_id '%s' must "
+                                  "have location_type=1 in stops.txt" %
+                                  (stop.parent_station, stop.stop_id))
+      elif stop.location_type == 1:
+        if count != 0:
+          problems.UsedStation(stop.stop_id, stop.stop_name)
+
+    #TODO: check that every station is used and within 1km of stops that are
+    # part of it. Then uncomment testStationWithoutReference.
 
     # Check for stops that might represent the same location
     # (specifically, stops that are less that 2 meters apart)
+    # Sort by latitude first then find the distance between each pair of
+    # stations within 2 meters latitude of each other.
     sorted_stops = self.GetStopList()
     sorted_stops.sort(key=(lambda x: x.stop_lat))
     TWO_METERS_LAT = 0.000018
@@ -2788,14 +2835,36 @@ class Schedule:
       index += 1
       while ((index < len(sorted_stops)) and
              ((sorted_stops[index].stop_lat - stop.stop_lat) < TWO_METERS_LAT)):
-        if ApproximateDistanceBetweenStops(stop, sorted_stops[index]) < 2:
-          problems.OtherProblem('The stops "%s" (ID "%s") and '
-                                '"%s" (ID "%s") are so close together that '
-                                'they probably represent the same location.' %
-                                (stop.stop_name, stop.stop_id,
-                                 sorted_stops[index].stop_name,
-                                 sorted_stops[index].stop_id),
-                                type=TYPE_WARNING)
+        distance  = ApproximateDistanceBetweenStops(stop, sorted_stops[index])
+        if distance < 2:
+          other_stop = sorted_stops[index]
+          if stop.location_type == 0 and other_stop.location_type == 0:
+            problems.OtherProblem(
+                'The stops "%s" (ID "%s") and "%s" (ID "%s") are %0.2fm apart '
+                'and probably represent the same location.' %
+                (stop.stop_name, stop.stop_id, other_stop.stop_name,
+                 other_stop.stop_id, distance), type=TYPE_WARNING)
+          elif stop.location_type == 1 and other_stop.location_type == 1:
+            problems.OtherProblem(
+                'The stations "%s" (ID "%s") and "%s" (ID "%s") are %0.2fm '
+                'apart and probably represent the same location.' %
+                (stop.stop_name, stop.stop_id, other_stop.stop_name,
+                 other_stop.stop_id, distance), type=TYPE_WARNING)
+          else:
+            if stop.location_type == 0 and other_stop.location_type == 1:
+              this_stop = stop
+              this_station = other_stop
+            elif stop.location_type == 1 and other_stop.location_type == 0:
+              this_stop = other_stop
+              this_station = stop
+            else:
+              raise RuntimeError("New location_type added?")
+            if this_stop.parent_station != this_station.stop_id:
+              problems.OtherProblem(
+                  'The parent_station of stop "%s" (ID "%s") is not '
+                  'station "%s" (ID "%s") but they are only %0.2fm apart.' %
+                  (this_stop.stop_name, this_stop.stop_id,
+                   this_station.stop_name, this_station.stop_id, distance))
         index += 1
 
     # Check for multiple routes using same short + long name
@@ -2966,22 +3035,40 @@ class EndOfLineChecker:
 
 class Loader:
   def __init__(self,
-               feed_path,
+               feed_path=None,
                schedule=None,
                problems=default_problem_reporter,
                extra_validation=False,
-               memory_db=True):
+               memory_db=True,
+               zip=None):
+    """Initialize a new Loader object.
+
+    Args:
+      feed_path: string path to a zip file or directory
+      schedule: a Schedule object or None to have one created
+      problems: a ProblemReporter object, the default reporter raises an
+        exception for each problem
+      extra_validation: True if you would like extra validation
+      memory_db: if creating a new Schedule object use an in-memory sqlite
+        database instead of creating one in a temporary file
+      zip: a zipfile.ZipFile object, optionally used instead of path
+    """
     if not schedule:
       schedule = Schedule(problem_reporter=problems, memory_db=memory_db)
     self._extra_validation = extra_validation
     self._schedule = schedule
     self._problems = problems
     self._path = feed_path
-    self._zip = None
+    self._zip = zip
 
   def _DetermineFormat(self):
     """Determines whether the feed is in a form that we understand, and
        if so, returns True."""
+    if self._zip:
+      # If zip was passed to __init__ then path isn't used
+      assert not self._path
+      return True
+
     if not os.path.exists(self._path):
       self._problems.FeedNotFound(self._path)
       return False

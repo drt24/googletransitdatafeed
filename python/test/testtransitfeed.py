@@ -27,6 +27,7 @@ import traceback
 import transitfeed
 import unittest
 from StringIO import StringIO
+import zipfile
 
 
 def DataPath(path):
@@ -964,6 +965,230 @@ class StopTimeValidationTestCase(ValidationTestCase):
     self.problems.AssertNoMoreExceptions()
 
 
+class MemoryZipTestCase(unittest.TestCase):
+  def setUp(self):
+    self.problems = RecordingProblemReporter(self, ("ExpirationDate",))
+    self.zip = zipfile.ZipFile(StringIO(), 'a')
+    self.zip.writestr(
+        "agency.txt",
+        "agency_id,agency_name,agency_url,agency_timezone\n"
+        "DTA,Demo Agency,http://google.com,America/Los_Angeles\n")
+    self.zip.writestr(
+        "calendar.txt",
+        "service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,"
+        "start_date,end_date\n"
+        "FULLW,1,1,1,1,1,1,1,20070101,20101231\n"
+        "WE,0,0,0,0,0,1,1,20070101,20101231\n")
+    self.zip.writestr(
+        "routes.txt",
+        "route_id,agency_id,route_short_name,route_long_name,route_type\n"
+        "AB,DTA,,Airport Bullfrog,3\n")
+    self.zip.writestr(
+        "trips.txt",
+        "route_id,service_id,trip_id\n"
+        "AB,FULLW,AB1\n")
+    self.zip.writestr(
+        "stops.txt",
+        "stop_id,stop_name,stop_lat,stop_lon\n"
+        "BEATTY_AIRPORT,Airport,36.868446,-116.784582\n"
+        "BULLFROG,Bullfrog,36.88108,-116.81797\n"
+        "STAGECOACH,Stagecoach Hotel,36.915682,-116.751677\n")
+    self.zip.writestr(
+        "stop_times.txt",
+        "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n"
+        "AB1,10:00:00,10:00:00,BEATTY_AIRPORT,1\n"
+        "AB1,10:20:00,10:20:00,BULLFROG,2\n"
+        "AB1,10:25:00,10:25:00,STAGECOACH,3\n")
+    self.loader = transitfeed.Loader(
+        problems=self.problems,
+        extra_validation=True,
+        zip=self.zip)
+
+
+class BasicMemoryZipTestCase(MemoryZipTestCase):
+  def run(self):
+    self.loader.Load()
+    self.problems.AssertNoMoreExceptions()
+
+
+class StopHierarchyTestCase(MemoryZipTestCase):
+  def testParentAtSameLatLon(self):
+    self.zip.writestr(
+        "stops.txt",
+        "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n"
+        "BEATTY_AIRPORT,Airport,36.868446,-116.784582,,STATION\n"
+        "STATION,Airport,36.868446,-116.784582,1,\n"
+        "BULLFROG,Bullfrog,36.88108,-116.81797,,\n"
+        "STAGECOACH,Stagecoach Hotel,36.915682,-116.751677,,\n")
+    schedule = self.loader.Load()
+    self.assertEquals(1, schedule.stops["STATION"].location_type)
+    self.assertEquals(0, schedule.stops["BEATTY_AIRPORT"].location_type)
+    self.problems.AssertNoMoreExceptions()
+
+  def testBadLocationType(self):
+    self.zip.writestr(
+        "stops.txt",
+        "stop_id,stop_name,stop_lat,stop_lon,location_type\n"
+        "BEATTY_AIRPORT,Airport,36.868446,-116.784582,2\n"
+        "BULLFROG,Bullfrog,36.88108,-116.81797,notvalid\n"
+        "STAGECOACH,Stagecoach Hotel,36.915682,-116.751677,\n")
+    schedule = self.loader.Load()
+    e = self.problems.PopException("InvalidValue")
+    self.assertEquals("location_type", e.column_name)
+    self.assertEquals(1, e.row_num)
+    e = self.problems.PopException("InvalidValue")
+    self.assertEquals("location_type", e.column_name)
+    self.assertEquals(2, e.row_num)
+    self.problems.AssertNoMoreExceptions()
+
+  def testStationUsed(self):
+    self.zip.writestr(
+        "stops.txt",
+        "stop_id,stop_name,stop_lat,stop_lon,location_type\n"
+        "BEATTY_AIRPORT,Airport,36.868446,-116.784582,1\n"
+        "BULLFROG,Bullfrog,36.88108,-116.81797,\n"
+        "STAGECOACH,Stagecoach Hotel,36.915682,-116.751677,\n")
+    schedule = self.loader.Load()
+    self.problems.PopException("UsedStation")
+    self.problems.AssertNoMoreExceptions()
+
+  def testParentNotFound(self):
+    self.zip.writestr(
+        "stops.txt",
+        "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n"
+        "BEATTY_AIRPORT,Airport,36.868446,-116.784582,,STATION\n"
+        "BULLFROG,Bullfrog,36.88108,-116.81797,,\n"
+        "STAGECOACH,Stagecoach Hotel,36.915682,-116.751677,,\n")
+    schedule = self.loader.Load()
+    e = self.problems.PopException("InvalidValue")
+    self.assertEquals("parent_station", e.column_name)
+    self.problems.AssertNoMoreExceptions()
+
+  def testParentIsStop(self):
+    self.zip.writestr(
+        "stops.txt",
+        "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n"
+        "BEATTY_AIRPORT,Airport,36.868446,-116.784582,,BULLFROG\n"
+        "BULLFROG,Bullfrog,36.88108,-116.81797,,\n"
+        "STAGECOACH,Stagecoach Hotel,36.915682,-116.751677,,\n")
+    schedule = self.loader.Load()
+    e = self.problems.PopException("InvalidValue")
+    self.assertEquals("parent_station", e.column_name)
+    self.problems.AssertNoMoreExceptions()
+
+  def testStationWithParent(self):
+    self.zip.writestr(
+        "stops.txt",
+        "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n"
+        "BEATTY_AIRPORT,Airport,36.868446,-116.784582,,STATION\n"
+        "STATION,Airport,36.868446,-116.784582,1,STATION2\n"
+        "STATION2,Airport 2,40.868446,-116.784582,1,\n"
+        "BULLFROG,Bullfrog,36.88108,-116.81797,,STATION2\n"
+        "STAGECOACH,Stagecoach Hotel,36.915682,-116.751677,,\n")
+    schedule = self.loader.Load()
+    e = self.problems.PopException("InvalidValue")
+    self.assertEquals("parent_station", e.column_name)
+    self.assertEquals(2, e.row_num)
+    self.problems.AssertNoMoreExceptions()
+
+  def testStationWithSelfParent(self):
+    self.zip.writestr(
+        "stops.txt",
+        "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n"
+        "BEATTY_AIRPORT,Airport,36.868446,-116.784582,,STATION\n"
+        "STATION,Airport,36.868446,-116.784582,1,STATION\n"
+        "BULLFROG,Bullfrog,36.88108,-116.81797,,\n"
+        "STAGECOACH,Stagecoach Hotel,36.915682,-116.751677,,\n")
+    schedule = self.loader.Load()
+    e = self.problems.PopException("InvalidValue")
+    self.assertEquals("parent_station", e.column_name)
+    self.assertEquals(2, e.row_num)
+    self.problems.AssertNoMoreExceptions()
+
+  #Uncomment once validation is implemented
+  #def testStationWithoutReference(self):
+  #  self.zip.writestr(
+  #      "stops.txt",
+  #      "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n"
+  #      "BEATTY_AIRPORT,Airport,36.868446,-116.784582,,\n"
+  #      "STATION,Airport,36.868446,-116.784582,1,\n"
+  #      "BULLFROG,Bullfrog,36.88108,-116.81797,,\n"
+  #      "STAGECOACH,Stagecoach Hotel,36.915682,-116.751677,,\n")
+  #  schedule = self.loader.Load()
+  #  e = self.problems.PopException("OtherProblem")
+  #  self.assertEquals("parent_station", e.column_name)
+  #  self.assertEquals(2, e.row_num)
+  #  self.problems.AssertNoMoreExceptions()
+
+
+class StopsNearEachOther(MemoryZipTestCase):
+  def testTooNear(self):
+    self.zip.writestr(
+        "stops.txt",
+        "stop_id,stop_name,stop_lat,stop_lon\n"
+        "BEATTY_AIRPORT,Airport,48.20000,140\n"
+        "BULLFROG,Bullfrog,48.20001,140\n"
+        "STAGECOACH,Stagecoach Hotel,36.915682,-116.751677\n")
+    schedule = self.loader.Load()
+    e = self.problems.PopException('OtherProblem')
+    self.assertTrue(e.FormatProblem().find("1.11m apart") != -1)
+    self.problems.AssertNoMoreExceptions()
+
+  def testJustFarEnough(self):
+    self.zip.writestr(
+        "stops.txt",
+        "stop_id,stop_name,stop_lat,stop_lon\n"
+        "BEATTY_AIRPORT,Airport,48.20000,140\n"
+        "BULLFROG,Bullfrog,48.20002,140\n"
+        "STAGECOACH,Stagecoach Hotel,36.915682,-116.751677\n")
+    schedule = self.loader.Load()
+    # Stops are 2.2m apart
+    self.problems.AssertNoMoreExceptions()
+
+  def testSameLocation(self):
+    self.zip.writestr(
+        "stops.txt",
+        "stop_id,stop_name,stop_lat,stop_lon\n"
+        "BEATTY_AIRPORT,Airport,48.2,140\n"
+        "BULLFROG,Bullfrog,48.2,140\n"
+        "STAGECOACH,Stagecoach Hotel,36.915682,-116.751677\n")
+    schedule = self.loader.Load()
+    e = self.problems.PopException('OtherProblem')
+    self.assertTrue(e.FormatProblem().find("0.00m apart") != -1)
+    self.problems.AssertNoMoreExceptions()
+
+  def testStationsTooNear(self):
+    self.zip.writestr(
+        "stops.txt",
+        "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n"
+        "BEATTY_AIRPORT,Airport,48.20000,140,,BEATTY_AIRPORT_STATION\n"
+        "BULLFROG,Bullfrog,48.20003,140,,BULLFROG_STATION\n"
+        "BEATTY_AIRPORT_STATION,Airport,48.20001,140,1,\n"
+        "BULLFROG_STATION,Bullfrog,48.20002,140,1,\n"
+        "STAGECOACH,Stagecoach Hotel,36.915682,-116.751677,,\n")
+    schedule = self.loader.Load()
+    e = self.problems.PopException('OtherProblem')
+    self.assertTrue(e.FormatProblem().find("1.11m apart") != -1)
+    self.assertTrue(e.FormatProblem().find("BEATTY_AIRPORT_STATION") != -1)
+    self.problems.AssertNoMoreExceptions()
+
+  def testStopNearNonParentStation(self):
+    self.zip.writestr(
+        "stops.txt",
+        "stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station\n"
+        "BEATTY_AIRPORT,Airport,48.20000,140,,\n"
+        "BULLFROG,Bullfrog,48.20005,140,,\n"
+        "BULLFROG_STATION,Bullfrog,48.20006,140,1,\n"
+        "STAGECOACH,Stagecoach Hotel,36.915682,-116.751677,,\n")
+    schedule = self.loader.Load()
+    e = self.problems.PopException('OtherProblem')
+    fmt = e.FormatProblem()
+    self.assertTrue(re.search(
+      r"parent_station of.*BULLFROG.*station.*BULLFROG_STATION.* 1.11m apart",
+      fmt), fmt)
+    self.problems.AssertNoMoreExceptions()
+
+
 class RouteConstructorTestCase(unittest.TestCase):
   def setUp(self):
     self.problems = RecordingProblemReporter(self)
@@ -1645,7 +1870,7 @@ class BasicParsingTestCase(unittest.TestCase):
     self.assertEqual(1, len(schedule._agencies))
     self.assertEqual(5, len(schedule.routes))
     self.assertEqual(2, len(schedule.service_periods))
-    self.assertEqual(9, len(schedule.stops))
+    self.assertEqual(10, len(schedule.stops))
     self.assertEqual(11, len(schedule.trips))
     self.assertEqual(0, len(schedule.fare_zones))
     self.assertEqual('to airport', schedule.GetTrip('STBA').GetStopTimes()[0].stop_headsign)
