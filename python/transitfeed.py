@@ -146,6 +146,11 @@ class ProblemReporterBase:
                            type=TYPE_WARNING)
     self._Report(e)
 
+  def CsvSyntax(self, description=None, context=None, type=TYPE_ERROR):
+    e = CsvSyntax(description=description, context=context,
+                  context2=self._context, type=type)
+    self._Report(e)
+
   def MissingValue(self, column_name, reason=None, context=None):
     e = MissingValue(column_name=column_name, reason=reason, context=context,
                      context2=self._context)
@@ -316,6 +321,9 @@ class UnrecognizedColumn(ExceptionWithContext):
                'proposed feed extension) that the validator doesn\'t know ' \
                'about yet. Extra information is fine; this warning is here ' \
                'to catch misspelled optional column names.'
+
+class CsvSyntax(ExceptionWithContext):
+  ERROR_TEXT = '%(description)s'
 
 class MissingValue(ExceptionWithContext):
   ERROR_TEXT = 'Missing value for column %(column_name)s'
@@ -3117,7 +3125,6 @@ class Loader:
     contents = contents.lstrip(codecs.BOM_UTF8)
     return contents
 
-  # TODO: Add testing for this specific function
   def _ReadCsvDict(self, file_name, all_cols, required):
     """Reads lines from file_name, yielding a dict of unicode values."""
     assert file_name.endswith(".txt")
@@ -3128,9 +3135,23 @@ class Loader:
 
     eol_checker = EndOfLineChecker(StringIO.StringIO(contents),
                                    file_name, self._problems)
-    reader = csv.reader(eol_checker)  # Use excel dialect
+    # The csv module doesn't provide a way to skip trailing space, but when I
+    # checked 15/675 feeds had trailing space in a header row and 120 had spaces
+    # after fields. Space after header fields can cause a serious parsing
+    # problem, so warn. Space after body fields can cause a problem time,
+    # integer and id fields; they will be validated at higher levels.
+    reader = csv.reader(eol_checker, skipinitialspace=True)
 
-    header = reader.next()
+    raw_header = reader.next()
+    header = []
+    for h in raw_header:
+      if h != h.strip():
+        self._problems.CsvSyntax(
+            description="The header row should not contain any "
+                        "space characters.",
+            context=(file_name, 1, [''] * len(raw_header), raw_header),
+            type=TYPE_WARNING)
+      header.append(h.strip())
 
     self._schedule._table_columns[table_name] = header
 
@@ -3149,7 +3170,7 @@ class Loader:
       context = (file_name, 1, [''] * len(header), header)
       self._problems.MissingColumn(file_name, col, context)
 
-    line_num = 0  # First line read by reader.next() above
+    line_num = 1  # First line read by reader.next() above
     for row in reader:
       line_num += 1
       if len(row) == 0:  # skip extra empty lines in file

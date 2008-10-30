@@ -1005,6 +1005,186 @@ class MemoryZipTestCase(unittest.TestCase):
         zip=self.zip)
 
 
+class CsvDictTestCase(unittest.TestCase):
+  def setUp(self):
+    self.problems = RecordingProblemReporter(self)
+    self.zip = zipfile.ZipFile(StringIO(), 'a')
+    self.loader = transitfeed.Loader(
+        problems=self.problems,
+        zip=self.zip)
+
+  def testEmptyFile(self):
+    self.zip.writestr("test.txt", "")
+    results = list(self.loader._ReadCsvDict("test.txt", [], []))
+    self.assertEquals([], results)
+    self.problems.PopException("EmptyFile")
+    self.problems.AssertNoMoreExceptions()
+
+  def testHeaderOnly(self):
+    self.zip.writestr("test.txt", "test_id,test_name")
+    results = list(self.loader._ReadCsvDict("test.txt",
+                                            ["test_id", "test_name"], []))
+    self.assertEquals([], results)
+    self.problems.AssertNoMoreExceptions()
+
+  def testHeaderAndNewLineOnly(self):
+    self.zip.writestr("test.txt", "test_id,test_name\n")
+    results = list(self.loader._ReadCsvDict("test.txt",
+                                            ["test_id", "test_name"], []))
+    self.assertEquals([], results)
+    self.problems.AssertNoMoreExceptions()
+
+  def testHeaderWithSpaceBefore(self):
+    self.zip.writestr("test.txt", " test_id, test_name\n")
+    results = list(self.loader._ReadCsvDict("test.txt",
+                                            ["test_id", "test_name"], []))
+    self.assertEquals([], results)
+    self.problems.AssertNoMoreExceptions()
+
+  def testHeaderWithSpaceBeforeAfter(self):
+    self.zip.writestr("test.txt", "test_id , test_name\n")
+    results = list(self.loader._ReadCsvDict("test.txt",
+                                            ["test_id", "test_name"], []))
+    self.assertEquals([], results)
+    e = self.problems.PopException("CsvSyntax")
+    self.problems.AssertNoMoreExceptions()
+
+  def testHeaderQuoted(self):
+    self.zip.writestr("test.txt", "\"test_id\", \"test_name\"\n")
+    results = list(self.loader._ReadCsvDict("test.txt",
+                                            ["test_id", "test_name"], []))
+    self.assertEquals([], results)
+    self.problems.AssertNoMoreExceptions()
+
+  def testHeaderSpaceAfterQuoted(self):
+    self.zip.writestr("test.txt", "\"test_id\" , \"test_name\"\n")
+    results = list(self.loader._ReadCsvDict("test.txt",
+                                            ["test_id", "test_name"], []))
+    self.assertEquals([], results)
+    e = self.problems.PopException("CsvSyntax")
+    self.problems.AssertNoMoreExceptions()
+
+  def testHeaderSpaceInQuotes(self):
+    self.zip.writestr("test.txt", "\"test_id \" , \"test_name\"\n")
+    results = list(self.loader._ReadCsvDict("test.txt",
+                                            ["test_id", "test_name"], []))
+    self.assertEquals([], results)
+    e = self.problems.PopException("CsvSyntax")
+    self.problems.AssertNoMoreExceptions()
+
+  def testFieldWithSpaces(self):
+    self.zip.writestr("test.txt",
+                      "test_id,test_name\n"
+                      "id1 , my name\n")
+    results = list(self.loader._ReadCsvDict("test.txt",
+                                            ["test_id", "test_name"], []))
+    self.assertEquals([({"test_id": "id1 ", "test_name": "my name"}, 2,
+                        ["test_id", "test_name"], ["id1 ","my name"])], results)
+    self.problems.AssertNoMoreExceptions()
+
+  def testFieldWithOnlySpaces(self):
+    self.zip.writestr("test.txt",
+                      "test_id,test_name\n"
+                      "id1,  \n")  # spaces are skipped to yield empty field
+    results = list(self.loader._ReadCsvDict("test.txt",
+                                            ["test_id", "test_name"], []))
+    self.assertEquals([({"test_id": "id1", "test_name": ""}, 2,
+                        ["test_id", "test_name"], ["id1",""])], results)
+    self.problems.AssertNoMoreExceptions()
+
+  def testQuotedFieldWithSpaces(self):
+    self.zip.writestr("test.txt",
+                      'test_id,"test_name",test_size\n'
+                      '"id1" , "my name" , "234 "\n')
+    results = list(self.loader._ReadCsvDict("test.txt",
+                                            ["test_id", "test_name",
+                                             "test_size"], []))
+    self.assertEquals(
+        [({"test_id": "id1 ", "test_name": "my name ", "test_size": "234 "}, 2,
+          ["test_id", "test_name", "test_size"], ["id1 ", "my name ", "234 "])],
+        results)
+    self.problems.AssertNoMoreExceptions()
+
+  def testQuotedFieldWithCommas(self):
+    self.zip.writestr("test.txt",
+                      'id,name1,name2\n'
+                      '"1", "brown, tom", "brown, ""tom"""\n')
+    results = list(self.loader._ReadCsvDict("test.txt",
+                                            ["id", "name1", "name2"], []))
+    self.assertEquals(
+        [({"id": "1", "name1": "brown, tom", "name2": "brown, \"tom\""}, 2,
+          ["id", "name1", "name2"], ["1", "brown, tom", "brown, \"tom\""])],
+        results)
+    self.problems.AssertNoMoreExceptions()
+
+  def testUnknownColumn(self):
+    # A small typo (omitting '_' in a header name) is detected
+    self.zip.writestr("test.txt", "test_id,testname\n")
+    results = list(self.loader._ReadCsvDict("test.txt",
+                                            ["test_id", "test_name"], []))
+    self.assertEquals([], results)
+    e = self.problems.PopException("UnrecognizedColumn")
+    self.assertEquals("testname", e.column_name)
+    self.problems.AssertNoMoreExceptions()
+
+  def testMissingRequiredColumn(self):
+    self.zip.writestr("test.txt", "test_id,test_size\n")
+    results = list(self.loader._ReadCsvDict("test.txt",
+                                            ["test_id", "test_size"],
+                                            ["test_name"]))
+    self.assertEquals([], results)
+    e = self.problems.PopException("MissingColumn")
+    self.assertEquals("test_name", e.column_name)
+    self.problems.AssertNoMoreExceptions()
+
+  def testRequiredNotInAllCols(self):
+    self.zip.writestr("test.txt", "test_id,test_name,test_size\n")
+    results = list(self.loader._ReadCsvDict("test.txt",
+                                            ["test_id", "test_size"],
+                                            ["test_name"]))
+    self.assertEquals([], results)
+    e = self.problems.PopException("UnrecognizedColumn")
+    self.assertEquals("test_name", e.column_name)
+    self.problems.AssertNoMoreExceptions()
+
+  def testBlankLine(self):
+    # line_num is increased for an empty line
+    self.zip.writestr("test.txt",
+                      "test_id,test_name\n"
+                      "\n"
+                      "id1,my name\n")
+    results = list(self.loader._ReadCsvDict("test.txt",
+                                            ["test_id", "test_name"], []))
+    self.assertEquals([({"test_id": "id1", "test_name": "my name"}, 3,
+                        ["test_id", "test_name"], ["id1","my name"])], results)
+    self.problems.AssertNoMoreExceptions()
+
+  def testExtraComma(self):
+    self.zip.writestr("test.txt",
+                      "test_id,test_name\n"
+                      "id1,my name,\n")
+    results = list(self.loader._ReadCsvDict("test.txt",
+                                            ["test_id", "test_name"], []))
+    self.assertEquals([({"test_id": "id1", "test_name": "my name"}, 2,
+                        ["test_id", "test_name"], ["id1","my name", ""])],
+                      results)
+    e = self.problems.PopException("OtherProblem")
+    self.assertTrue(e.FormatProblem().find("too many cells") != -1)
+    self.problems.AssertNoMoreExceptions()
+
+  def testMissingComma(self):
+    self.zip.writestr("test.txt",
+                      "test_id,test_name\n"
+                      "id1 my name\n")
+    results = list(self.loader._ReadCsvDict("test.txt",
+                                            ["test_id", "test_name"], []))
+    self.assertEquals([({"test_id": "id1 my name"}, 2,
+                        ["test_id", "test_name"], ["id1 my name"])], results)
+    e = self.problems.PopException("OtherProblem")
+    self.assertTrue(e.FormatProblem().find("missing cells") != -1)
+    self.problems.AssertNoMoreExceptions()
+
+
 class BasicMemoryZipTestCase(MemoryZipTestCase):
   def run(self):
     self.loader.Load()
@@ -1035,10 +1215,10 @@ class StopHierarchyTestCase(MemoryZipTestCase):
     schedule = self.loader.Load()
     e = self.problems.PopException("InvalidValue")
     self.assertEquals("location_type", e.column_name)
-    self.assertEquals(1, e.row_num)
+    self.assertEquals(2, e.row_num)
     e = self.problems.PopException("InvalidValue")
     self.assertEquals("location_type", e.column_name)
-    self.assertEquals(2, e.row_num)
+    self.assertEquals(3, e.row_num)
     self.problems.AssertNoMoreExceptions()
 
   def testStationUsed(self):
@@ -1088,7 +1268,7 @@ class StopHierarchyTestCase(MemoryZipTestCase):
     schedule = self.loader.Load()
     e = self.problems.PopException("InvalidValue")
     self.assertEquals("parent_station", e.column_name)
-    self.assertEquals(2, e.row_num)
+    self.assertEquals(3, e.row_num)
     self.problems.AssertNoMoreExceptions()
 
   def testStationWithSelfParent(self):
@@ -1102,7 +1282,7 @@ class StopHierarchyTestCase(MemoryZipTestCase):
     schedule = self.loader.Load()
     e = self.problems.PopException("InvalidValue")
     self.assertEquals("parent_station", e.column_name)
-    self.assertEquals(2, e.row_num)
+    self.assertEquals(3, e.row_num)
     self.problems.AssertNoMoreExceptions()
 
   #Uncomment once validation is implemented
@@ -1119,6 +1299,19 @@ class StopHierarchyTestCase(MemoryZipTestCase):
   #  self.assertEquals("parent_station", e.column_name)
   #  self.assertEquals(2, e.row_num)
   #  self.problems.AssertNoMoreExceptions()
+
+
+class StopSpacesTestCase(MemoryZipTestCase):
+  def testFieldsWithSpace(self):
+    self.zip.writestr(
+        "stops.txt",
+        "stop_id,stop_code,stop_name,stop_lat,stop_lon,stop_url,location_type,"
+        "parent_station\n"
+        "BEATTY_AIRPORT, ,Airport,36.868446,-116.784582, , ,\n"
+        "BULLFROG,,Bullfrog,36.88108,-116.81797,,,\n"
+        "STAGECOACH,,Stagecoach Hotel,36.915682,-116.751677,,,\n")
+    schedule = self.loader.Load()
+    self.problems.AssertNoMoreExceptions()
 
 
 class StopsNearEachOther(MemoryZipTestCase):
