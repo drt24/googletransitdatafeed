@@ -35,6 +35,7 @@ Stop object which has attributes such as stop_lat and stop_name.
   Stop: Represents a single stop
   ServicePeriod: Represents a single service, a set of dates
   Agency: Represents the agency in this feed
+  Transfer: Represents a single transfer rule
   TimeToSecondsSinceMidnight(): Convert HH:MM:SS into seconds since midnight.
   FormatSecondsSinceMidnight(s): Formats number of seconds past midnight into a string
 """
@@ -520,7 +521,7 @@ class Stop(object):
 
   def _GetTripSequence(self, schedule=None):
     """Return a list of (trip, stop_sequence) for all trips visiting this stop.
-    
+
     A trip may be in the list multiple times with different index.
     stop_sequence is an integer.
 
@@ -554,7 +555,7 @@ class Stop(object):
         raise RuntimeError("stop_sequence %d not found in trip_id %s" %
                            sequence, trip.trip_id)
     return trip_index
- 
+
   def GetStopTimeTrips(self, schedule=None):
     """Return a list of (time, (trip, index), is_timepoint).
 
@@ -1325,7 +1326,7 @@ class Trip(object):
 
   def GetHeadwayStartTimes(self):
     """Return a list of start time for each headway-based run.
-    
+
     Returns:
       a sorted list of seconds since midnight, the start time of each run. If
       this trip doesn't have headways returns an empty list."""
@@ -1504,7 +1505,7 @@ class Trip(object):
       problems.InvalidValue('stop_sequence', row[0],
                             'Duplicate stop_sequence in trip_id %s' %
                             self.trip_id)
-                 
+
     stoptimes = self.GetStopTimes(problems)
     if stoptimes:
       if stoptimes[0].arrival_time is None and stoptimes[0].departure_time is None:
@@ -1976,6 +1977,88 @@ class Agency(object):
     return not found_problem
 
 
+class Transfer(object):
+  """Represents a transfer in a schedule"""
+  _REQUIRED_FIELD_NAMES = ['from_stop_id', 'to_stop_id', 'transfer_type']
+  _FIELD_NAMES = _REQUIRED_FIELD_NAMES + ['min_transfer_time']
+
+  def __init__(self, schedule=None, from_stop_id=None, to_stop_id=None, transfer_type=None,
+               min_transfer_time=None, field_dict=None):
+    if schedule is not None:
+      self._schedule = weakref.proxy(schedule)  # See weakref comment at top
+    else:
+      self._schedule = None
+    if field_dict:
+      self.__dict__.update(field_dict)
+    else:
+      self.from_stop_id = from_stop_id
+      self.to_stop_id = to_stop_id
+      self.transfer_type = transfer_type
+      self.min_transfer_time = min_transfer_time
+
+    if IsEmpty(self.transfer_type):
+      self.transfer_type = None
+    else:
+      try:
+        # TODO: Check for a case when conversion is possible, but we should
+        # produce a warning. Example: "001".
+        self.transfer_type = int(self.transfer_type)
+      except (TypeError, ValueError):
+        pass
+
+    if IsEmpty(self.min_transfer_time):
+      self.min_transfer_time = None
+    else:
+      try:
+        self.min_transfer_time = int(self.min_transfer_time)
+      except (TypeError, ValueError):
+        pass
+
+  def GetFieldValuesTuple(self):
+    return [getattr(self, fn) for fn in Transfer._FIELD_NAMES]
+
+  def __getitem__(self, name):
+    return getattr(self, name)
+
+  def __eq__(self, other):
+    if not other:
+      return False
+
+    if id(self) == id(other):
+      return True
+
+    return self.GetFieldValuesTuple() == other.GetFieldValuesTuple()
+
+  def __ne__(self, other):
+    return not self.__eq__(other)
+
+  def __repr__(self):
+    return "<Transfer %s>" % self.__dict__
+
+  def Validate(self, problems=default_problem_reporter):
+    if IsEmpty(self.from_stop_id):
+      problems.MissingValue('from_stop_id')
+    elif self._schedule:
+      if self.from_stop_id not in self._schedule.stops.keys():
+        problems.InvalidValue('from_stop_id', self.from_stop_id)
+
+    if IsEmpty(self.to_stop_id):
+      problems.MissingValue('to_stop_id')
+    elif self._schedule:
+      if self.to_stop_id not in self._schedule.stops.keys():
+        problems.InvalidValue('to_stop_id', self.to_stop_id)
+
+    if not IsEmpty(self.transfer_type):
+      if (not isinstance(self.transfer_type, int)) or \
+          (self.transfer_type not in range(0, 4)):
+        problems.InvalidValue('transfer_type', self.transfer_type)
+
+    if not IsEmpty(self.min_transfer_time):
+      if (not isinstance(self.min_transfer_time, int)) or \
+          self.min_transfer_time < 0:
+        problems.InvalidValue('min_transfer_time', self.min_transfer_time)
+
+
 class ServicePeriod(object):
   """Represents a service, which identifies a set of dates when one or more
   trips operate."""
@@ -2275,6 +2358,7 @@ class Schedule:
     self.fares = {}
     self.fare_zones = {}  # represents the set of all known fare zones
     self._shapes = {}  # shape_id to Shape
+    self._transfers = []  # list of transfers
     self._default_service_period = None
     self._default_agency = None
     self.problem_reporter = problem_reporter
@@ -2624,6 +2708,17 @@ class Schedule:
                                     'of the IDs defined in the '
                                     'fare attributes.)')
 
+  def AddTransferObject(self, transfer, problem_reporter=None):
+    transfer._schedule = weakref.proxy(self)  # See weakref comment at top
+    if not problem_reporter:
+      problem_reporter = self.problem_reporter
+
+    transfer.Validate(problem_reporter)
+    self._transfers.append(transfer)
+
+  def GetTransferList(self):
+    return self._transfers
+
   def GetStop(self, id):
     return self.stops[id]
 
@@ -2777,6 +2872,14 @@ class Schedule:
       writer.writerow(Shape._FIELD_NAMES)
       writer.writerows(shape_rows)
       archive.writestr('shapes.txt', shape_string.getvalue())
+
+    # write transfers (if applicable)
+    if self.GetTransferList():
+      transfer_string = StringIO.StringIO()
+      writer = CsvUnicodeWriter(transfer_string)
+      writer.writerow(Transfer._FIELD_NAMES)
+      writer.writerows(f.GetFieldValuesTuple() for f in self.GetTransferList())
+      archive.writestr('transfers.txt', transfer_string.getvalue())
 
     archive.close()
 
@@ -3556,6 +3659,18 @@ class Loader:
     for trip in self._schedule.trips.values():
       trip.Validate(self._problems)
 
+  def _LoadTransfers(self):
+    file_name = 'transfers.txt'
+    if not self._HasFile(file_name):  # transfers are an optional feature
+      return
+    for (d, row_num, header, row) in self._ReadCsvDict(file_name,
+                                              Transfer._FIELD_NAMES,
+                                              Transfer._REQUIRED_FIELD_NAMES):
+      self._problems.SetFileContext(file_name, row_num, row, header)
+      transfer = Transfer(field_dict=d)
+      self._schedule.AddTransferObject(transfer, self._problems)
+      self._problems.ClearContext()
+
   def Load(self):
     self._problems.ClearContext()
     if not self._DetermineFormat():
@@ -3571,6 +3686,7 @@ class Loader:
     self._LoadStopTimes()
     self._LoadFares()
     self._LoadFareRules()
+    self._LoadTransfers()
 
     if self._zip:
       self._zip.close()

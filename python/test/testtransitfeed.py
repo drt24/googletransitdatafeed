@@ -355,7 +355,8 @@ class LoadUnrecognizedColumnsTestCase(unittest.TestCase):
       ('stop_times.txt', 'drop_off_time'),
       ('fare_attributes.txt', 'transfer_time'),
       ('fare_rules.txt', 'source_id'),
-      ('frequencies.txt', 'superfluous')
+      ('frequencies.txt', 'superfluous'),
+      ('transfers.txt', 'to_stop')
     ])
 
     # Now make sure we got the unrecognized column errors that we expected.
@@ -856,7 +857,7 @@ class StopAttributes(ValidationTestCase):
       e = self.problems.PopException('MissingValue')
       self.assertEquals(name, e.column_name)
     self.problems.AssertNoMoreExceptions()
-    
+
     stop = transitfeed.Stop()
     # Test behaviour for unset and unknown attribute
     self.assertEquals(stop['new_column'], '')
@@ -1641,6 +1642,71 @@ class FareValidationTestCase(ValidationTestCase):
     fare.transfer_duration = 7200
     self.problems.AssertNoMoreExceptions()
 
+class TransferValidationTestCase(ValidationTestCase):
+  def runTest(self):
+    # simple successes
+    transfer = transitfeed.Transfer()
+    transfer.from_stop_id = "S1"
+    transfer.to_stop_id = "S2"
+    transfer.transfer_type = 0
+    repr(transfer)  # shouldn't crash
+    transfer.Validate(self.problems)
+    transfer.transfer_type = 3
+    transfer.Validate(self.problems)
+    self.problems.AssertNoMoreExceptions()
+
+    # transfer_type is out of range
+    transfer.transfer_type = 4
+    self.ExpectInvalidValue(transfer, "transfer_type")
+    transfer.transfer_type = -1
+    self.ExpectInvalidValue(transfer, "transfer_type")
+    transfer.transfer_type = "text"
+    self.ExpectInvalidValue(transfer, "transfer_type")
+    transfer.transfer_type = 2
+
+    # invalid min_transfer_time
+    transfer.min_transfer_time = -1
+    self.ExpectInvalidValue(transfer, "min_transfer_time")
+    transfer.min_transfer_time = "text"
+    self.ExpectInvalidValue(transfer, "min_transfer_time")
+    transfer.min_transfer_time = 250
+    transfer.Validate(self.problems)
+    self.problems.AssertNoMoreExceptions()
+
+    # missing stop ids
+    transfer.from_stop_id = ""
+    self.ExpectMissingValue(transfer, 'from_stop_id')
+    transfer.from_stop_id = "S1"
+    transfer.to_stop_id = None
+    self.ExpectMissingValue(transfer, 'to_stop_id')
+    transfer.to_stop_id = "S2"
+
+    # stops are presented in schedule case
+    schedule = transitfeed.Schedule()
+    stop1 = schedule.AddStop(57.5, 30.2, "stop 1")
+    stop2 = schedule.AddStop(57.5, 30.3, "stop 2")
+    transfer = transitfeed.Transfer(schedule=schedule)
+    transfer.from_stop_id = stop1.stop_id
+    transfer.to_stop_id = stop2.stop_id
+    transfer.transfer_type = 2
+    transfer.min_transfer_time = 250
+    repr(transfer)  # shouldn't crash
+    transfer.Validate(self.problems)
+    self.problems.AssertNoMoreExceptions()
+
+    # stops are not presented in schedule case
+    schedule = transitfeed.Schedule()
+    stop1 = schedule.AddStop(57.5, 30.2, "stop 1")
+    transfer = transitfeed.Transfer(schedule=schedule)
+    transfer.from_stop_id = stop1.stop_id
+    transfer.to_stop_id = "unexist"
+    transfer.transfer_type = 2
+    transfer.min_transfer_time = 250
+    self.ExpectInvalidValue(transfer, 'to_stop_id')
+    transfer.from_stop_id = "unexist"
+    transfer.to_stop_id = stop1.stop_id
+    self.ExpectInvalidValue(transfer, "from_stop_id")
+    self.problems.AssertNoMoreExceptions()
 
 class ServicePeriodValidationTestCase(ValidationTestCase):
   def runTest(self):
@@ -1807,7 +1873,7 @@ class TripValidationTestCase(ValidationTestCase):
   def runTest(self):
     trip = transitfeed.Trip()
     repr(trip)  # shouldn't crash
-    
+
     schedule = transitfeed.Schedule()  # Needed to find StopTimes
     trip = transitfeed.Trip(schedule=schedule)
     repr(trip)  # shouldn't crash
