@@ -3150,6 +3150,7 @@ class Loader:
                schedule=None,
                problems=default_problem_reporter,
                extra_validation=False,
+               load_stop_times=True,
                memory_db=True,
                zip=None):
     """Initialize a new Loader object.
@@ -3160,6 +3161,8 @@ class Loader:
       problems: a ProblemReporter object, the default reporter raises an
         exception for each problem
       extra_validation: True if you would like extra validation
+      load_stop_times: load the stop_times table, used to speed load time when
+        times are not needed. The default is True.
       memory_db: if creating a new Schedule object use an in-memory sqlite
         database instead of creating one in a temporary file
       zip: a zipfile.ZipFile object, optionally used instead of path
@@ -3171,6 +3174,7 @@ class Loader:
     self._problems = problems
     self._path = feed_path
     self._zip = zip
+    self._load_stop_times = load_stop_times
 
   def _DetermineFormat(self):
     """Determines whether the feed is in a form that we understand, and
@@ -3683,7 +3687,8 @@ class Loader:
     self._LoadShapes()
     self._LoadTrips()
     self._LoadHeadways()
-    self._LoadStopTimes()
+    if self._load_stop_times:
+      self._LoadStopTimes()
     self._LoadFares()
     self._LoadFareRules()
     self._LoadTransfers()

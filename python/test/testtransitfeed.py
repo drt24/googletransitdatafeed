@@ -41,8 +41,11 @@ def GetDataPathContents():
 
 class ExceptionProblemReporterNoExpiration(
     transitfeed.ExceptionProblemReporter):
-  """This version, used for most tests, ignores feed expiration problems,
-     so that we don't need to keep updating the dates in our tests."""
+  """Ignores feed expiration problems.
+
+  Use TestFailureProblemReporter in new code because it fails more cleanly, is
+  easier to extend and does more thorough checking.
+  """
 
   def __init__(self):
     transitfeed.ExceptionProblemReporter.__init__(self, raise_warnings=True)
@@ -53,15 +56,20 @@ class ExceptionProblemReporterNoExpiration(
 
 class TestFailureProblemReporter(transitfeed.ProblemReporter):
   """Causes a test failure immediately on any problem."""
-  def __init__(self, test_case):
+  def __init__(self, test_case, ignore_types=("ExpirationDate",)):
     transitfeed.ProblemReporter.__init__(self)
     self.test_case = test_case
+    self._ignore_types = ignore_types or set()
 
-  def ExpirationDate(self, expiration, context=None):
-    pass  # We don't want to give errors about our test data files
-
-  def _Report(self, problem_text):
-    self.test_case.fail(problem_text)
+  def _Report(self, e):
+    # These should never crash
+    formatted_problem = e.FormatProblem()
+    formatted_context = e.FormatContext()
+    exception_class = e.__class__.__name__
+    if exception_class in self._ignore_types:
+      return
+    self.test_case.fail(
+        "%s: %s\n%s" % (exception_class, formatted_problem, formatted_context))
 
 
 class RecordingProblemReporter(transitfeed.ProblemReporterBase):
@@ -2132,6 +2140,9 @@ class BasicParsingTestCase(unittest.TestCase):
     self.assertEqual(10, len(schedule.stops))
     self.assertEqual(11, len(schedule.trips))
     self.assertEqual(0, len(schedule.fare_zones))
+
+  def assertLoadedStopTimesCorrectly(self, schedule):
+    self.assertEqual(5, len(schedule.GetTrip('CITY1').GetStopTimes()))
     self.assertEqual('to airport', schedule.GetTrip('STBA').GetStopTimes()[0].stop_headsign)
     self.assertEqual(2, schedule.GetTrip('CITY1').GetStopTimes()[1].pickup_type)
     self.assertEqual(3, schedule.GetTrip('CITY1').GetStopTimes()[1].drop_off_type)
@@ -2139,20 +2150,34 @@ class BasicParsingTestCase(unittest.TestCase):
   def test_MemoryDb(self):
     loader = transitfeed.Loader(
       DataPath('good_feed.zip'),
-      problems=ExceptionProblemReporterNoExpiration(),
+      problems=TestFailureProblemReporter(self),
       extra_validation=True,
       memory_db=True)
     schedule = loader.Load()
     self.assertLoadedCorrectly(schedule)
+    self.assertLoadedStopTimesCorrectly(schedule)
 
   def test_TemporaryFile(self):
     loader = transitfeed.Loader(
       DataPath('good_feed.zip'),
-      problems=ExceptionProblemReporterNoExpiration(),
+      problems=TestFailureProblemReporter(self),
       extra_validation=True,
       memory_db=False)
     schedule = loader.Load()
     self.assertLoadedCorrectly(schedule)
+    self.assertLoadedStopTimesCorrectly(schedule)
+
+  def test_NoLoadStopTimes(self):
+    problems = TestFailureProblemReporter(
+        self, ignore_types=("ExpirationDate", "UnusedStop", "OtherProblem"))
+    loader = transitfeed.Loader(
+      DataPath('good_feed.zip'),
+      problems=problems,
+      extra_validation=True,
+      load_stop_times=False)
+    schedule = loader.Load()
+    self.assertLoadedCorrectly(schedule)
+    self.assertEqual(0, len(schedule.GetTrip('CITY1').GetStopTimes()))
 
 
 class RepeatedRouteNameTestCase(LoadTestCase):
