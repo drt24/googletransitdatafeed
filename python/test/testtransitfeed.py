@@ -86,6 +86,9 @@ class RecordingProblemReporter(transitfeed.ProblemReporterBase):
     self._ignore_types = ignore_types or set()
 
   def _Report(self, e):
+    # Ensure that these don't crash
+    e.FormatProblem()
+    e.FormatContext()
     if e.__class__.__name__ in self._ignore_types:
       return
     # Keep the 7 nearest stack frames. This should be enough to identify
@@ -459,10 +462,10 @@ class ProblemReporterTestCase(RedirectStdOutTestCaseBase):
   def testNoContextWithBadUnicode(self):
     pr = transitfeed.ProblemReporter()
     pr.OtherProblem('test string')
-    pr.OtherProblem('\xff\xfe\x80\x88')
+    pr.OtherProblem(u'\xff\xfe\x80\x88')
     # Invalid ascii and utf-8. encode('utf-8') and decode('utf-8') will fail
     # for this value
-    pr.OtherProblem(u'\xff\xfe\x80\x88')
+    pr.OtherProblem('\xff\xfe\x80\x88')
 
   def testBadUnicodeContext(self):
     pr = transitfeed.ProblemReporter()

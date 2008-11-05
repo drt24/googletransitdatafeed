@@ -265,17 +265,29 @@ class ExceptionWithContext(Exception):
   def __str__(self):
     return self.FormatProblem()
 
-  def GetDict(self):
+  def GetDictToFormat(self):
     """Return a copy of self as a dict, suitable for passing to FormatProblem"""
     d = {}
-    d.update(self.__dict__)
+    for k, v in self.__dict__.items():
+      # TODO: Better handling of unicode/utf-8 within Schedule objects.
+      # Concatinating a unicode and utf-8 str object causes an exception such
+      # as "UnicodeDecodeError: 'ascii' codec can't decode byte ..." as python
+      # tries to convert the str to a unicode. To avoid that happening within
+      # the problem reporter convert all unicode attributes to utf-8.
+      # Currently valid utf-8 fields are converted to unicode in _ReadCsvDict.
+      # Perhaps all fields should be left as utf-8.
+      d[k] = EncodeUnicode(v)
     return d
 
   def FormatProblem(self, d=None):
-    """Return a text string describing the problem. d may be the return value
-    of GetDict with formatting added to the values."""
+    """Return a text string describing the problem.
+
+    Args:
+      d: map returned by GetDictToFormat with  with formatting added
+    """
     if not d:
-      d = self.__dict__
+      d = self.GetDictToFormat()
+
     output_error_text = self.__class__.ERROR_TEXT % d
     if ('reason' in d) and d['reason']:
       return '%s\n%s' % (output_error_text, d['reason'])
@@ -345,7 +357,7 @@ class UsedStation(ExceptionWithContext):
 class ExpirationDate(ExceptionWithContext):
   def FormatProblem(self, d=None):
     if not d:
-      d = self.__dict__
+      d = self.GetDictToFormat()
     expiration = d['expiration']
     formatted_date = time.strftime("%B %d, %Y",
                                    time.localtime(expiration))
@@ -1186,7 +1198,7 @@ class Trip(object):
       if new_secs != None and new_secs < prev_secs:
         problems.OtherProblem(
             'out of order stop time for stop_id=%s trip_id=%s %s < %s' %
-            (stoptime.stop_id, self.trip_id,
+            (EncodeUnicode(stoptime.stop_id), EncodeUnicode(self.trip_id),
              FormatSecondsSinceMidnight(new_secs),
              FormatSecondsSinceMidnight(prev_secs)))
     self._AddStopTimeObjectUnordered(stoptime, schedule, problems)
@@ -2919,15 +2931,19 @@ class Schedule:
           problems.UnusedStop(stop.stop_id, stop.stop_name)
         if stop.parent_station:
           if stop.parent_station not in self.stops:
-            problems.InvalidValue("parent_station", stop.parent_station,
+            problems.InvalidValue("parent_station",
+                                  EncodeUnicode(stop.parent_station),
                                   "parent_station '%s' not found for stop_id "
-                                  "'%s' in stops.txt" % (stop.parent_station,
-                                                         stop.stop_id))
+                                  "'%s' in stops.txt" %
+                                  (EncodeUnicode(stop.parent_station),
+                                   EncodeUnicode(stop.stop_id)))
           elif self.stops[stop.parent_station].location_type != 1:
-            problems.InvalidValue("parent_station", stop.parent_station,
+            problems.InvalidValue("parent_station",
+                                  EncodeUnicode(stop.parent_station),
                                   "parent_station '%s' of stop_id '%s' must "
                                   "have location_type=1 in stops.txt" %
-                                  (stop.parent_station, stop.stop_id))
+                                  (EncodeUnicode(stop.parent_station),
+                                   EncodeUnicode(stop.stop_id)))
       elif stop.location_type == 1:
         if count != 0:
           problems.UsedStation(stop.stop_id, stop.stop_name)
@@ -2953,14 +2969,18 @@ class Schedule:
             problems.OtherProblem(
                 'The stops "%s" (ID "%s") and "%s" (ID "%s") are %0.2fm apart '
                 'and probably represent the same location.' %
-                (stop.stop_name, stop.stop_id, other_stop.stop_name,
-                 other_stop.stop_id, distance), type=TYPE_WARNING)
+                (EncodeUnicode(stop.stop_name),
+                 EncodeUnicode(stop.stop_id),
+                 EncodeUnicode(other_stop.stop_name),
+                 EncodeUnicode(other_stop.stop_id), distance),
+                type=TYPE_WARNING)
           elif stop.location_type == 1 and other_stop.location_type == 1:
             problems.OtherProblem(
                 'The stations "%s" (ID "%s") and "%s" (ID "%s") are %0.2fm '
                 'apart and probably represent the same location.' %
-                (stop.stop_name, stop.stop_id, other_stop.stop_name,
-                 other_stop.stop_id, distance), type=TYPE_WARNING)
+                (EncodeUnicode(stop.stop_name), EncodeUnicode(stop.stop_id),
+                 EncodeUnicode(other_stop.stop_name),
+                 EncodeUnicode(other_stop.stop_id), distance), type=TYPE_WARNING)
           else:
             if stop.location_type == 0 and other_stop.location_type == 1:
               this_stop = stop
@@ -2974,8 +2994,10 @@ class Schedule:
               problems.OtherProblem(
                   'The parent_station of stop "%s" (ID "%s") is not '
                   'station "%s" (ID "%s") but they are only %0.2fm apart.' %
-                  (this_stop.stop_name, this_stop.stop_id,
-                   this_station.stop_name, this_station.stop_id, distance))
+                  (EncodeUnicode(this_stop.stop_name),
+                   EncodeUnicode(this_stop.stop_id),
+                   EncodeUnicode(this_station.stop_name),
+                   EncodeUnicode(this_station.stop_id), distance))
         index += 1
 
     # Check for multiple routes using same short + long name
