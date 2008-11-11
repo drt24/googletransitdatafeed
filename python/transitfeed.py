@@ -458,6 +458,14 @@ def DateStringToDateObject(date_string):
                        int(date_string[6:8]))
 
 
+def FloatStringToFloat(float_string):
+  """Convert a float as a string to a float or raise an exception"""
+  # Will raise TypeError unless a string
+  if not re.match(r"^[+-]?\d+(\.\d+)?$", float_string):
+    raise ValueError()
+  return float(float_string)
+
+
 EARTH_RADIUS = 6378135          # in meters
 def ApproximateDistanceBetweenStops(stop1, stop2):
   """Compute approximate distance between two stops in meters. Assumes the
@@ -600,9 +608,10 @@ class Stop(object):
     """
     if name == 'stop_lat':
       try:
-        # TODO: http://code.google.com/p/googletransitdatafeed/issues/detail?id=75
-        # validate stop_latitude and lng are in format -?[1-9]\d+\.\d+
-        self.stop_lat = float(value)
+        if isinstance(value, (float, int)):
+          self.stop_lat = value
+        else:
+          self.stop_lat = FloatStringToFloat(value)
       except (ValueError, TypeError):
         problems.InvalidValue('stop_lat', value)
         del self.stop_lat
@@ -611,7 +620,10 @@ class Stop(object):
           problems.InvalidValue('stop_lat', value)
     elif name == 'stop_lon':
       try:
-        self.stop_lon = float(value)
+        if isinstance(value, (float, int)):
+          self.stop_lon = value
+        else:
+          self.stop_lon = FloatStringToFloat(value)
       except (ValueError, TypeError):
         problems.InvalidValue('stop_lon', value)
         del self.stop_lon
@@ -2951,11 +2963,14 @@ class Schedule:
     #TODO: check that every station is used and within 1km of stops that are
     # part of it. Then uncomment testStationWithoutReference.
 
-    # Check for stops that might represent the same location
-    # (specifically, stops that are less that 2 meters apart)
-    # Sort by latitude first then find the distance between each pair of
-    # stations within 2 meters latitude of each other.
-    sorted_stops = self.GetStopList()
+    # Check for stops that might represent the same location (specifically,
+    # stops that are less that 2 meters apart) First filter out stops without a
+    # valid lat and lon. Then sort by latitude, then find the distance between
+    # each pair of stations within 2 meters latitude of each other. This avoids
+    # doing n^2 comparisons in the average case and doesn't need a spatial
+    # index.
+    sorted_stops = filter(lambda s: s.stop_lat and s.stop_lon,
+                          self.GetStopList())
     sorted_stops.sort(key=(lambda x: x.stop_lat))
     TWO_METERS_LAT = 0.000018
     for index, stop in enumerate(sorted_stops[:-1]):

@@ -1394,6 +1394,39 @@ class StopsNearEachOther(MemoryZipTestCase):
     self.problems.AssertNoMoreExceptions()
 
 
+class BadLatLonInStopUnitTest(ValidationTestCase):
+  def runTest(self):
+    stop = transitfeed.Stop(field_dict={"stop_id": "STOP1",
+                                        "stop_name": "Stop one",
+                                        "stop_lat": "0x20",
+                                        "stop_lon": "140.01"})
+    self.ExpectInvalidValue(stop, "stop_lat")
+
+    stop = transitfeed.Stop(field_dict={"stop_id": "STOP1",
+                                        "stop_name": "Stop one",
+                                        "stop_lat": "13.0",
+                                        "stop_lon": "1e2"})
+    self.ExpectInvalidValue(stop, "stop_lon")
+
+
+class BadLatLonInFileUnitTest(MemoryZipTestCase):
+  def runTest(self):
+    self.zip.writestr(
+        "stops.txt",
+        "stop_id,stop_name,stop_lat,stop_lon\n"
+        "BEATTY_AIRPORT,Airport,0x20,140.00\n"
+        "BULLFROG,Bullfrog,48.20001,140.0123\n"
+        "STAGECOACH,Stagecoach Hotel,48.002,bogus\n")
+    schedule = self.loader.Load()
+    e = self.problems.PopException('InvalidValue')
+    self.assertEquals(2, e.row_num)
+    self.assertEquals("stop_lat", e.column_name)
+    e = self.problems.PopException('InvalidValue')
+    self.assertEquals(4, e.row_num)
+    self.assertEquals("stop_lon", e.column_name)
+    self.problems.AssertNoMoreExceptions()
+
+
 class RouteConstructorTestCase(unittest.TestCase):
   def setUp(self):
     self.problems = RecordingProblemReporter(self)
