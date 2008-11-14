@@ -1688,6 +1688,59 @@ class FareValidationTestCase(ValidationTestCase):
 
 class TransferValidationTestCase(ValidationTestCase):
   def runTest(self):
+    # Totally bogus data shouldn't cause a crash
+    transfer = transitfeed.Transfer(field_dict={"ignored": "foo"})
+    self.assertEquals(0, transfer.transfer_type)
+
+    transfer = transitfeed.Transfer(from_stop_id = "S1", to_stop_id = "S2",
+                                    transfer_type = "1", min_transfer_time = 2)
+    self.assertEquals("S1", transfer.from_stop_id)
+    self.assertEquals("S2", transfer.to_stop_id)
+    self.assertEquals(1, transfer.transfer_type)
+    self.assertEquals(2, transfer.min_transfer_time)
+    transfer.Validate(self.problems)
+    self.assertEquals("S1", transfer.from_stop_id)
+    self.assertEquals("S2", transfer.to_stop_id)
+    self.assertEquals(1, transfer.transfer_type)
+    self.assertEquals(2, transfer.min_transfer_time)
+    self.problems.AssertNoMoreExceptions()
+
+    transfer = transitfeed.Transfer(field_dict={"from_stop_id": "S1", \
+                                                "to_stop_id": "S2", \
+                                                "transfer_type": "0", \
+                                                "min_transfer_time": "2"})
+    self.assertEquals("S1", transfer.from_stop_id)
+    self.assertEquals("S2", transfer.to_stop_id)
+    self.assertEquals(0, transfer.transfer_type)
+    self.assertEquals(2, transfer.min_transfer_time)
+    transfer.Validate(self.problems)
+    self.assertEquals("S1", transfer.from_stop_id)
+    self.assertEquals("S2", transfer.to_stop_id)
+    self.assertEquals(0, transfer.transfer_type)
+    self.assertEquals(2, transfer.min_transfer_time)
+    self.problems.AssertNoMoreExceptions()
+
+    transfer = transitfeed.Transfer(field_dict={"from_stop_id": "S1", \
+                                                "to_stop_id": "S2", \
+                                                "transfer_type": "-4", \
+                                                "min_transfer_time": "2"})
+    self.assertEquals("S1", transfer.from_stop_id)
+    self.assertEquals("S2", transfer.to_stop_id)
+    self.assertEquals("-4", transfer.transfer_type)
+    self.assertEquals(2, transfer.min_transfer_time)
+    self.ExpectInvalidValue(transfer, "transfer_type")
+    self.assertEquals("S1", transfer.from_stop_id)
+    self.assertEquals("S2", transfer.to_stop_id)
+    self.assertEquals("-4", transfer.transfer_type)
+    self.assertEquals(2, transfer.min_transfer_time)
+
+    transfer = transitfeed.Transfer(field_dict={"from_stop_id": "S1", \
+                                                "to_stop_id": "S2", \
+                                                "transfer_type": "", \
+                                                "min_transfer_time": "-1"})
+    self.assertEquals(0, transfer.transfer_type)
+    self.ExpectInvalidValue(transfer, "min_transfer_time")
+
     # simple successes
     transfer = transitfeed.Transfer()
     transfer.from_stop_id = "S1"
@@ -3267,6 +3320,28 @@ class TimeConversionHelpersTestCase(unittest.TestCase):
       pass  # expected
     else:
       self.fail("Should have thrown ValueError")
+
+
+class NonNegIntStringToIntTestCase(unittest.TestCase):
+  def runTest(self):
+    self.assertEqual(0, transitfeed.NonNegIntStringToInt("0"))
+    self.assertEqual(0, transitfeed.NonNegIntStringToInt(u"0"))
+    self.assertEqual(1, transitfeed.NonNegIntStringToInt("1"))
+    self.assertEqual(2, transitfeed.NonNegIntStringToInt("2"))
+    self.assertEqual(10, transitfeed.NonNegIntStringToInt("10"))
+    self.assertEqual(1234567890123456789,
+                     transitfeed.NonNegIntStringToInt("1234567890123456789"))
+    self.assertRaises(ValueError, transitfeed.NonNegIntStringToInt, "")
+    self.assertRaises(ValueError, transitfeed.NonNegIntStringToInt, "-1")
+    self.assertRaises(ValueError, transitfeed.NonNegIntStringToInt, "+1")
+    self.assertRaises(ValueError, transitfeed.NonNegIntStringToInt, "01")
+    self.assertRaises(ValueError, transitfeed.NonNegIntStringToInt, "00")
+    self.assertRaises(ValueError, transitfeed.NonNegIntStringToInt, "0x1")
+    self.assertRaises(ValueError, transitfeed.NonNegIntStringToInt, "1.0")
+    self.assertRaises(ValueError, transitfeed.NonNegIntStringToInt, "1e1")
+    self.assertRaises(TypeError, transitfeed.NonNegIntStringToInt, 1)
+    self.assertRaises(TypeError, transitfeed.NonNegIntStringToInt, None)
+
 
 class GetHeadwayTimesTestCase(unittest.TestCase):
   """Test for GetHeadwayStartTimes and GetHeadwayStopTimes"""

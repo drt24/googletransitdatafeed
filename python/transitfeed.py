@@ -466,6 +466,14 @@ def FloatStringToFloat(float_string):
   return float(float_string)
 
 
+def NonNegIntStringToInt(int_string):
+  """Convert an non-negative integer string to an int or raise an exception"""
+  # Will raise TypeError unless a string
+  if not re.match(r"^(?:0|[1-9]\d*)$", int_string):
+    raise ValueError()
+  return int(int_string)
+
+
 EARTH_RADIUS = 6378135          # in meters
 def ApproximateDistanceBetweenStops(stop1, stop2):
   """Compute approximate distance between two stops in meters. Assumes the
@@ -2020,23 +2028,22 @@ class Transfer(object):
       self.transfer_type = transfer_type
       self.min_transfer_time = min_transfer_time
 
-    if IsEmpty(self.transfer_type):
-      self.transfer_type = None
+    if getattr(self, 'transfer_type', None) in ("", None):
+      # Use the default, recommended transfer, if attribute is not set or blank
+      self.transfer_type = 0
     else:
       try:
-        # TODO: Check for a case when conversion is possible, but we should
-        # produce a warning. Example: "001".
-        self.transfer_type = int(self.transfer_type)
+        self.transfer_type = NonNegIntStringToInt(self.transfer_type)
       except (TypeError, ValueError):
         pass
 
-    if IsEmpty(self.min_transfer_time):
-      self.min_transfer_time = None
-    else:
+    if hasattr(self, 'min_transfer_time'):
       try:
-        self.min_transfer_time = int(self.min_transfer_time)
+        self.min_transfer_time = NonNegIntStringToInt(self.min_transfer_time)
       except (TypeError, ValueError):
         pass
+    else:
+      self.min_transfer_time = None
 
   def GetFieldValuesTuple(self):
     return [getattr(self, fn) for fn in Transfer._FIELD_NAMES]
