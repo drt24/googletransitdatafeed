@@ -1,0 +1,6 @@
+include INSTALL
+include COPYING
+include gtfsscheduleviewer/files/*
+recursive-include test *
+recursive-include examples *
+recursive-exclude . *.pyc

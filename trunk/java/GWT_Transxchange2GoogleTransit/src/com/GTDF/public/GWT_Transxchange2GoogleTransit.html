@@ -1,0 +1,159 @@
+<!--/*											-->
+<!-- * Copyright 2007 GoogleTransitDataFeed						-->
+<!-- * 											-->
+<!-- * Licensed under the Apache License, Version 2.0 (the "License"); you may not	-->
+<!-- * use this file except in compliance with the License. You may obtain a copy of	-->
+<!-- * the License at									-->
+<!-- * 											-->
+<!-- * http://www.apache.org/licenses/LICENSE-2.0					-->
+<!-- * 											-->
+<!-- * Unless required by applicable law or agreed to in writing, software		-->
+<!-- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT	-->
+<!-- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the		-->
+<!-- * License for the specific language governing permissions and limitations under	-->
+<!-- * the License.									-->
+<!-- */											-->
+
+<html>
+	<head>
+		<link href="GWT_Transxchange2GoogleTransit.css" rel="stylesheet" type="text/css">
+	<title>GWT_Transxchange2GoogleTransit</title>
+
+		<!--<style>
+			body,td,a,div,.p{font-family:arial,sans-serif}
+			div,td{color:#000000}
+			a:link,.w,.w a:link{color:#0000cc}
+			a:visited{color:#551a8b}
+			a:active{color:#ff0000}
+		</style>-->
+
+	<meta name='gwt:module' content='com.GTDF.GWT_Transxchange2GoogleTransit'>
+		
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"><style type="text/css">
+<!--
+body {
+	background-color: #FFFFFF;
+}
+-->
+</style></head>
+
+	<body>
+
+		<iframe id="__gwt_historyFrame" style="width:0;height:0;border:0"></iframe>
+				
+<!-- EDJ -->				
+				<table>
+				<tr><td id="user_result"></td></tr>
+				</table>
+<!-- END EDJ -->
+		
+<table align=right>
+				<!-- Converter form for javascript below -->
+				<FORM NAME="converter">
+				<INPUT TYPE="hidden" NAME="toastring">
+				</FORM>
+ 			<tr>
+				
+ 				<td id ="l_outdir"><font size=-1>User</font></td> <td id="outdir">
+
+				<!-- Get username from URI -->
+				<!-- 	1. Read URI -->
+				<!-- 	2. convert to a string from property window.location via hidden form -->
+				<!-- 	3. extract username -->
+				<!-- The "converter" form is also used to provide the GWT-JS access to the username -->
+
+				<SCRIPT LANGUAGE="javascript">
+				var locate = window.location;
+				document.converter.toastring.value = locate;
+
+				var text = document.converter.toastring.value;
+
+				function extractusername(str) {
+					return(str.substring(str.indexOf("=") + 1, str.length));
+				}
+				document.converter.toastring.value = extractusername(text);
+				</SCRIPT>
+
+				</td>
+ 			</tr>
+		</table><br>
+		<hr size=1>
+
+<br>
+		<table align="center" width="665" class="gwt-TabBar">
+		  <tr valign="top"><td width="164" align="left"><A href="http://www.googletransitdatafeed.org"><img src="Adapters_small.jpg"></a></td>
+	  <td width="460" align="justify" nowrap>Transformations on<br><font size=+2>GoogleTransitDataFeed</font>
+				<br><br><ul><font size =-1>
+				<li>&nbsp&nbsp Transxchange2GoogleTransit transformation and hosting</li>
+				<li>&nbsp&nbsp Google Transit Data Feed Spec archive upload and hosting</li></font></ul>			</td>
+
+		  <td width="25" align="right">
+		  <table>
+				<tr><td id="user_result"></td></tr>
+			</table>			</td></tr><tr></tr>
+		</table>
+<table align="center" width="665" height="24" >
+          <tr>
+            <td width="15" id="tab_area">&nbsp;</td>
+          </tr>
+        </table>
+<table><tr><td>
+			<a name="txcg"></a>
+			<table border="5" rules="none">
+			<tr><TH colspan="3">
+<<<<<<< .mine
+ 				Transxchange2GoogleTransit v1.6.1
+=======
+ 				Transxchange2GoogleTransit v1.5
+>>>>>>> .r462
+ 			</tr>
+			<tr>
+ 				<td></td><td id ="l_url" nowrap align="right"><font size=-1>Url:</font></td> <td id="url"></td>
+ 			</tr>
+ 			<tr>
+				<td></td><td id ="l_timezone" nowrap align="right"><font size=-1>Timezone:</font></td> <td id="timezoneP"></td>
+			</tr>
+ 			<tr>
+				<td></td><td nowrap></td><font size=-1> </font> <td id="timezoneS"></td>
+ 			</tr>
+			<tr>
+				<td></td><td nowrap></td> <td align="right"><font size=-2>Please refer to <a href="http://en.wikipedia.org/wiki/List_of_tz_zones" target="top">Wikipedia list of timezones</a> for additional information</font></td><td nowrap></td> 
+ 			</tr>
+ 			<tr>
+ 				<td></td><td id ="l_defaultroutetype" nowrap align="right"><font size=-1>Default Route Type:</font></td> <td id="defaultroutetype"></td>
+ 			</tr>
+ 			<tr>
+ 				<td></td><td id ="l_infile" nowrap valign="top" align="right"><font size=-1>Infile:</font></td> <td id="infile"></td>
+ 			</tr>
+			<tr>
+				<td></td><td id="start" nowrap valign="top"></td> <td></td>
+			</tr>
+			<tr>
+				<td></td><td nowrap align="right"><font size=-1></font></td><td id="result"></td>
+			</tr>
+			</table>
+				</td></tr>
+			<a name="upload"></a>
+			<tr><td><table border="5" rules="none">
+			<tr><TH colspan="3">
+				Upload google_transit.zip
+			</tr>
+			<tr>
+				<td></td><td id ="l_gz_servicestart" nowrap align="right"><font size=-1>Service start:</font></td> <td id="gz_servicestart"></td>
+			</tr>
+			<tr>
+				<td></td><td id ="l_gz_infile" nowrap valign="top" align="right"><font size=-1>Infile:</font></td> <td id="gz_infile"></td>
+			</tr>
+			<tr>
+				<td></td><td id="gz_start" nowrap valign="top"></td> <td></td>
+			</tr>
+			<tr>
+				<td></td><td nowrap align="right"><font size=-1></font></td><td id="gz_result"></td>
+			</tr>
+			</table></td></tr>
+		<script language="javascript" src="gwt.js"></script>
+
+		</table>
+	</body>
+</html>
+
