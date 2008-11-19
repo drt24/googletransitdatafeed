@@ -3235,7 +3235,7 @@ class GetTripTimeTestCase(unittest.TestCase):
     self.trip3 = self.route1.AddTrip(schedule, "trip 3", trip_id='trip3')
 
   def testGetTimeInterpolatedStops(self):
-    rv = self.schedule.GetTrip('trip1').GetTimeInterpolatedStops()
+    rv = self.trip1.GetTimeInterpolatedStops()
     self.assertEqual(4, len(rv))
     (secs, stoptimes, istimepoints) = tuple(zip(*rv))
 
@@ -3243,6 +3243,32 @@ class GetTripTimeTestCase(unittest.TestCase):
     self.assertEqual(("140.01,0", "140.02,0", "140.03,0", "140.04,0"),
                      tuple([st.stop.stop_name for st in stoptimes]))
     self.assertEqual((True, False, False, True), istimepoints)
+
+    self.assertEqual([], self.trip3.GetTimeInterpolatedStops())
+
+  def testGetTimeInterpolatedStopsUntimedEnd(self):
+    self.trip2.AddStopTime(self.stop3, schedule=self.schedule)
+    self.assertRaises(ValueError, self.trip2.GetTimeInterpolatedStops)
+
+  def testGetTimeInterpolatedStopsUntimedStart(self):
+    # Temporarily replace the problem reporter so that adding the first
+    # StopTime without a time doesn't throw an exception.
+    old_problems = self.schedule.problem_reporter
+    self.schedule.problem_reporter = TestFailureProblemReporter(
+        self, ("OtherProblem",))
+    self.trip3.AddStopTime(self.stop3, schedule=self.schedule)
+    self.schedule.problem_reporter = old_problems
+    self.trip3.AddStopTime(self.stop2, schedule=self.schedule,
+                           departure_secs=500, arrival_secs=500)
+    self.assertRaises(ValueError, self.trip3.GetTimeInterpolatedStops)
+
+  def testGetTimeInterpolatedStopsSingleStopTime(self):
+    self.trip3.AddStopTime(self.stop3, schedule=self.schedule,
+                           departure_secs=500, arrival_secs=500)
+    rv = self.trip3.GetTimeInterpolatedStops()
+    self.assertEqual(1, len(rv))
+    self.assertEqual(500, rv[0][0])
+    self.assertEqual(True, rv[0][2])
 
   def testGetStopTimeTrips(self):
     stopa = self.schedule.GetNearestStops(lon=140.03, lat=0)[0]
