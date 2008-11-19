@@ -1156,7 +1156,7 @@ class Trip(object):
   def GetFieldValuesTuple(self):
     return [getattr(self, fn) or '' for fn in Trip._FIELD_NAMES]
 
-  def AddStopTime(self, stop, problems=default_problem_reporter, schedule=None, **kwargs):
+  def AddStopTime(self, stop, problems=None, schedule=None, **kwargs):
     """Add a stop to this trip. Stops must be added in the order visited.
 
     Args:
@@ -1166,11 +1166,14 @@ class Trip(object):
     Returns:
       None
     """
+    if problems is None:
+      # TODO: delete this branch when StopTime.__init__ doesn't need a
+      # ProblemReporter
+      problems = default_problem_reporter
     stoptime = StopTime(problems=problems, stop=stop, **kwargs)
-    self.AddStopTimeObject(stoptime, schedule, problems=problems)
+    self.AddStopTimeObject(stoptime, schedule)
 
-  def _AddStopTimeObjectUnordered(self, stoptime, schedule,
-                                  problems=default_problem_reporter):
+  def _AddStopTimeObjectUnordered(self, stoptime, schedule, problems):
     """Add StopTime object to this trip.
 
     The trip isn't checked for duplicate sequence numbers so it must be
@@ -1183,8 +1186,7 @@ class Trip(object):
     cursor.execute(
         insert_query, stoptime.GetSqlValuesTuple(self.trip_id))
 
-  def AddStopTimeObject(self, stoptime, schedule=None,
-                        problems=default_problem_reporter):
+  def AddStopTimeObject(self, stoptime, schedule=None, problems=None):
     """Add a StopTime object to the end of this trip.
 
     Args:
@@ -1199,6 +1201,11 @@ class Trip(object):
     """
     if schedule is None:
       schedule = self._schedule
+    if schedule is None:
+      warnings.warn("No longer supported. _schedule attribute is  used to get "
+                    "stop_times table", DeprecationWarning)
+    if problems is None:
+      problems = schedule.problem_reporter
 
     new_secs = stoptime.GetTimeSecs()
     cursor = schedule._connection.cursor()
@@ -1244,12 +1251,20 @@ class Trip(object):
     secs will always be an int. If the StopTime object does not have explict
     times this method guesses using distance. stoptime is a StopTime object and
     is_timepoint is a bool.
+
+    Raises:
+      ValueError if this trip does not have the times needed to interpolate
     """
     rv = []
 
     stoptimes = self.GetStopTimes()
-    assert stoptimes[0].GetTimeSecs() != None
-    assert stoptimes[-1].GetTimeSecs() != None
+    # If there are no stoptimes [] is the correct return value but if the start
+    # or end are missing times there is no correct return value.
+    if not stoptimes:
+      return []
+    if (stoptimes[0].GetTimeSecs() is None or
+        stoptimes[-1].GetTimeSecs() is None):
+      raise ValueError("%s must have time at first and last stop" % (self))
 
     cur_timepoint = None
     next_timepoint = None
