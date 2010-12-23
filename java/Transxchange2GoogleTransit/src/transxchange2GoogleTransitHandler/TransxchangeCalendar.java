@@ -82,7 +82,11 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 	static final String[] _key_daytype_not_fr = {"Service", "RegularDayType", "DaysOfWeek", "NotFriday"};
 	static final String[] _key_daytype_not_sa = {"Service", "RegularDayType", "DaysOfWeek", "NotSaturday"};
 	static final String[] _key_daytype_not_su = {"Service", "RegularDayType", "DaysOfWeek", "NotSunday"};
+	static final String[] _key_operatingperiod = {"Service", "OperatingPeriod"};
 	String keyDaysOfWeek = "";
+	boolean inOperatingPeriod = false;
+	String serviceStartDate = "";
+	String serviceEndDate = "";
 	String monday = "";
 	String tuesday = "";
 	String wednesday = "";
@@ -163,6 +167,7 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 		return service;
 	}
 	
+   	@Override
 	public void startElement(String uri, String name, String qName, Attributes atts)
 		throws SAXParseException {
 	    super.startElement(uri, name, qName, atts);
@@ -196,8 +201,11 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 	    	sunday = key_calendar__sunday[2];
 	    	watchForNotDays = true; // v1.5: This works in conjunction with keyDaysOfWeek. If not-day like </NotTuesday> occurs without prior definition of daytype, reverse initial 0000000 Mon-Sun
 	    }
+	    if (key.equals(_key_operatingperiod[0]) && qName.equals(_key_operatingperiod[1]))
+	    	inOperatingPeriod = true;
 	}
 
+   	@Override
 	public void endElement (String uri, String name, String qName) {
 		if (niceString == null || niceString.length() > 0) {
 			if (key.equals(key_calendar__service_id[0]) && keyNested.equals(key_calendar__service_id[1])) {
@@ -208,14 +216,20 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 			}
 			if (key.equals(key_calendar__start_date[0]) && keyNested.equals(key_calendar__start_date[1])) {
 				newCalendar__start_date = new ValueList(key_calendar__start_date[1]);
+				if (inOperatingPeriod)
+					serviceStartDate = niceString;
 				listCalendar__start_date.add(newCalendar__start_date);
-				newCalendar__start_date.addValue(readTransxchangeDate(niceString));
+				newCalendar__start_date.addValue(readTransxchangeDate(serviceStartDate));
 			}
 			if (key.equals(key_calendar__end_date[0]) && keyNested.equals(key_calendar__end_date[1])) {
 				newCalendar__end_date = new ValueList(key_calendar__end_date[1]);
+				if (inOperatingPeriod)
+					serviceEndDate = niceString;
 				listCalendar__end_date.add(newCalendar__end_date);
-				newCalendar__end_date.addValue(readTransxchangeDate(niceString));
+				newCalendar__end_date.addValue(readTransxchangeDate(serviceEndDate));
 			}
+		    if (key.equals(_key_operatingperiod[0]) && qName.equals(_key_operatingperiod[1]))
+		    	inOperatingPeriod = false;
 		}
 		
 		if (keyDaysOfWeek.equals(_key_daytype_mofr[2]) && qName.equals(_key_daytype_mofr[3])) {
@@ -390,6 +404,7 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 		}
 	}
 
+   	@Override
 	public void clearKeys (String qName) {
 		if (qName.equals(key_calendar__service_id[1])) 
 			keyNested = "";
@@ -408,6 +423,7 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 		}
 	}
 
+   	@Override
 	public void completeData() {
 		int i;
 		
@@ -467,6 +483,7 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
  	    csvProofList(listCalendar__end_date);
 	}
 
+   	@Override
 	public void dumpValues() {
 		int i;
 		ValueList iterator;

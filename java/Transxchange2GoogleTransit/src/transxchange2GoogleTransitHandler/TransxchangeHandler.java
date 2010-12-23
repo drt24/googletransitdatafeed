@@ -111,6 +111,8 @@ public class TransxchangeHandler {
 				parseHandler.setTimezone(timezone);
 				parseHandler.setDefaultRouteType(defaultRouteType);
 				parseHandler.setUseAgencyShortname(useAgencyShortName);
+				parseHandler.setRootDirectory(rootDirectory);
+				parseHandler.setWorkDirectory(workDirectory);
 		
 				SAXParserFactory parserFactory = SAXParserFactory.newInstance();
 				SAXParser parser = parserFactory.newSAXParser();
@@ -141,7 +143,7 @@ public class TransxchangeHandler {
 	 */
 	public String writeOutput(String rootDirectory, String workDirectory)
 		throws IOException
-	{		
+	{
 		consolidateAgencies(); // Eliminiate possible duplicates from multiple input files in zip archive
 		consolidateStops(); // Eliminiate possible duplicates from multiple input files in zip archive
 		consolidateRoutes(); // Eliminiate possible duplicates from multiple input files in zip archive

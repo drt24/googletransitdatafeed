@@ -22,44 +22,43 @@ public class ValueList {
 	  private String keyName;
 	  private List values;
 
-	  public void addValue(String addValue) {
-		  
-		  values.add(addValue);
-	  }
+      public void addValue(String addValue) {
+          
+          values.add(addValue);
+  }
 
-	  public String getValue(int i) {
-		  if (i < 0 || i >= values.size())
-			  return null;
+  public String getValue(int i) {
+          if (i < 0 || i >= values.size())
+                  return null;
 
-		  return (String)(values.get(i));
-	  }
+          return (String)(values.get(i));
+  }
 
-	  public void setValue(int i, String value) {
-		    if (i < 0 || i >= values.size())
-		      return;
-		    
-		    values.set(i, value);
-	  }
+  public void setValue(int i, String value) {
+            if (i < 0 || i >= values.size())
+              return;
+            
+            values.set(i, value);
+  }
 
-	  public void dumpValues() {
-		  Iterator i = values.iterator();
-		  while (i.hasNext()) {
-			  System.out.println(keyName + " " + i.next());
-		  }
-	  }
+  public void dumpValues() {
+          Iterator i = values.iterator();
+          while (i.hasNext()) {
+                  System.out.println(keyName + " " + i.next());
+          }
+  }
 
-	  public String getKeyName() {
-		  return keyName;
-	  }
+  public String getKeyName() {
+          return keyName;
+  }
 
-	  public int size() {
-		  return values.size();
-	  }
+  public int size() {
+          return values.size();
+  }
 
-	  public ValueList(String key) {
-		  
-		  keyName = key;
-		  values = new ArrayList();
-	  }
-
+  public ValueList(String key) {
+          
+          keyName = key;
+          values = new ArrayList();
+  }
 }

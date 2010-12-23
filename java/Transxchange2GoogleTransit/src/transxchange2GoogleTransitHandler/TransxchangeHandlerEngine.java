@@ -71,7 +71,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	static PrintWriter stopsOut = null;
 	static PrintWriter routesOut = null;
 	static PrintWriter tripsOut = null;
-	static PrintWriter stop_timesOut = null;
+//	static PrintWriter stop_timesOut = null;
 	static PrintWriter calendarsOut = null;
 	static PrintWriter calendarDatesOut = null;
 	
@@ -79,6 +79,9 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	static String outdir = "";
 	
 	static boolean useAgencyShortName = false;
+	
+	static String rootDirectory = "";
+	static String workDirectory = "";
 
 	/*
 	 * Utility methods to set and get attribute values
@@ -95,10 +98,6 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		googleTransitDefaultRouteType = defaultRouteType;
 	}
 	
-// 11-Mar-2009	public void setStopFile(String stopFile) { // v1.6.2
-// 11-Mar-2009		naptanStopFile = stopFile;
-// 11-Mar-2009	}
-	
 	public String getUrl() {
 		return googleTransitUrl;
 	}
@@ -110,10 +109,6 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	public String getDefaultRouteType() {
 		return googleTransitDefaultRouteType;
 	}
-	
-// 11-Mar-2009	public String getStopFile() { // v1.6.2
-// 11-Mar-2009		return naptanStopFile;
-// 11-Mar-2009	}
 	
 	public TransxchangeAgency getAgencies() {
 		return agencies;
@@ -151,6 +146,19 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		useAgencyShortName = flag;
 	}
 	
+	public void setRootDirectory(String eRootDirectory) {
+		rootDirectory = eRootDirectory;
+	}
+	public void setWorkDirectory(String eWorkDirectory) {
+		workDirectory = eWorkDirectory;
+	}
+	public String getRootDirectory() {
+		return rootDirectory;
+	}
+	public String getWorkDirectory() {
+		return workDirectory;
+	}
+	
 	public String getParseError() {
 		return parseError;
 	}
@@ -165,6 +173,12 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	
 	public boolean isAgencyShortName() {
 		return useAgencyShortName;
+	}
+	
+	public void addFilename(String fileName) {
+		if (fileName == null || filenames == null)
+			return;
+		filenames.add(fileName);
 	}
 	
 	/*
@@ -224,13 +238,18 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	public void endDocument() {
     
 		// wrap up document parsing
-		agencies.endDocument();
-		stops.endDocument();
-		routes.endDocument();
-		trips.endDocument();
-		stopTimes.endDocument();
-		calendar.endDocument();
-		calendarDates.endDocument();
+		try {
+			agencies.endDocument();
+			stops.endDocument();
+			routes.endDocument();
+			trips.endDocument();
+			stopTimes.endDocument();
+			calendar.endDocument();
+			calendarDates.endDocument();
+		} catch (Exception e) {
+			System.out.println("transxchange2GTFS endDocument() exception: " + e.getMessage());
+			System.exit(0);
+		}
         
 		// Complete data structures (by filling in default values if necessary)
 		agencies.completeData();
@@ -275,7 +294,6 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		
 		// Create output directory
 		// Note service start date not any longer used to determine directory name for outfiles
-//      String serviceStartDate = (String)((ValueList)this.getCalendar().getListCalendar__start_date().get(0)).getValue(0);        
 		new File(outdir /* + "/" + serviceStartDate*/ ).mkdirs();
 	}
 	
@@ -311,31 +329,8 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
         }       
 
         // stop_times.txt
-        if (stop_timesOut == null) {
-            outfileName = stop_timesFilename + /* "_" + serviceStartDate + */ extension;
-            outfile = new File(outdir + /* "/" + serviceStartDate + */ "/"  + outfileName);
-            filenames.add(outfileName);      
-            stop_timesOut = new PrintWriter(new FileWriter(outfile));
-            stop_timesOut.println("trip_id,arrival_time,departure_time,stop_id,stop_sequence,stop_headsign,pickup_type,drop_off_type,shape_dist_traveled");        	
-        }
-        for (int i = 0; i < this.getStopTimes().getListStoptimes__trip_id().size(); i++) {
-        	stop_timesOut.print(((ValueList)this.getStopTimes().getListStoptimes__trip_id().get(i)).getKeyName());
-        	stop_timesOut.print(",");
-        	stop_timesOut.print(((ValueList)this.getStopTimes().getListStoptimes__arrival_time().get(i)).getValue(0));
-        	stop_timesOut.print(",");
-        	stop_timesOut.print(((ValueList)this.getStopTimes().getListStoptimes__departure_time().get(i)).getValue(0));
-        	stop_timesOut.print(",");
-        	stop_timesOut.print(((ValueList)this.getStopTimes().getListStoptimes__stop_id().get(i)).getValue(0));
-        	stop_timesOut.print(",");
-        	stop_timesOut.print(((ValueList)this.getStopTimes().getListStoptimes__stop_sequence().get(i)).getValue(0));
-        	stop_timesOut.print(",");
-        	stop_timesOut.print(",");
-        	stop_timesOut.print(((ValueList)this.getStopTimes().getListStoptimes__pickup_type().get(i)).getValue(0));
-        	stop_timesOut.print(",");
-        	stop_timesOut.print(((ValueList)this.getStopTimes().getListStoptimes__drop_off_type().get(i)).getValue(0));
-        	stop_timesOut.println(",");
-        }       
-        
+        // v1.6.6: Functionality moved into TransxchangeStopTimes.java
+
         // calendar.txt
         String daytypesJourneyPattern;
         String daytypesService;
@@ -355,6 +350,8 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
         	// v1.5: Service ID added to calendar data structure in class TransxchangeCalendar. 
         	// 	If match and no journey pattern associated with daytype, 
         	//  then daytype applies to service, not journey pattern. Otherwise daytpe is set to 0 as daytype applies to journey pattern, not service
+        	
+        	// Monday
         	daytypesJourneyPattern = (String)((ValueList)this.getCalendar().getListCalendar__monday().get(i)).getValue(1); 
         	daytypesService = (String)((ValueList)this.getCalendar().getListCalendar__monday().get(i)).getValue(2); 
         	if (daytypesService == null)
@@ -570,7 +567,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		stopsOut.close();
 		routesOut.close();
 		tripsOut.close();
-		stop_timesOut.close();
+//		stop_timesOut.close();
 		calendarsOut.close();
 		if (calendarDatesOut != null) // calendar_dates is optional; might not have been created
 			calendarDatesOut.close();
@@ -579,7 +576,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		stopsOut = null;
 		routesOut = null;
 		tripsOut = null;
-		stop_timesOut = null;
+//		stop_timesOut = null;
 		calendarsOut = null;
 		calendarDatesOut = null;
 		
@@ -615,7 +612,6 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	 */
 	public TransxchangeHandlerEngine ()
 		throws UnsupportedEncodingException, IOException {
-// 11-Mar-2009		this.naptanStopFile = stopfile;
 		agencies = new TransxchangeAgency(this);
 		stops = new TransxchangeStops(this);
 		routes = new TransxchangeRoutes(this);

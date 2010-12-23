@@ -15,6 +15,7 @@
  */
 
 package transxchange2GoogleTransitHandler;
+import java.io.IOException;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -49,13 +50,13 @@ public abstract class TransxchangeDataAspect {
 
 	public void characters (char ch[], int start, int length) {
 		if (key.length() > 0) {
-//			niceString = new String(ch, start, length);
 			for (int i = start; i < start + length; i++)
 				niceString = niceString + ch[i];
 		}		
 	}
 	
-	public void endDocument() {
+	public void endDocument() 
+		throws IOException {
 	}
 
 	public void completeData() {

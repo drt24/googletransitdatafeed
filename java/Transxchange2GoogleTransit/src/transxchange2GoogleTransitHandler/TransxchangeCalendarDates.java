@@ -80,9 +80,6 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
 	ArrayList bankHolidays;
 	HashMap years = new HashMap(); //  years as HashMap to maintain unique entries
 	ArrayList yearsList = new ArrayList(); // years as list to allow iterating through years
-//	Map bankHolidays2007;
-//	Map bankHolidays2008;
-//	Map bankHolidays2009;
 	
 	/*
 	 * Utility methods to retrieve Google Transit feed structures
@@ -119,6 +116,7 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
 		listCalendar_OOL_end_date = null;		
 	}
 
+   	@Override
 	public void startElement(String uri, String name, String qName, Attributes atts)
 		throws SAXParseException {
 		
@@ -162,6 +160,7 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
 	    	keyOperationDaysBank = _key_calendar_bankholiday_operation_spring[2];
 	}
 	
+   	@Override
 	public void endElement (String uri, String name, String qName) {
 
 		String service;
@@ -245,26 +244,10 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
            		if (key.equals(_key_calendar_bankholiday_operation_spring[0]) && keyNested.equals(_key_calendar_bankholiday_operation_spring[1]) && keyOperationDaysBank.equals(_key_calendar_bankholiday_operation_spring[2]))       
            			createBankHoliday(service, qName, holidays, _key_calendar_bankholiday_nooperation_all[4]);
         	}
-
-        	// v1.5: handle bank holidays no-operation
-/*        	if (key.equals(_key_calendar_bankholiday_nooperation_all[0]) && keyNested.equals(_key_calendar_bankholiday_nooperation_all[1]) && keyOperationDaysBank.equals(_key_calendar_bankholiday_nooperation_all[2])) {       
-        		service = handler.getCalendar().getService();
-//        		createBankHolidaysAll(service, bankHolidays2007, _key_calendar_bankholiday_nooperation_all[4]);
-//        		createBankHolidaysAll(service, bankHolidays2008, _key_calendar_bankholiday_nooperation_all[4]);
-//        		createBankHolidaysAll(service, bankHolidays2009, _key_calendar_bankholiday_nooperation_all[4]);
-        	}
-        	
-        	// v1.5 handle bank holidays operation
-        	if (key.equals(_key_calendar_bankholiday_operation_spring[0]) && keyNested.equals(_key_calendar_bankholiday_operation_spring[1]) && keyOperationDaysBank.equals(_key_calendar_bankholiday_operation_spring[2])) {       
-        		service = handler.getCalendar().getService();
-//        		createBankHoliday(service, qName, bankHolidays2007, _key_calendar_bankholiday_nooperation_all[4]);
-//        		createBankHoliday(service, qName, bankHolidays2008, _key_calendar_bankholiday_nooperation_all[4]);
-//        		createBankHoliday(service, qName, bankHolidays2009, _key_calendar_bankholiday_nooperation_all[4]);
-        	}
-*/
         }    
 	}
 
+   	@Override
 	public void clearKeys (String qName) {
 	    if (key.equals(_key_calendar_dates_end[0]) && keyNested.equals(_key_calendar_dates_end[1]) && (keyOperationDays.equals(_key_calendar_dates_end[2]) || keyOperationDays.equals(_key_calendar_no_dates_end[2]))&& keyOperationDaysStart.equals(_key_calendar_dates_end[3]))
 	    	keyOperationDaysStart = "";
@@ -278,7 +261,7 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
    			keyOperationDaysBank = "";	
 	}
 
-	
+   	@Override
 	public void completeData() {
 		
   	    // Add quotes if needed
@@ -287,6 +270,7 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
   	    csvProofList(listCalendarDates__exception_type);
 	}
 	
+   	@Override
 	public void dumpValues() {
 		int i;
 		ValueList iterator;
@@ -488,151 +472,7 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
 			break;
 		}
 		bankHolidays.put("BoxingDay", year + theDay);
-//		bankHolidays.put("BoxingDay  ", year + "1226");
 
-/*		
-		Dim hols As BankHols
-	    Dim Yr as string
-	    '
-	    Yr = "2009"
-	    ' find the bank hols for the year
-	    hols = CalcBankHol(Yr)
-	    '
-	    ' Returns 8 bank holidays.
-	    //
-	    //This code is copyrighted and has    // limited warranties.Please see http://
-	    //     www.Planet-Source-Code.com/vb/scripts/Sh
-	    //     owCode.asp?txtCodeId=71665&lngWId=-10    //for details.    //**************************************
-	    //     
-	    
-	    Public Type BankHols
-	    NewYear As Variant
-	    GoodFriday As Variant
-	    EasterMon As Variant
-	    MayDay As Variant
-	    SpringBank As Variant
-	    AugustBankHol As Variant
-	    ChristmasDay As Variant
-	    BoxingDay As Variant
-	    End Type
-	    Function CalcBankHol(Yr As String) As BankHols
-	    'Calculate England and Wales Bank Holiday Dates 1978 - 2099
-	    Dim strDayName As String
-	    Dim strEastSun As String
-	    Dim i As Integer
-	    Dim strDate
-	    ' No 1: New Year's Day
-	    ' 1st January or next weekday if it falls on a Saturday or Sunday
-	    '
-	    strDayName = Format("1/1/" & Yr, "dddd")
-	    If strDayName = "Saturday" Then
-	    CalcBankHol.NewYear = DateValue("3" & "/" & "1" & "/" & Yr)
-	    ElseIf strDayName = "Sunday" Then
-	    CalcBankHol.NewYear = DateValue("2" & "/" & "1" & "/" & Yr)
-	    Else
-	    CalcBankHol.NewYear = DateValue("1" & "/" & "1" & "/" & Yr)
-	    End If
-	    '
-	    ' Find Easter Sunday
-	    strEastSun = EasterSundayIs(Yr)
-	    '
-	    ' No 2: Good Friday
-	    ' 2 days before Easter Sunday
-	    '
-	    CalcBankHol.GoodFriday = DateValue(strEastSun) - 2
-	    ' No 3: Easter Monday
-	    ' 1 day after Easter Sunday
-	    '
-	    CalcBankHol.EasterMon = DateValue(strEastSun) + 1
-	    '
-	    ' No 4: May Day
-	    ' 1st Monday in May
-	    '
-	    For i = 1 To 8 ' must come within 8 days
-	    strDate = Trim(str(i)) & "/" & "5" & "/" & Yr
-	    strDayName = WeekdayName(Weekday(strDate), False, 1)
-	    If strDayName = "Monday" Then Exit For
-	    Next i
-	    CalcBankHol.MayDay = DateValue(strDate)
-	    '
-	    ' No 5: Spring Bank Holiday
-	    ' Last Monday in May
-	    '
-	    For i = 31 To 31 - 8 Step -1 ' must come within 8 days
-	    strDate = Trim(str(i)) & "/" & "5" & "/" & Yr
-	    strDayName = WeekdayName(Weekday(strDate), False, 1)
-	    If strDayName = "Monday" Then Exit For
-	    Next i
-	    CalcBankHol.SpringBank = DateValue(strDate)
-	    '
-	    ' No 6: Late Summer Bank Holiday
-	    ' Last Monday in August
-	    '
-	    For i = 31 To 31 - 8 Step -1 ' must come within 8 days
-	    strDate = Trim(str(i)) & "/" & "8" & "/" & Yr
-	    strDayName = WeekdayName(Weekday(strDate), False, 1)
-	    If strDayName = "Monday" Then Exit For
-	    Next i
-	    CalcBankHol.AugustBankHol = DateValue(strDate)
-	    '
-	    ' No 7: Christmas Day
-	    ' 25 December, or next Monday in lieu if falls on Saturday or Sunday
-	    '
-	    strDayName = WeekdayName(Weekday("25/12/" & Yr), False, 1)
-	    Select Case strDayName
-	    Case "Saturday"
-	    CalcBankHol.ChristmasDay = DateValue("27/12/" & Yr)
-	    Case "Sunday"
-	    CalcBankHol.ChristmasDay = DateValue("26/12/" & Yr)
-	    Case Else
-	    CalcBankHol.ChristmasDay = DateValue("25/12/" & Yr)
-	    End Select
-	    '
-	    ' No 8: Boxing Day
-	    ' 26 December, or next Monday if this falls on a Saturday or
-	    ' Tuesday if it falls on a Sunday
-	    '
-	    strDayName = WeekdayName(Weekday("26/12/" & Yr), False, 1)
-	    Select Case strDayName
-	    Case "Saturday"
-	    CalcBankHol.BoxingDay = DateValue("28/12/" & Yr)
-	    Case "Sunday"
-	    CalcBankHol.BoxingDay = DateValue("27/12/" & Yr)
-	    Case Else
-	    CalcBankHol.BoxingDay = DateValue("26/12/" & Yr)
-	    End Select
-	    End Function
-	    Public Function EasterSundayIs(inYear As String)
-	    '
-	    'Local Variables
-	    '
-	    Dim g%, c%, x%, z%, d%, e%, n%, mon%
-	    Dim Y%
-	    '
-	    Y = Val(inYear)
-	    '
-	    'Do the calculations of the golden number (g)
-	    '
-	    g = (Y Mod 19) + 1
-	    c = Int(Y / 100) + 1
-	    x = Int(3 * c / 4) - 12
-	    z = Int((8 * c + 5) / 25) - 5
-	    d = Int(5 * Y / 4) - x - 10
-	    e = (11 * g + 20 + z - x) Mod 30
-	    If (e = 25) And (g > 11) Or e = 24 Then
-	    e = e + 1
-	    End If
-	    n = 44 - e
-	    If n < 21 Then n = n + 30
-	    n = n + 7 - (d + n) Mod 7
-	    If n > 31 Then
-	    mon = 4
-	    n = n - 31
-	    Else
-	    mon = 3
-	    End If
-	    EasterSundayIs = DateSerial(Y, mon, n)
-*/
 		return bankHolidays;
 	}
 

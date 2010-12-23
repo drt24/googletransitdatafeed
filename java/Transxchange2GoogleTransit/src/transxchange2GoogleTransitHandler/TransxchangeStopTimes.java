@@ -16,6 +16,8 @@
 
 package transxchange2GoogleTransitHandler;
 
+import java.io.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,16 +31,6 @@ import org.xml.sax.SAXParseException;
 public class TransxchangeStopTimes extends TransxchangeDataAspect {
 
 	// xml keys and output field fillers
-/*	static final String[] key_stop_times__trip_id = new String[] {"__transxchange2GoogleTransit_drawDefault", "", "OpenRequired"}; // Google Transit required
-	static final String[] key_stop_times__arrival_time = new String[] {"__transxchange2GoogleTransit_drawDefault", "", "OpenRequired"}; // Google Transit required
-	static final String[] key_stop_times__departure_time = new String[] {"__transxchange2GoogleTransit_drawDefault", "", "OpenRequired"}; // Google Transit required
-	static final String[] key_stop_times__stop_id = new String[] {"StopPointRef", "OpenRequired"}; // Google Transit required
-	static final String[] key_stop_times__stop_sequence = new String[] {"__transxchange2GoogleTransit_drawDefault", "OpenRequired"}; // Google Transit required
-	static final String[] key_stop_times__pickup_type = new String[] {"NormalStopping", "", "0"}; // Google Transit required
-	static final String[] key_stop_times__drop_off_type = new String[] {"__transxchange2GoogleTransit_drawDefault", "", "0"}; // Google Transit required
-*/
-	
-	
 	static final String[] key_stop_times__trip_id = new String[] {"__tdD", "", "OpenRequired"}; // Google Transit required
 	static final String[] key_stop_times__arrival_time = new String[] {"__tdD", "", "OpenRequired"}; // Google Transit required
 	static final String[] key_stop_times__departure_time = new String[] {"__tdD", "", "OpenRequired"}; // Google Transit required
@@ -46,7 +38,6 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	static final String[] key_stop_times__stop_sequence = new String[] {"__tdD", "OpenRequired"}; // Google Transit required
 	static final String[] key_stop_times__pickup_type = new String[] {"NStp", "", "0"}; // Google Transit required
 	static final String[] key_stop_times__drop_off_type = new String[] {"__tdD", "", "0"}; // Google Transit required
-	
 	
 	// Parsed data 
 	List listStoptimes__trip_id;
@@ -144,7 +135,8 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 		return listStoptimes__drop_off_type;
 	}
 	
-	public void startElement(String uri, String name, String qName, Attributes atts)
+   	@Override
+   	public void startElement(String uri, String name, String qName, Attributes atts)
 		throws SAXParseException {
 		
 	    super.startElement(uri, name, qName, atts);
@@ -204,13 +196,14 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	}
 	
 
+   	@Override
 	public void endElement (String uri, String name, String qName) {
 		if (niceString == null || niceString.length() == 0)
 			return;
 		
 		_vehicleJourneyCode = handler.getTrips().getVehicleJourneyCode();
 		_departureTime = handler.getTrips().getDepartureTime();
-				
+	if (_vehicleJourneyCode.length() > 0)
 	    if (key.equals(_key_trips_activity_pass[0]) && keyNested.equals(_key_trips_activity_pass[1]) && keyNestedActivity.length() == 0) 
 	    	_journeyPatternTimingLinkRefPass = niceString;       	
 	    if (key.equals(_key_trips_activity_pickup[0]) && keyNested.equals(_key_trips_activity_pickup[1]) && keyNestedActivity.length() == 0) 
@@ -297,7 +290,7 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	    }		
 	}
 
-	
+   	@Override
 	public void clearKeys (String qName) {
 		if (key.equals(_key_trips_activity_pass[0]) && keyNested.equals(_key_trips_activity_pass[1]) && keyNestedActivity.equals(_key_trips_activity_pass[2])) {
 			keyNestedActivity = "";
@@ -321,7 +314,8 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 		}		
 	}
 	
-	public void endDocument() {
+   	@Override
+	public void endDocument() throws IOException {
 	    List _listJourneyPatternRef;
 	    List _listJourneyPatternSectionRefs;
 	    List listTrips__trip_id;
@@ -335,15 +329,27 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	    int stopTimeInSeconds;
 		Integer sn;
 		int listSize, listSizeOuter, listSizeInner;
+
+		PrintWriter stop_timesOut = null;
+		String outfileName = "";
+		File outfile = null;
+		String outdir = handler.getRootDirectory() + handler.getWorkDirectory();
 	    
-		// Roll out stop times
+        if (stop_timesOut == null) {
+            outfileName = TransxchangeHandlerEngine.stop_timesFilename + /* "_" + serviceStartDate + */ TransxchangeHandlerEngine.extension;
+            outfile = new File(outdir + /* "/" + serviceStartDate + */ "/"  + outfileName);
+            handler.addFilename(outfileName);
+            stop_timesOut = new PrintWriter(new FileWriter(outfile));
+            stop_timesOut.println("trip_id,arrival_time,departure_time,stop_id,stop_sequence,stop_headsign,pickup_type,drop_off_type,shape_dist_traveled");        	
+        }
+        // Roll out stop times
 	    _listJourneyPatternRef = handler.getTrips().getListJourneyPatternRef();
 	    _listJourneyPatternSectionRefs = handler.getTrips().getListJourneyPatternSectionRefs();
 	    listTrips__trip_id = handler.getTrips().getListTrips__trip_id();
 	    for (i = 0; i < _listJourneyPatternRef.size(); i++) { // for all trips
 	    	iterator = (ValueList)_listJourneyPatternRef.get(i);
 	    	journeyPatternRef = (String)iterator.getValue(0);
-	    	
+
 	    	jp = 0;
 	       	sequenceNumber = 1;     	
 	       	stopTimehhmmss[0] = -1;
@@ -452,11 +458,9 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	       						newStoptimes__stop_id.addValue((String)((ValueList)_listTimingLinksFromStop.get(j)).getValue(0));
 	       						newStoptimes__stop_sequence = new ValueList(journeyPatternSectionRef); 
 	       						listStoptimes__stop_sequence.add(newStoptimes__stop_sequence);
-//								{
-									sn = new Integer(sequenceNumber);
-									newStoptimes__stop_sequence.addValue(sn.toString());
-									sn = null;
-//								}
+								sn = new Integer(sequenceNumber);
+								newStoptimes__stop_sequence.addValue(sn.toString());
+								sn = null;
 	       						sequenceNumber++;
 	            	
 	       						// Find out if timing link runtime is overridden by vehicle journey specific run times
@@ -510,7 +514,7 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	   				newStoptimes__arrival_time.addValue("");
 	   			newStoptimes__departure_time = new ValueList(iterator.getKeyName()); // departure time
 	   			listStoptimes__departure_time.add(newStoptimes__departure_time);
-// v1.6.2	   			newStoptimes__departure_time.addValue("");   	    	
+
 	   			// v1.6.2: conformance with GTFS revision 20-Nov-2007: Departure time at last stop
 	   			newStoptimes__departure_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));   	    	
 	   			newStoptimes__stop_id = new ValueList(journeyPatternSectionRef); 
@@ -518,11 +522,9 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	   			newStoptimes__stop_id.addValue((String)((ValueList)_listTimingLinksToStop.get(lastStopOnPattern)).getValue(0));   			
 	   			newStoptimes__stop_sequence = new ValueList(journeyPatternSectionRef); 
 	   			listStoptimes__stop_sequence.add(newStoptimes__stop_sequence);
-//				{
-					sn = new Integer(sequenceNumber);
-					newStoptimes__stop_sequence.addValue(sn.toString());
-					sn = null;
-//				}
+				sn = new Integer(sequenceNumber);
+				newStoptimes__stop_sequence.addValue(sn.toString());
+				sn = null;
 	   			newStoptimes__pickup_type = new ValueList(key_stop_times__pickup_type[0]);
 	   			listStoptimes__pickup_type.add(newStoptimes__pickup_type);
 	   			newStoptimes__pickup_type.addValue(key_stop_times__pickup_type[2]);
@@ -530,9 +532,36 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	   			listStoptimes__drop_off_type.add(newStoptimes__drop_off_type);
 	   			newStoptimes__drop_off_type.addValue(key_stop_times__drop_off_type[2]);
 	   		}
+	   		
+	        for (int ii = 0; ii < this.getListStoptimes__trip_id().size(); ii++) {
+	        	stop_timesOut.print(((ValueList)this.getListStoptimes__trip_id().get(ii)).getKeyName());
+	        	stop_timesOut.print(",");
+	        	stop_timesOut.print(((ValueList)this.getListStoptimes__arrival_time().get(ii)).getValue(0));
+	        	stop_timesOut.print(",");
+	        	stop_timesOut.print(((ValueList)this.getListStoptimes__departure_time().get(ii)).getValue(0));
+	        	stop_timesOut.print(",");
+	        	stop_timesOut.print(((ValueList)this.getListStoptimes__stop_id().get(ii)).getValue(0));
+	        	stop_timesOut.print(",");
+	        	stop_timesOut.print(((ValueList)this.getListStoptimes__stop_sequence().get(ii)).getValue(0));
+	        	stop_timesOut.print(",");
+	        	stop_timesOut.print(",");
+	        	stop_timesOut.print(((ValueList)this.getListStoptimes__pickup_type().get(ii)).getValue(0));
+	        	stop_timesOut.print(",");
+	        	stop_timesOut.print(((ValueList)this.getListStoptimes__drop_off_type().get(ii)).getValue(0));
+	        	stop_timesOut.println(",");
+	        }       
+	        listStoptimes__trip_id.clear();
+	    	listStoptimes__arrival_time.clear();
+	    	listStoptimes__departure_time.clear();
+	    	listStoptimes__stop_id.clear();
+	    	listStoptimes__stop_sequence.clear();
+	    	listStoptimes__pickup_type.clear();
+	    	listStoptimes__drop_off_type.clear();
 	    }
+		stop_timesOut.close();
 	}
 	
+   	@Override
 	public void completeData() {
   	    // Add quotes if needed
   	    csvProofList(listStoptimes__trip_id);
@@ -544,6 +573,7 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
   	    csvProofList(listStoptimes__drop_off_type);
 	}
 
+   	@Override
 	public void dumpValues() {
 		int i;
 		ValueList iterator;

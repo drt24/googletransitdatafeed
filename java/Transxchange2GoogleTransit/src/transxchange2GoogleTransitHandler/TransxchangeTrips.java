@@ -116,6 +116,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 		_journeyPattern = jp;
 	}
 
+   	@Override
 	public void startElement(String uri, String name, String qName, Attributes atts)
 		throws SAXParseException {
 	
@@ -152,6 +153,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 
 	}
 
+   	@Override
 	public void endElement (String uri, String name, String qName) {
 	    boolean hot;
 
@@ -285,6 +287,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 		}
 	}
 	
+   	@Override
 	public void clearKeys (String qName) {
 		if (qName.equals(key_trips__trip_headsign[1])) 
 			keyNested = "";
@@ -303,11 +306,11 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 			_serviceCode = "";
 			_lineName = "";
 	    	_vehicleJourneyCode = "";
-//	    	_journeyPatternRef = ""; Do not clear _journeyPatternRef - will be needed if following vehicle journey refers first
 	    	_vehicleJourneyRef = "";
 		}		
 	}
 
+   	@Override
 	public void endDocument() {
 		int i, j;
 		boolean hot;
@@ -336,6 +339,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	    }
 	}
 
+   	@Override
 	public void completeData() {
   	    // Add quotes if needed
   	    csvProofList(listTrips__route_id);
@@ -345,6 +349,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
   	    csvProofList(listTrips__block_id);
 	}
 	
+   	@Override
 	public void dumpValues() {
 		ValueList iterator;
 

@@ -42,7 +42,7 @@ public class Transxchange2GoogleTransit {
 		TransxchangeHandler handler = null;
 
 		System.out.println();
-        System.out.println("transxchange2GoogleTransit 1.6.5");
+        System.out.println("transxchange2GTFS 1.6.6");
         System.out.println("Please refer to LICENSE file for licensing information");
         if ((args.length != 3 || args.length == 3 && !args[1].toLowerCase().equals("-c")))
         	if (args.length < 5 || args.length > 6) {
@@ -74,23 +74,23 @@ public class Transxchange2GoogleTransit {
         	else
         		handler.parse(args[0], args[1], args[2], args[3], "", args[4], "", useAgencyShortname);
 		} catch (ParserConfigurationException e) {
-        	System.out.println("transxchange2GoogleTransit ParserConfiguration parse error:");
+        	System.out.println("transxchange2GTFS ParserConfiguration parse error:");
         	System.out.println(e.getMessage());
         	System.exit(1);			
 		}
 		catch (SAXException e) {
-			System.out.println("transxchange2GoogleTransit SAX parse error:");
+			System.out.println("transxchange2GTFS SAX parse error:");
 			System.out.println(e.getMessage());
 			System.out.println(e.getException());
 			System.exit(1);						
 		}
 		catch (UnsupportedEncodingException e) { // v1.5: resource file ukstops.txt incorrect encoding
-			System.out.println("transxchange2GoogleTransit NaPTAN stop file:");
+			System.out.println("transxchange2GTFS NaPTAN stop file:");
 			System.out.println(e.getMessage());
 			System.exit(1);						
 		}
  		catch (IOException e) {
-			System.out.println("transxchange2GoogleTransit IO parse error:");
+			System.out.println("transxchange2GTFS IO parse error:");
 			System.out.println(e.getMessage());
 			System.exit(1);						
 		}
@@ -99,7 +99,7 @@ public class Transxchange2GoogleTransit {
         try {
         	handler.writeOutput("", args[4]);
         } catch (IOException e) {
-        	System.out.println("transxchange2GoogleTransit write error:");
+        	System.out.println("transxchange2GTFS write error:");
         	System.out.println(e.getMessage());
         	System.exit(1);
         }

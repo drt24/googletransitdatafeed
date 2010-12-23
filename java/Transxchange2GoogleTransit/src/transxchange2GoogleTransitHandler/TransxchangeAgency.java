@@ -32,7 +32,6 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 	static final String[] key_agency__agency_id = new String[] {"Operator", "", "OpenRequired"}; // v1.5: Read Operator id Google Transit required
 	static final String[] key_agency__agency_lid = new String[] {"LicensedOperator", "", "OpenRequired"}; // v1.5: Read Operator id Google Transit required
 	static String[] key_agency__agency_name = new String[] {"OperatorNameOnLicence", "", "OpenRequired"}; // Google Transit required
-//	static String[] key_agency__agency_name = new String[] {"OperatorShortName", "", "OpenRequired"}; // v1.5: Read OperatorNameOnLicense in place of OperatorShortName
 	static final String[] key_agency__agency_url = new String[] {"EmailAddress", "", "OpenRequired"}; // Google Transit required
 	static final String[] key_agency__agency_timezone = new String[] {"__transxchange2GoogleTransit_drawDefault", "", ""}; // Google Transit required
 
@@ -59,6 +58,7 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 		return listAgency__agency_timezone;
 	}
 	
+   	@Override
 	public void startElement(String uri, String name, String qName, Attributes atts)
 		throws SAXParseException {
 
@@ -85,6 +85,7 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 			key = key_agency__agency_url[0];
 	}
 
+   	@Override
 	public void endElement (String uri, String name, String qName) {
 		if (niceString == null || niceString.length() == 0) 
 			return;
@@ -95,6 +96,7 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 	    }
 	}
 
+   	@Override
 	public void clearKeys (String qName) {
 		if (qName.equals(key_agency__agency_id[0])) // v1.5: new: agency ID
 			key = "";
@@ -104,6 +106,7 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 			key = "";		 
 	}
 
+   	@Override
 	public void completeData() {
 		int i, j;
 	    boolean hot;
@@ -138,6 +141,7 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
   	    csvProofList(listAgency__agency_timezone);
 	}
 
+   	@Override
 	public void dumpValues() {
 		int i;
 		ValueList iterator = null;
