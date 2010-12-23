@@ -58,6 +58,8 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 	String _agencyId = ""; // v1.5: agency ID
 	List _listRouteDesc;
 	ValueList _newRouteDesc;
+	
+	String currentRouteId;
 
 	public List getListRoutes__route_id() {
 		return listRoutes__route_id;
@@ -89,9 +91,10 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 		if (key.equals(key_routes__route_id[0]) && qName.equals(key_routes__route_id[1])) {
 	        qualifierIx = atts.getIndex("id");
 	        qualifierString = atts.getValue(qualifierIx);
-	        newRoutes__route_id = new ValueList("");
+	        newRoutes__route_id = new ValueList(qualifierString);
 	        listRoutes__route_id.add(newRoutes__route_id);
 	    	newRoutes__route_id.addValue(qualifierString);
+			currentRouteId = qualifierString;
 	    }
 		if (qName.equals(key_routes__agency_id[0])) 
 			key = key_routes__agency_id[0]; // v1.5 agency ID
@@ -131,7 +134,7 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 			newRoutes__route_type = new ValueList(key_routes__route_type[0]); // Default for _type
 			listRoutes__route_type.add(newRoutes__route_type);
 			newRoutes__route_type.addValue(handler.getDefaultRouteType());
-			newRoutes__service_id = new ValueList("");
+			newRoutes__service_id = new ValueList(niceString);
 			listRoutes__service_id.add(newRoutes__service_id);
         	newRoutes__service_id.addValue(((TransxchangeCalendar)handler.getCalendar()).getService());
 		}
@@ -148,7 +151,7 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
         	keyNested = "";
 		}		
 		if (key.equals(key_routes__route_desc[0]) && keyNested.equals(key_routes__route_desc[1])) {
-			_newRouteDesc = new ValueList("");
+			_newRouteDesc = new ValueList(currentRouteId);
 			_listRouteDesc.add(_newRouteDesc);
 			_newRouteDesc.addValue(niceString);
         	keyNested = "";
