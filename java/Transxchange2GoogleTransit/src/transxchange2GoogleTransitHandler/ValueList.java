@@ -23,22 +23,23 @@ public class ValueList {
 	  private List values;
 
       public void addValue(String addValue) {
-          
-          values.add(addValue);
+          StringBuffer val = new StringBuffer(addValue);
+          values.add(val);
   }
 
   public String getValue(int i) {
           if (i < 0 || i >= values.size())
                   return null;
 
-          return (String)(values.get(i));
+          return (String)(((StringBuffer)values.get(i)).toString());
   }
 
   public void setValue(int i, String value) {
-            if (i < 0 || i >= values.size())
-              return;
-            
-            values.set(i, value);
+      if (i < 0 || i >= values.size())
+          return;
+
+      StringBuffer val = new StringBuffer(value);
+      values.set(i, val);
   }
 
   public void dumpValues() {

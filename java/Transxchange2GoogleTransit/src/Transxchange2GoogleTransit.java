@@ -42,7 +42,7 @@ public class Transxchange2GoogleTransit {
 		TransxchangeHandler handler = null;
 
 		System.out.println();
-        System.out.println("transxchange2GTFS 1.6.6");
+        System.out.println("transxchange2GTFS 1.6.7");
         System.out.println("Please refer to LICENSE file for licensing information");
         if ((args.length != 3 || args.length == 3 && !args[1].toLowerCase().equals("-c")))
         	if (args.length < 5 || args.length > 6) {

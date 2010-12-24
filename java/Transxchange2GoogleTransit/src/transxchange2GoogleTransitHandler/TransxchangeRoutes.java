@@ -18,6 +18,7 @@ package transxchange2GoogleTransitHandler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXParseException;
@@ -49,6 +50,8 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 	ValueList newRoutes__route_long_name;
 	List listRoutes__route_desc;      
 	ValueList newRoutes__route_desc;
+	HashMap listRoutes__route_dest;      
+//	ValueList newRoutes__route_dest;
 	List listRoutes__route_type;      
 	ValueList newRoutes__route_type;
 	List listRoutes__service_id;      
@@ -75,6 +78,14 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 	}
 	public List getListRoutes__route_desc() {
 		return listRoutes__route_desc;
+	}
+	public HashMap getListRoutes__route_dest() {
+		return listRoutes__route_dest;
+	}
+	public String getHeadsign(String routeId) {
+		if (routeId == null || listRoutes__route_dest == null || !listRoutes__route_dest.containsKey(routeId))
+			return "";
+		return (String)listRoutes__route_dest.get(routeId);
 	}
 	public List getListRoutes__route_type() {
 		return listRoutes__route_type;
@@ -145,10 +156,12 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 			_origin = niceString;
 		}		
 		if (key.equals(key_routes__route_destination[0]) && keyNested.equals(key_routes__route_destination[1])) { // v1.5: Origin/Destination
-			_newRouteDesc = new ValueList("");
-			_listRouteDesc.add(_newRouteDesc);
-			_newRouteDesc.addValue(_origin + " - " + niceString);
-        	keyNested = "";
+/*			newRoutes__route_dest = new ValueList(currentRouteId);
+			listRoutes__route_dest.add(_newRouteDesc);
+			newRoutes__route_dest.addValue(_origin + " - " + niceString);
+*/
+			listRoutes__route_dest.put(currentRouteId, niceString);
+			keyNested = "";
 		}		
 		if (key.equals(key_routes__route_desc[0]) && keyNested.equals(key_routes__route_desc[1])) {
 			_newRouteDesc = new ValueList(currentRouteId);
@@ -228,6 +241,7 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
   	    csvProofList(listRoutes__route_short_name);
   	    csvProofList(listRoutes__route_long_name);
   	    csvProofList(listRoutes__route_desc);
+//  	    csvProofList(listRoutes__route_dest);
   	    csvProofList(listRoutes__route_type);
 	}
 	
@@ -257,6 +271,10 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 		    iterator = (ValueList)listRoutes__route_desc.get(i);
 		    iterator.dumpValues();
 		}
+		for (i = 0; i < listRoutes__route_dest.size(); i++) {
+		    iterator = (ValueList)listRoutes__route_dest.get(i);
+		    iterator.dumpValues();
+		}
 	}
 
 	public TransxchangeRoutes(TransxchangeHandlerEngine owner) {
@@ -266,6 +284,7 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 		listRoutes__route_short_name = new ArrayList();
 		listRoutes__route_long_name = new ArrayList();
 		listRoutes__route_desc = new ArrayList();
+		listRoutes__route_dest = new HashMap();
 		listRoutes__route_type = new ArrayList();
 		listRoutes__service_id = new ArrayList();
 		

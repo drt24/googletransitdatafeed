@@ -314,14 +314,17 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	        tripsOut = new PrintWriter(new FileWriter(outfile));
 	        tripsOut.println("route_id,service_id,trip_id,trip_headsign,direction_id,block_id,shape_id");
 		}
+		String routeId;
         for (int i = 0; i < this.getTrips().getListTrips__route_id().size(); i++) {
-        	tripsOut.print(((ValueList)this.getTrips().getListTrips__route_id().get(i)).getValue(0));
+        	routeId = ((ValueList)this.getTrips().getListTrips__route_id().get(i)).getValue(0);
+        	tripsOut.print(routeId);
         	tripsOut.print(",");
         	tripsOut.print(((ValueList)this.getTrips().getListTrips__service_id().get(i)).getValue(0));
         	tripsOut.print(",");
         	tripsOut.print(((ValueList)this.getTrips().getListTrips__trip_id().get(i)).getKeyName());
         	tripsOut.print(",");
-        	tripsOut.print(((ValueList)this.getTrips().getListTrips__trip_headsign().get(i)).getValue(0));
+        	tripsOut.print((this.getRoutes().getHeadsign(routeId)));
+//        	tripsOut.print(((ValueList)this.getTrips().getListTrips__trip_headsign().get(i)).getValue(0));
         	tripsOut.print(",");
         	tripsOut.print(",");
         	tripsOut.print(((ValueList)this.getTrips().getListTrips__block_id().get(i)).getValue(0));
