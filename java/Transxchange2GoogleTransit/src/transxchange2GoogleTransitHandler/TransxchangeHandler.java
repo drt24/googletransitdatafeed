@@ -1,5 +1,5 @@
 /*
- * Copyright 2007, 2008, 2009, 2010 GoogleTransitDataFeed
+ * Copyright 2007, 2008, 2009, 2010, 2011 GoogleTransitDataFeed
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,8 +26,10 @@ import org.xml.sax.*;
 
 import java.util.zip.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 
 /*
  * This class extends DefaultHandler to parse a TransXChange v2.1 xml file,	
@@ -77,7 +79,8 @@ public class TransxchangeHandler {
 	 */
 	public void parse(String filename, String url, String timezone, String defaultRouteType,
 			String rootDirectory, String workDirectory, String stopFile,
-			boolean useAgencyShortName)
+			boolean useAgencyShortName, boolean skipEmptyService, boolean skipOrphanStops,
+			HashMap modeList, ArrayList stopColumns, String stopfilecolumnseparator)
 	    throws SAXException, SAXParseException, IOException, ParserConfigurationException
 	{
 		ZipFile zipfile = null;
@@ -99,7 +102,7 @@ public class TransxchangeHandler {
 			
 			// Read stopfile
 			if (stopFile != null && stopFile.length() > 0)
-				TransxchangeStops.readStopfile(stopFile);
+				TransxchangeStops.readStopfile(stopFile, stopColumns);
 	
 			// Roll single as well as zipped infiles into a unified data structure for later transparent processing (stops only, rest goes straight to output files)
 			parseHandlers = new ArrayList();
@@ -111,6 +114,11 @@ public class TransxchangeHandler {
 				parseHandler.setTimezone(timezone);
 				parseHandler.setDefaultRouteType(defaultRouteType);
 				parseHandler.setUseAgencyShortname(useAgencyShortName);
+				parseHandler.setSkipEmptyService(skipEmptyService);
+				parseHandler.setSkipOrphanStops(skipOrphanStops);
+				parseHandler.setModeList(modeList);
+				parseHandler.setStopColumns(stopColumns);
+				parseHandler.setStopfilecolumnseparator(stopfilecolumnseparator);
 				parseHandler.setRootDirectory(rootDirectory);
 				parseHandler.setWorkDirectory(workDirectory);
 		
@@ -124,7 +132,7 @@ public class TransxchangeHandler {
 						InputStream in = zipfile.getInputStream(zipentry);
 						parser.parse(in, parseHandler);	
 						parseHandler.writeOutputSansAgenciesStopsRoutes(); // Dump data structure with exception of stops which need later consolidation over all input files
-						parseHandler.clearDataSansAgenciesStopsRoutes(); // No need to keep the data structures written
+						parseHandler.clearDataSansAgenciesStopsRoutes(); // No need to keep the data structures
 					}				
 				} else {
 					parser.parse(new File(filename), parseHandler);	
@@ -144,13 +152,53 @@ public class TransxchangeHandler {
 	public String writeOutput(String rootDirectory, String workDirectory)
 		throws IOException
 	{
+		parseHandler.closeStopTimes();
+		
+        // if empty service skipping requested: Filter out trips that do not refer to an active service
+		if (parseHandler.isSkipEmptyService()) {
+    		String outdir = parseHandler.getRootDirectory() + parseHandler.getWorkDirectory();
+    		String infileName = TransxchangeHandlerEngine.stop_timesFilename + "_tmp" + /* "_" + serviceStartDate + */ TransxchangeHandlerEngine.extension;
+        	File infile = new File(outdir + /* "/" + serviceStartDate + */ "/" + infileName);
+        	String outfileName = TransxchangeHandlerEngine.stop_timesFilename + /* "_" + serviceStartDate + */ TransxchangeHandlerEngine.extension;
+        	File outfile = new File(outdir + /* "/" + serviceStartDate + */ "/" + outfileName);
+        	BufferedReader stop_timesIn = new BufferedReader(new FileReader(infile));
+        	
+            PrintWriter stop_timesOut = new PrintWriter(new FileWriter(outfile));
+    		stop_timesOut.println("trip_id,arrival_time,departure_time,stop_id,stop_sequence,stop_headsign,pickup_type,drop_off_type,shape_dist_traveled");
+    		String line = null;
+    		String inTrip, inService, inStop;
+    		Iterator parsers;
+    		TransxchangeHandlerEngine parser;
+    		StringTokenizer st;
+    		while ((line = stop_timesIn.readLine()) != null) {
+    			parsers = parseHandlers.iterator();
+    			while (parsers.hasNext()) {
+    				parser = (TransxchangeHandlerEngine)parsers.next();
+    				if (parser != null) {
+    					st = new StringTokenizer(line, ",");
+    					inTrip = st.nextToken(); // trip id is first column
+    					inService = parser.getTrips().getService(inTrip);
+    					st.nextToken();
+    					st.nextToken();
+    					inStop = st.nextToken();
+    					if (parser.hasCalendarDatesServiceId(inService) || parser.hasCalendarServiceId(inService)) {
+    						stop_timesOut.println(line);
+        					parser.getStops().flagStop(inStop); // Flag as included in service for later rollout in skiporphanstop
+        				}
+    				}
+    			}
+    		}
+    		stop_timesOut.close();
+    		stop_timesIn.close();
+    		infile.delete();
+        }
 		consolidateAgencies(); // Eliminiate possible duplicates from multiple input files in zip archive
 		consolidateStops(); // Eliminiate possible duplicates from multiple input files in zip archive
 		consolidateRoutes(); // Eliminiate possible duplicates from multiple input files in zip archive
 		Iterator parsers = parseHandlers.iterator(); 
 		while (parsers.hasNext())
 			((TransxchangeHandlerEngine)parsers.next()).writeOutputAgenciesStopsRoutes(); // Now write agencies, stops
-		return TransxchangeHandlerEngine.closeOutput(rootDirectory, workDirectory);
+		return parseHandler.closeOutput(rootDirectory, workDirectory);
 	}
 	
 	/*

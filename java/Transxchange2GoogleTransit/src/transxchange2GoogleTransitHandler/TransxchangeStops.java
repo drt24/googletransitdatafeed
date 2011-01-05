@@ -1,5 +1,5 @@
 /*
- * Copyright 2007, 2008, 2009, 2010 GoogleTransitDataFeed
+ * Copyright 2007, 2008, 2009, 2010, 2011 GoogleTransitDataFeed
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,12 +17,12 @@
 package transxchange2GoogleTransitHandler;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.*;
-import java.net.*;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXParseException;
@@ -70,6 +70,16 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	
 	static Map lat = null; // v1.5 lat, lon
 	static Map lon = null; // v1.5 lat, lon
+	static HashMap stopIx = null;
+	
+	static HashMap stops = null;
+
+	static HashMap stopColumnIxs = null;
+	static ArrayList[] columnValues = {null, null, null, null, null, null, null, null, null, null,
+		null, null, null, null, null, null, null, null, null, null,
+		null, null, null, null, null, null, null, null, null, null,
+		null, null, null, null, null, null, null, null, null, null,
+		null, null, null, null, null, null, null, null, null, null};
 	
 	static final String[] _key_stops_alternative_descriptor = new String[] {"StopPoints", "AlternativeDescriptors", "CommonName"};
 
@@ -126,6 +136,28 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	}
 	public List getListStops__stop_country() {
 		return listStops__stop_country;
+	}
+	
+	public void addStop(String stopId) {
+		if (stopId == null || stopId.length() == 0)
+			return;
+		if (stops == null)
+			stops = new HashMap();
+		stops.put(stopId, "0");
+	}
+	public boolean hasStop(String testId) {
+		if (stops == null || testId == null || testId.length() == 0)
+			return false;
+		if (!stops.containsKey(testId))
+			return false;
+		if (!((String)stops.get(testId)).equals("1"))
+			return false;
+		return true;
+	}
+	public void flagStop(String stopId) {
+		if (stops == null || stopId == null || stopId.length() == 0)
+			return;
+		stops.put(stopId, "1");
 	}
 
    	@Override
@@ -379,7 +411,8 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	    ValueList iterator, jterator;
 	    String stopId;
 	    boolean hot;
-	    String indicator, locality;
+	    String indicator, locality, stopname, naptanPick;
+	    Integer index;
 
 	    // Backfill missing stop coordinates with default lat/lon
 	    for (i = 0; i < listStops__stop_id.size(); i++) {
@@ -405,41 +438,67 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	    }
 	    
 	    // Roll stop locality and indicator into stopname
-	    for (i = 0; i < listStops__stop_name.size(); i++) {
-	    	indicator = "";
-	    	locality = "";
-	    	iterator = (ValueList)listStops__stop_name.get(i);
-	    	stopId = (String)iterator.getKeyName();
-	    	j = 0; // Find locality
-	    	hot = true;
-	    	jterator = null;
-	    	while (hot && j < _listStops__stop_locality.size()) {
-	    		jterator = (ValueList)_listStops__stop_locality.get(j);
-	    		if (jterator.getKeyName().equals(stopId))
-	    			hot = false;
-	    		else
-	    			j++;
-	    	}
-	    	if (!hot)
-	    		locality = (String)jterator.getValue(0);
-	    	j = 0; // Find indicator
-	    	hot = true;
-	    	jterator = null;
-	    	while (hot && j < _listStops__stop_indicator.size()) {
-	    		jterator = (ValueList)_listStops__stop_indicator.get(j);
-	    		if (jterator.getKeyName().equals(stopId))
-	    			hot = false;
-	    		else
-	    			j++;
-	    	}
-	    	if (!hot)
-	    		indicator = (String)jterator.getValue(0);
-	    	
-	    	if (locality.length() > 0 && iterator != null) // Prefix locality
-	    		iterator.setValue(0, locality + ", " + (String)iterator.getValue(0));
-	    	if (indicator.length() > 0 && iterator != null) // Posfix indicator
-	        	iterator.setValue(0, (String)iterator.getValue(0) + ", "+ indicator);
-	    }
+    	ArrayList stopColumns = handler.getStopColumns();
+    	if (stopColumns == null)
+		    for (i = 0; i < listStops__stop_name.size(); i++) {
+		    	indicator = "";
+		    	locality = "";
+		    	iterator = (ValueList)listStops__stop_name.get(i);
+		    	stopId = (String)iterator.getKeyName();
+		    	j = 0; // Find locality
+		    	hot = true;
+		    	jterator = null;
+		    	while (hot && j < _listStops__stop_locality.size()) {
+		    		jterator = (ValueList)_listStops__stop_locality.get(j);
+		    		if (jterator.getKeyName().equals(stopId))
+		    			hot = false;
+		    		else
+		    			j++;
+		    	}
+		    	if (!hot)
+		    		locality = (String)jterator.getValue(0);
+		    	j = 0; // Find indicator
+		    	hot = true;
+		    	jterator = null;
+		    	while (hot && j < _listStops__stop_indicator.size()) {
+		    		jterator = (ValueList)_listStops__stop_indicator.get(j);
+		    		if (jterator.getKeyName().equals(stopId))
+		    			hot = false;
+		    		else
+		    			j++;
+		    	}
+		    	if (!hot)
+		    		indicator = (String)jterator.getValue(0);
+		    	
+		    	if (locality.length() > 0 && iterator != null) // Prefix locality
+		    		iterator.setValue(0, locality + ", " + (String)iterator.getValue(0));
+		    	if (indicator.length() > 0 && iterator != null) // Postfix indicator
+		        	iterator.setValue(0, (String)iterator.getValue(0) + ", "+ indicator);
+		    }
+   		else 
+		    for (i = 0; i < listStops__stop_name.size(); i++) {
+//		    	iterator = (ValueList)listStops__stop_id.get(i);
+//		    	stopId = (String)iterator.getValue(0);
+		    	iterator = (ValueList)listStops__stop_name.get(i);
+		    	stopId = (String)iterator.getKeyName();
+		    	stopname = ""; 
+		    	for (j = 0; j < 30; j++) {
+		    		if (columnValues[j] != null) {
+		    			if (stopname.length() > 0)
+		    				stopname += handler.getStopfilecolumnseparator(); // ",";
+		    			index = (Integer)stopIx.get(stopId);
+		    			if (index == null) {
+		    				if (stopname.length() == 0)
+		    					stopname += "OpenRequired";
+		    			} else {
+		    				naptanPick = (String)columnValues[j].get((Integer)stopIx.get(stopId));
+		    				naptanPick = naptanPick.replaceAll("\"", "");
+		    				stopname += naptanPick;
+			    		}
+		    		}
+		    	}
+		    	iterator.setValue(0, stopname);
+		    }
 	}
 	
    	@Override
@@ -513,11 +572,13 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 		String token;
 		int counter = 0;
 		boolean found = false;
-		while (!found && (token = st.nextToken()) != null)
+		while (!found && st.hasMoreTokens()) {
+			token = st.nextToken();
 			if (token.equals(code))
 				found = true;
 			else
 				counter++;
+		}
 		if (!found)
 			return -1;
 		return counter;
@@ -541,57 +602,93 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	}
 
 	
-	public static void readStopfile(String stopsFileName) 
+	public static void readStopfile(String stopsFileName, ArrayList stopColumns) 
 		throws UnsupportedEncodingException, IOException {
 
 		// v1.6.3: read Naptan format stop file
-		if (stopsFileName != null && stopsFileName.length() > 0) {
-			
-			BufferedReader bufFileIn = new BufferedReader(new FileReader(stopsFileName));
+		if (!(stopsFileName != null && stopsFileName.length() > 0))
+			return;
+		
+		BufferedReader bufFileIn = new BufferedReader(new FileReader(stopsFileName));
 
-			// v1.6.3: Read first line to find column positions of stopcode, lat and lon
-			String line;
-			int stopcodeIx;
-			int latIx;
-			int lonIx;
+		// v1.6.3: Read first line to find column positions of stopcode, lat and lon
+		String line;
+		int stopcodeIx;
+		int latIx;
+		int lonIx;
+		if ((line = bufFileIn.readLine()) != null) {
+			if ((stopcodeIx = findColumn(line, "\"ATCOCode\"")) == -1)
+				throw new UnsupportedEncodingException("stopfile column ATCOCode not found");
+			if ((latIx = findColumn(line, "\"Lat\"")) == -1)
+				throw new UnsupportedEncodingException("stopfile column Lat not found");
+			if ((lonIx = findColumn(line, "\"Lon\"")) == -1)
+				throw new UnsupportedEncodingException("stopfile column Lon not found");
+		} else
+			throw new UnsupportedEncodingException("stopfile is empty");
+			
+		if (lat != null)
+			lat.clear();
+		if (lon != null)
+			lon.clear();
+		lat = new HashMap();		
+		lon = new HashMap();
+		stopIx = new HashMap();
+		String stopcode;
+		String tokens[] = {"", "", "", "", "", "", "", "", "", "",
+				"", "", "", "", "", "", "", "", "", "",
+				"", "", "", "", "", "", "", "", "", "",
+				"", "", "", "", "", "", "", "", "", "",
+				"", "", "", "", "", "", "", "", "", ""};
+		int i, j;
+		int lineCounter = 0;
+		while((line = bufFileIn.readLine()) != null) {
+			StringTokenizer st = new StringTokenizer(line, ",");
+			i = 0;
+			while (st.hasMoreTokens() && i < 30) {
+				tokens[i] = st.nextToken();
+				i++;
+			}
+			stopcode = tokens[stopcodeIx].substring(1, tokens[stopcodeIx].length() - 1); // Remove quotation marks
+			lat.put(stopcode, tokens[latIx]);
+			lon.put(stopcode, tokens[lonIx]);
+			stopIx.put(stopcode, (Integer)lineCounter);
+			lineCounter++;
+		}
+		bufFileIn.close();
+		
+		// v1.7.0 read columns
+		if (stopColumns != null && stopColumns.size() > 0) {
+			bufFileIn = new BufferedReader(new FileReader(stopsFileName));
 			if ((line = bufFileIn.readLine()) != null) {
-				if ((stopcodeIx = findColumn(line, "\"ATCOCode\"")) == -1)
-					throw new UnsupportedEncodingException("stopfile column ATCOCode not found");
-				if ((latIx = findColumn(line, "\"Lat\"")) == -1)
-					throw new UnsupportedEncodingException("stopfile column Lat not found");
-				if ((lonIx = findColumn(line, "\"Lon\"")) == -1)
-					throw new UnsupportedEncodingException("stopfile column Lon not found");
+				Iterator iterator = stopColumns.iterator();
+				String column;
+				stopColumnIxs = new HashMap();
+				while (iterator.hasNext()) {
+					column = (String)iterator.next();
+					stopColumnIxs.put(column, (Integer)findColumn(line, column));
+				}
 			} else
 				throw new UnsupportedEncodingException("stopfile is empty");
-			
-			if (lat != null)
-				lat.clear();
-			if (lon != null)
-				lon.clear();
-			lat = new HashMap();		
-			lon = new HashMap();		
-			String stopcode;
-			String tokens[] = {"", "", "", "", "", "", "", "", "", "",
-					"", "", "", "", "", "", "", "", "", "",
-					"", "", "", "", "", "", "", "", "", "",
-					"", "", "", "", "", "", "", "", "", "",
-					"", "", "", "", "", "", "", "", "", ""};
-			boolean firstline = true;
-			int i;
 			while((line = bufFileIn.readLine()) != null) {
-				if (!firstline) {
+				Iterator iterator = stopColumns.iterator();
+				i = 0;
+				String column;
+				while(iterator.hasNext() && i < 30) {
+					column = (String)iterator.next();
 					StringTokenizer st = new StringTokenizer(line, ",");
-					i = 0;
-					while (st.hasMoreTokens() && i < 30) {
-						tokens[i] = st.nextToken();
-						i++;
+					String token;
+					j = 0;
+					while (st.hasMoreTokens()) {
+						token = st.nextToken();
+						if ((Integer)stopColumnIxs.get(column) == j) {
+							if (columnValues[i] == null)
+								columnValues[i] = new ArrayList();
+							columnValues[i].add(token);
+						}
+						j++;
 					}
-
-					stopcode = tokens[stopcodeIx].substring(1, tokens[stopcodeIx].length() - 1); // Remove quotation marks
-					lat.put(stopcode, tokens[latIx]);
-					lon.put(stopcode, tokens[lonIx]);
-				} else
-					firstline = false;
+					i++;
+				}
 			}
 			bufFileIn.close();
 		}

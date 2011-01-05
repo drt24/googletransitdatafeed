@@ -1,5 +1,5 @@
 /*
- * Copyright 2007, 2008, 2009, 2010 GoogleTransitDataFeed
+ * Copyright 2007, 2008, 2009, 2010, 2011 GoogleTransitDataFeed
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -38,7 +38,8 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 	static final String[] key_routes__route_origin = new String[] {"Service", "Origin", ""}; // v1.5: user Origin - Destination as route description if there is no service description in the TransXChange file
 	static final String[] key_routes__route_destination = new String[] {"Service", "Destination", ""};
 	static final String[] key_routes__route_type = new String[] {"__transxchange2GoogleTransit_drawDefault", "", "3"}; // Google Transit required
-
+	static final String[] key_routes__route_mode = new String[] {"Service", "Mode"};
+	
 	// Parsed data 
 	List listRoutes__route_id;      
 	ValueList newRoutes__route_id;
@@ -61,6 +62,8 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 	String _agencyId = ""; // v1.5: agency ID
 	List _listRouteDesc;
 	ValueList _newRouteDesc;
+	
+	HashMap modeList = null;
 	
 	String currentRouteId;
 
@@ -127,6 +130,8 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 			key = key_routes__route_destination[0];
 		if (key.equals(key_routes__route_destination[0]) && qName.equals(key_routes__route_destination[1]))
 			keyNested = key_routes__route_destination[1];	
+		if (key.equals(key_routes__route_mode[0]) && qName.equals(key_routes__route_mode[1]))
+			keyNested = key_routes__route_mode[1];	
 	}
 	
    	@Override
@@ -134,6 +139,8 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 		if (niceString == null || niceString.length() == 0)
 			return;
 		
+		modeList = handler.getModeList();
+
 		if (key.equals(key_routes__route_short_name[0]) && keyNested.equals(key_routes__route_short_name[1])) {
 			newRoutes__route_short_name = new ValueList(key_routes__route_short_name[1]);
 			listRoutes__route_short_name.add(newRoutes__route_short_name);
@@ -168,6 +175,17 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 			_listRouteDesc.add(_newRouteDesc);
 			_newRouteDesc.addValue(niceString);
         	keyNested = "";
+		}		
+		if (key.equals(key_routes__route_mode[0]) && keyNested.equals(key_routes__route_mode[1])) {
+			if (modeList != null) {
+				if (!(newRoutes__route_type != null && newRoutes__route_type.size() > 0)) {
+					newRoutes__route_type = new ValueList(key_routes__route_type[0]); // Default for _type
+					listRoutes__route_type.add(newRoutes__route_type);
+					newRoutes__route_type.addValue(handler.getDefaultRouteType());
+				}
+				newRoutes__route_type.setValue(0, (String)modeList.get(niceString));
+				newRoutes__route_type = null;
+			}		
 		}		
 	}
 	

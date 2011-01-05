@@ -1,5 +1,5 @@
 /*
- * Copyright 2007, 2008, 2009, 2010 GoogleTransitDataFeed
+ * Copyright 2007, 2008, 2009, 2010, 2011 GoogleTransitDataFeed
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -113,6 +113,8 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	String _vehicleJourneyCode;
 	String _departureTime;
 	
+	static PrintWriter stop_timesOut = null;
+	
 	public List getListStoptimes__trip_id() {
 		return listStoptimes__trip_id;
 	}
@@ -133,6 +135,12 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	}
 	public List getListStoptimes__drop_off_type() {
 		return listStoptimes__drop_off_type;
+	}
+	public void closeStopTimesOutput() {
+		if (stop_timesOut == null)
+			return;
+		stop_timesOut.close();
+		stop_timesOut = null;
 	}
 	
    	@Override
@@ -201,8 +209,8 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 		if (niceString == null || niceString.length() == 0)
 			return;
 		
-		_vehicleJourneyCode = handler.getTrips().getVehicleJourneyCode();
-		_departureTime = handler.getTrips().getDepartureTime();
+	_vehicleJourneyCode = handler.getTrips().getVehicleJourneyCode();
+	_departureTime = handler.getTrips().getDepartureTime();
 	if (_vehicleJourneyCode.length() > 0)
 	    if (key.equals(_key_trips_activity_pass[0]) && keyNested.equals(_key_trips_activity_pass[1]) && keyNestedActivity.length() == 0) 
 	    	_journeyPatternTimingLinkRefPass = niceString;       	
@@ -330,18 +338,21 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 		Integer sn;
 		int listSize, listSizeOuter, listSizeInner;
 
-		PrintWriter stop_timesOut = null;
 		String outfileName = "";
 		File outfile = null;
 		String outdir = handler.getRootDirectory() + handler.getWorkDirectory();
 	    
         if (stop_timesOut == null) {
-            outfileName = TransxchangeHandlerEngine.stop_timesFilename + /* "_" + serviceStartDate + */ TransxchangeHandlerEngine.extension;
-            outfile = new File(outdir + /* "/" + serviceStartDate + */ "/"  + outfileName);
+    		outfileName = TransxchangeHandlerEngine.stop_timesFilename + /* "_" + serviceStartDate + */ TransxchangeHandlerEngine.extension;
             handler.addFilename(outfileName);
+        	if (handler.isSkipEmptyService())
+        		outfileName = TransxchangeHandlerEngine.stop_timesFilename + "_tmp" + /* "_" + serviceStartDate + */ TransxchangeHandlerEngine.extension;
+            outfile = new File(outdir + /* "/" + serviceStartDate + */ "/"  + outfileName);
             stop_timesOut = new PrintWriter(new FileWriter(outfile));
-            stop_timesOut.println("trip_id,arrival_time,departure_time,stop_id,stop_sequence,stop_headsign,pickup_type,drop_off_type,shape_dist_traveled");        	
+        	if (!handler.isSkipEmptyService())
+        		stop_timesOut.println("trip_id,arrival_time,departure_time,stop_id,stop_sequence,stop_headsign,pickup_type,drop_off_type,shape_dist_traveled");        	
         }
+        
         // Roll out stop times
 	    _listJourneyPatternRef = handler.getTrips().getListJourneyPatternRef();
 	    _listJourneyPatternSectionRefs = handler.getTrips().getListJourneyPatternSectionRefs();
@@ -456,6 +467,7 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	       						newStoptimes__stop_id = new ValueList(journeyPatternSectionRef); 
 	       						listStoptimes__stop_id.add(newStoptimes__stop_id);
 	       						newStoptimes__stop_id.addValue((String)((ValueList)_listTimingLinksFromStop.get(j)).getValue(0));
+	       						handler.getStops().addStop((String)((ValueList)_listTimingLinksFromStop.get(j)).getValue(0));
 	       						newStoptimes__stop_sequence = new ValueList(journeyPatternSectionRef); 
 	       						listStoptimes__stop_sequence.add(newStoptimes__stop_sequence);
 								sn = new Integer(sequenceNumber);
@@ -519,7 +531,8 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	   			newStoptimes__departure_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));   	    	
 	   			newStoptimes__stop_id = new ValueList(journeyPatternSectionRef); 
 	   			listStoptimes__stop_id.add(newStoptimes__stop_id);
-	   			newStoptimes__stop_id.addValue((String)((ValueList)_listTimingLinksToStop.get(lastStopOnPattern)).getValue(0));   			
+	   			newStoptimes__stop_id.addValue((String)((ValueList)_listTimingLinksToStop.get(lastStopOnPattern)).getValue(0));
+	   			handler.getStops().addStop((String)((ValueList)_listTimingLinksToStop.get(lastStopOnPattern)).getValue(0));
 	   			newStoptimes__stop_sequence = new ValueList(journeyPatternSectionRef); 
 	   			listStoptimes__stop_sequence.add(newStoptimes__stop_sequence);
 				sn = new Integer(sequenceNumber);
@@ -558,7 +571,6 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	    	listStoptimes__pickup_type.clear();
 	    	listStoptimes__drop_off_type.clear();
 	    }
-		stop_timesOut.close();
 	}
 	
    	@Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007, 2008, 2009, 2010 GoogleTransitDataFeed
+ * Copyright 2007, 2008, 2009, 2010, 2011 GoogleTransitDataFeed
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -114,6 +114,23 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 
 	void setJourneyPattern(String jp) {
 		_journeyPattern = jp;
+	}
+	
+	String getService(String trip) {
+		if (trip == null || trip.length() == 0)
+			return "";
+		boolean found = false;
+		int i = 0;
+		String result = "";
+		while (!found && i < listTrips__service_id.size()) {
+			if (((ValueList)listTrips__service_id.get(i)).getKeyName().equals(trip))
+				found = true;
+			else
+				i++;
+		}
+		if (found)
+			result = ((ValueList)listTrips__service_id.get(i)).getValue(0);
+		return result;
 	}
 
    	@Override

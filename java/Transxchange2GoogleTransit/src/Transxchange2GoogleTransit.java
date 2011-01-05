@@ -1,5 +1,5 @@
 /*
- * Copyright 2007, 2008, 2009, 2010 GoogleTransitDataFeed
+ * Copyright 2007, 2008, 2009, 2010, 2011 GoogleTransitDataFeed
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,6 +25,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.StringTokenizer;
+
 import transxchange2GoogleTransitHandler.*;
 
 /*
@@ -36,13 +40,18 @@ import transxchange2GoogleTransitHandler.*;
 public class Transxchange2GoogleTransit {
 	
 	static boolean 										useAgencyShortname = false;
+	static boolean 										skipEmptyService = false;
+	static boolean 										skipOrphanStops = false;
+	static HashMap										modeList = null;
+	static ArrayList									stopColumns = null;
+	static String										stopfilecolumnseparator;
 
 	public static void main(String[] args) {
 
 		TransxchangeHandler handler = null;
 
 		System.out.println();
-        System.out.println("transxchange2GTFS 1.6.7");
+        System.out.println("transxchange2GTFS 1.7.0");
         System.out.println("Please refer to LICENSE file for licensing information");
         if ((args.length != 3 || args.length == 3 && !args[1].toLowerCase().equals("-c")))
         	if (args.length < 5 || args.length > 6) {
@@ -70,9 +79,9 @@ public class Transxchange2GoogleTransit {
         	if (args.length == 3)
         		args = readConfigFile(args[0], args[2]);
         	if (args.length == 6)
-        		handler.parse(args[0], args[1], args[2], args[3], "", args[4], args[5], useAgencyShortname);
+        		handler.parse(args[0], args[1], args[2], args[3], "", args[4], args[5], useAgencyShortname, skipEmptyService, skipOrphanStops, modeList, stopColumns, stopfilecolumnseparator);
         	else
-        		handler.parse(args[0], args[1], args[2], args[3], "", args[4], "", useAgencyShortname);
+        		handler.parse(args[0], args[1], args[2], args[3], "", args[4], "", useAgencyShortname, skipEmptyService, skipOrphanStops, modeList, stopColumns, stopfilecolumnseparator);
 		} catch (ParserConfigurationException e) {
         	System.out.println("transxchange2GTFS ParserConfiguration parse error:");
         	System.out.println(e.getMessage());
@@ -118,26 +127,49 @@ public class Transxchange2GoogleTransit {
 		String line;
 		int tokenCount;
 		String tagToken = "", configurationValue;
+		String txcMode = null;
 		while ((line = in.readLine()) != null) {
 			tokenCount = 0;
-			java.util.StringTokenizer st = new java.util.StringTokenizer(line, "=");
+			StringTokenizer st = new StringTokenizer(line, "=");
 			while (st.hasMoreTokens() && tokenCount < 2) {
 				if (tokenCount == 0)
 					tagToken = st.nextToken().trim().toLowerCase();
 				else {
 					configurationValue = st.nextToken().trim();
-					if (tagToken.equals("url"))
+					if (tagToken.toLowerCase().equals("url"))
 						result[1] = new String(configurationValue);
-					if (tagToken.equals("timezone"))
+					if (tagToken.toLowerCase().equals("timezone"))
 						result[2] = new String(configurationValue);
-					if (tagToken.equals("default-route-type"))
+					if (tagToken.toLowerCase().equals("default-route-type"))
 						result[3] = new String(configurationValue);
-					if (tagToken.equals("output-directory"))
+					if (tagToken.toLowerCase().equals("output-directory"))
 						result[4] = new String(configurationValue);
-					if (tagToken.equals("stopfile"))
+					if (tagToken.toLowerCase().equals("stopfile"))
 						result[5] = new String(configurationValue);
-					if (tagToken.equals("useagencyshortname") && configurationValue != null && configurationValue.trim().toLowerCase().equals("true"))
+					if (tagToken.toLowerCase().equals("naptanstopcolumn")) {
+						if (stopColumns == null)
+							stopColumns = new ArrayList();
+						stopColumns.add(configurationValue);
+					}
+					if (tagToken.toLowerCase().equals("stopfilecolumnseparator"))
+						stopfilecolumnseparator = new String(configurationValue);
+						
+					if (tagToken.toLowerCase().equals("useagencyshortname") && configurationValue != null && configurationValue.trim().toLowerCase().equals("true"))
 						useAgencyShortname = true;
+					if (tagToken.toLowerCase().equals("skipemptyservice") && configurationValue != null && configurationValue.trim().toLowerCase().equals("true"))
+						skipEmptyService = true;
+					if (tagToken.toLowerCase().equals("skiporphanstops") && configurationValue != null && configurationValue.trim().toLowerCase().equals("true"))
+						skipOrphanStops = true;
+					if (txcMode != null)
+						if (txcMode.length() > 0 && configurationValue.length() > 0) {
+							if (modeList == null)
+								modeList = new HashMap();
+							modeList.put(txcMode, configurationValue);
+						}
+						txcMode = null;
+					}
+					if (tagToken.length() >= 5 && tagToken.substring(0, 5).equals("mode:")) {
+						txcMode = tagToken.substring(5, tagToken.length());
 				}	
 				tokenCount++;
 			}

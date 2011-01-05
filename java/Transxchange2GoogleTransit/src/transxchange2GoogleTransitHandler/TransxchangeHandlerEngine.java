@@ -1,5 +1,5 @@
 /*
- * Copyright 2007, 2008, 2009, 2010 GoogleTransitDataFeed
+ * Copyright 2007, 2008, 2009, 2010, 2011 GoogleTransitDataFeed
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,15 +18,12 @@ package transxchange2GoogleTransitHandler;
 
 import java.io.*;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 
 import java.util.zip.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /*
  * This class extends DefaultHandler to parse a TransXChange v2.1 xml file,	
@@ -79,6 +76,14 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	static String outdir = "";
 	
 	static boolean useAgencyShortName = false;
+	static boolean skipEmptyService = false;
+	static boolean skipOrphanStops = false;
+	static HashMap modeList = null;
+	static ArrayList stopColumns = null;
+	static String stopfilecolumnseparator = ",";
+	
+	HashMap calendarServiceIds = null;
+	HashMap calendarDatesServiceIds = null;
 	
 	static String rootDirectory = "";
 	static String workDirectory = "";
@@ -145,6 +150,33 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	public void setUseAgencyShortname(boolean flag) {
 		useAgencyShortName = flag;
 	}
+	public void setSkipEmptyService(boolean flag) {
+		skipEmptyService = flag;
+	}
+	public void setSkipOrphanStops(boolean flag) {
+		skipOrphanStops = flag;
+	}
+	public void setModeList(HashMap list) {
+		modeList = list;
+	}
+	public void setStopColumns(ArrayList list) {
+		stopColumns = list;
+	}
+	public void setStopfilecolumnseparator(String separator) {
+		if (separator == null)
+			stopfilecolumnseparator = "";
+		stopfilecolumnseparator = separator;
+	}
+	public String getStopfilecolumnseparator() {
+		return stopfilecolumnseparator;
+	}
+	
+	public HashMap getModeList() {
+		return modeList;
+	}
+	public ArrayList getStopColumns() {
+		return stopColumns;
+	}
 	
 	public void setRootDirectory(String eRootDirectory) {
 		rootDirectory = eRootDirectory;
@@ -174,11 +206,28 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	public boolean isAgencyShortName() {
 		return useAgencyShortName;
 	}
+	public boolean isSkipEmptyService() {
+		return skipEmptyService;
+	}
+	public boolean isSkipOrphanStops() {
+		return skipOrphanStops;
+	}
 	
 	public void addFilename(String fileName) {
 		if (fileName == null || filenames == null)
 			return;
 		filenames.add(fileName);
+	}
+	
+	public boolean hasCalendarServiceId(String testId) {
+		if (testId == null || calendarServiceIds == null)
+			return false;
+		return (calendarServiceIds.containsKey(testId));
+	}
+	public boolean hasCalendarDatesServiceId(String testId) {
+		if (testId == null || calendarDatesServiceIds == null)
+			return false;
+		return (calendarDatesServiceIds.containsKey(testId));
 	}
 	
 	/*
@@ -246,7 +295,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 			stopTimes.endDocument();
 			calendar.endDocument();
 			calendarDates.endDocument();
-		} catch (Exception e) {
+		} catch (IOException e) {
 			System.out.println("transxchange2GTFS endDocument() exception: " + e.getMessage());
 			System.exit(0);
 		}
@@ -306,34 +355,6 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		String outfileName = "";
 		File outfile = null;
 		
-        // trips.txt
-		if (tripsOut == null) {
-	        outfileName = tripsFilename + /* "_" + serviceStartDate + */ extension;
-	        outfile = new File(outdir + /* "/" + serviceStartDate + */ "/" + outfileName);
-	        filenames.add(outfileName);      
-	        tripsOut = new PrintWriter(new FileWriter(outfile));
-	        tripsOut.println("route_id,service_id,trip_id,trip_headsign,direction_id,block_id,shape_id");
-		}
-		String routeId;
-        for (int i = 0; i < this.getTrips().getListTrips__route_id().size(); i++) {
-        	routeId = ((ValueList)this.getTrips().getListTrips__route_id().get(i)).getValue(0);
-        	tripsOut.print(routeId);
-        	tripsOut.print(",");
-        	tripsOut.print(((ValueList)this.getTrips().getListTrips__service_id().get(i)).getValue(0));
-        	tripsOut.print(",");
-        	tripsOut.print(((ValueList)this.getTrips().getListTrips__trip_id().get(i)).getKeyName());
-        	tripsOut.print(",");
-        	tripsOut.print((this.getRoutes().getHeadsign(routeId)));
-//        	tripsOut.print(((ValueList)this.getTrips().getListTrips__trip_headsign().get(i)).getValue(0));
-        	tripsOut.print(",");
-        	tripsOut.print(",");
-        	tripsOut.print(((ValueList)this.getTrips().getListTrips__block_id().get(i)).getValue(0));
-        	tripsOut.println(",");
-        }       
-
-        // stop_times.txt
-        // v1.6.6: Functionality moved into TransxchangeStopTimes.java
-
         // calendar.txt
         String daytypesJourneyPattern;
         String daytypesService;
@@ -344,12 +365,14 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
             outfile = new File(outdir + /* "/" + serviceStartDate + */ "/" + outfileName);
             filenames.add(outfileName);
             calendarsOut = new PrintWriter(new FileWriter(outfile));
-            calendarsOut.println("service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date");        	
+            calendarsOut.println("service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date");
         }
+        calendarServiceIds = new HashMap();
+        
+        String outLine;
         for (int i = 0; i < this.getCalendar().getListCalendar__service_id().size(); i++) {
+        	outLine = "";
         	serviceId = (String)(((ValueList)this.getCalendar().getListCalendar__service_id().get(i))).getValue(0);
-        	calendarsOut.print(serviceId);
-        	calendarsOut.print(",");
         	// v1.5: Service ID added to calendar data structure in class TransxchangeCalendar. 
         	// 	If match and no journey pattern associated with daytype, 
         	//  then daytype applies to service, not journey pattern. Otherwise daytpe is set to 0 as daytype applies to journey pattern, not service
@@ -360,10 +383,10 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
         	if (daytypesService == null)
         		daytypesService = "";
         	if (daytypesService.equals(serviceId) && daytypesJourneyPattern.length() == 0)
-        		calendarsOut.print(((ValueList)this.getCalendar().getListCalendar__monday().get(i)).getValue(0));
+        		outLine += ((ValueList)this.getCalendar().getListCalendar__monday().get(i)).getValue(0);
         	else
-        		calendarsOut.print("0");
-        	calendarsOut.print(",");
+        		outLine += "0";
+        	outLine += ",";
 
         	// Tuesday
            	daytypesJourneyPattern = (String)((ValueList)this.getCalendar().getListCalendar__tuesday().get(i)).getValue(1); 
@@ -371,10 +394,10 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
         	if (daytypesService == null)
         		daytypesService = "";
         	if (daytypesService.equals(serviceId) && daytypesJourneyPattern.length() == 0)
-        		calendarsOut.print(((ValueList)this.getCalendar().getListCalendar__tuesday().get(i)).getValue(0));
+        		outLine += ((ValueList)this.getCalendar().getListCalendar__tuesday().get(i)).getValue(0);
         	else
-        		calendarsOut.print("0");
-        	calendarsOut.print(",");
+        		outLine += "0";
+        	outLine += ",";
         	
         	// Wednesday
            	daytypesJourneyPattern = (String)((ValueList)this.getCalendar().getListCalendar__wednesday().get(i)).getValue(1); 
@@ -382,10 +405,10 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
         	if (daytypesService == null)
         		daytypesService = "";
         	if (daytypesService.equals(serviceId) && daytypesJourneyPattern.length() == 0)
-        		calendarsOut.print(((ValueList)this.getCalendar().getListCalendar__wednesday().get(i)).getValue(0));
+        		outLine += ((ValueList)this.getCalendar().getListCalendar__wednesday().get(i)).getValue(0);
         	else
-        		calendarsOut.print("0");
-        	calendarsOut.print(",");
+        		outLine += "0";
+        	outLine += ",";
         	
         	// Thursday
            	daytypesJourneyPattern = (String)((ValueList)this.getCalendar().getListCalendar__thursday().get(i)).getValue(1); 
@@ -393,10 +416,10 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
         	if (daytypesService == null)
         		daytypesService = "";
         	if (daytypesService.equals(serviceId) && daytypesJourneyPattern.length() == 0)
-        		calendarsOut.print(((ValueList)this.getCalendar().getListCalendar__thursday().get(i)).getValue(0));
+        		outLine += ((ValueList)this.getCalendar().getListCalendar__thursday().get(i)).getValue(0);
         	else
-        		calendarsOut.print("0");
-        	calendarsOut.print(",");
+        		outLine += "0";
+        	outLine += ",";
 
         	// Friday
           	daytypesJourneyPattern = (String)((ValueList)this.getCalendar().getListCalendar__friday().get(i)).getValue(1); 
@@ -404,10 +427,10 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
         	if (daytypesService == null)
         		daytypesService = "";
         	if (daytypesService.equals(serviceId) && daytypesJourneyPattern.length() == 0)
-        		calendarsOut.print(((ValueList)this.getCalendar().getListCalendar__friday().get(i)).getValue(0));
+        		outLine += ((ValueList)this.getCalendar().getListCalendar__friday().get(i)).getValue(0);
         	else
-        		calendarsOut.print("0");
-        	calendarsOut.print(",");
+        		outLine += "0";
+        	outLine += ",";
 
         	// Saturday
           	daytypesJourneyPattern = (String)((ValueList)this.getCalendar().getListCalendar__saturday().get(i)).getValue(1); 
@@ -415,26 +438,33 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
         	if (daytypesService == null)
         		daytypesService = "";
         	if (daytypesService.equals(serviceId) && daytypesJourneyPattern.length() == 0)
-        		calendarsOut.print(((ValueList)this.getCalendar().getListCalendar__saturday().get(i)).getValue(0));
+        		outLine += ((ValueList)this.getCalendar().getListCalendar__saturday().get(i)).getValue(0);
         	else
-        		calendarsOut.print("0");
-        	calendarsOut.print(",");
-        	
+        		outLine += "0";
+        	outLine += ",";
+ 	
         	// Sunday
           	daytypesJourneyPattern = (String)((ValueList)this.getCalendar().getListCalendar__sunday().get(i)).getValue(1); 
         	daytypesService = (String)((ValueList)this.getCalendar().getListCalendar__sunday().get(i)).getValue(2); 
         	if (daytypesService == null)
         		daytypesService = "";
         	if (daytypesService.equals(serviceId) && daytypesJourneyPattern.length() == 0)
-        		calendarsOut.print(((ValueList)this.getCalendar().getListCalendar__sunday().get(i)).getValue(0));
+        		outLine += ((ValueList)this.getCalendar().getListCalendar__sunday().get(i)).getValue(0);
         	else
-        		calendarsOut.print("0");
-        	calendarsOut.print(",");
+        		outLine += "0";
+        	outLine += ",";
 
         	// Start and end dates
-        	calendarsOut.print(((ValueList)this.getCalendar().getListCalendar__start_date().get(i)).getValue(0));
-        	calendarsOut.print(",");
-        	calendarsOut.println(((ValueList)this.getCalendar().getListCalendar__end_date().get(i)).getValue(0));           			
+        	if (outLine.contains("1") || !skipEmptyService) {
+	        	calendarsOut.print(serviceId);
+	        	calendarsOut.print(",");
+	        	calendarsOut.print(outLine);
+	        	calendarsOut.print(((ValueList)this.getCalendar().getListCalendar__start_date().get(i)).getValue(0));
+	        	calendarsOut.print(",");
+	        	calendarsOut.println(((ValueList)this.getCalendar().getListCalendar__end_date().get(i)).getValue(0));
+	        	if (skipEmptyService)
+	        		calendarServiceIds.put(serviceId, serviceId);
+            }       
         }       
 
         // calendar_dates.txt
@@ -447,14 +477,55 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
             	filenames.add(outfileName);
             	calendarDatesOut.println("service_id,date,exception_type");        		
         	}
+        	calendarDatesServiceIds = new HashMap();
+        	String calendarDateServiceId;
+        	String calendarDateExceptionType;
         	for (int i = 0; i < this.getCalendarDates().getListCalendarDates__service_id().size(); i++) {
-        		calendarDatesOut.print(((ValueList)this.getCalendarDates().getListCalendarDates__service_id().get(i)).getValue(0));
-        		calendarDatesOut.print(",");
-        		calendarDatesOut.print(((ValueList)this.getCalendarDates().getListCalendarDates__date().get(i)).getValue(0));
-        		calendarDatesOut.print(",");
-        		calendarDatesOut.println(((ValueList)this.getCalendarDates().getListCalendarDates__exception_type().get(i)).getValue(0));           			
+        		calendarDateServiceId = ((ValueList)this.getCalendarDates().getListCalendarDates__service_id().get(i)).getValue(0);
+        		calendarDateExceptionType = ((ValueList)this.getCalendarDates().getListCalendarDates__exception_type().get(i)).getValue(0);
+        		if (this.hasCalendarServiceId(calendarDateServiceId) || !calendarDateExceptionType.equals("2") || !skipEmptyService) {
+	        		calendarDatesOut.print(calendarDateServiceId);
+	        		calendarDatesOut.print(",");
+	        		calendarDatesOut.print(((ValueList)this.getCalendarDates().getListCalendarDates__date().get(i)).getValue(0));
+	        		calendarDatesOut.print(",");
+	        		calendarDatesOut.println(calendarDateExceptionType);
+	        		if (skipEmptyService)
+	        			calendarDatesServiceIds.put(calendarDateServiceId, calendarDateServiceId);
+            	}       
         	}       
         }
+        
+        // trips.txt
+		if (tripsOut == null) {
+	        outfileName = tripsFilename + /* "_" + serviceStartDate + */ extension;
+	        outfile = new File(outdir + /* "/" + serviceStartDate + */ "/" + outfileName);
+	        filenames.add(outfileName);      
+	        tripsOut = new PrintWriter(new FileWriter(outfile));
+	        tripsOut.println("route_id,service_id,trip_id,trip_headsign,direction_id,block_id,shape_id");
+		}
+		String tripsRouteId;
+		String tripsServiceId;
+        for (int i = 0; i < this.getTrips().getListTrips__route_id().size(); i++) {
+        	tripsServiceId = ((ValueList)this.getTrips().getListTrips__service_id().get(i)).getValue(0);
+        	if (!skipEmptyService || this.hasCalendarServiceId(tripsServiceId) || this.hasCalendarDatesServiceId(tripsServiceId)) {
+        		tripsRouteId = ((ValueList)this.getTrips().getListTrips__route_id().get(i)).getValue(0);
+	        	tripsOut.print(tripsRouteId);
+	        	tripsOut.print(",");
+	        	tripsOut.print(tripsServiceId);
+	        	tripsOut.print(",");
+	        	tripsOut.print(((ValueList)this.getTrips().getListTrips__trip_id().get(i)).getKeyName());
+	        	tripsOut.print(",");
+	        	tripsOut.print((this.getRoutes().getHeadsign(tripsRouteId)));
+	//        	tripsOut.print(((ValueList)this.getTrips().getListTrips__trip_headsign().get(i)).getValue(0));
+	        	tripsOut.print(",");
+	        	tripsOut.print(",");
+	        	tripsOut.print(((ValueList)this.getTrips().getListTrips__block_id().get(i)).getValue(0));
+	        	tripsOut.println(",");
+            }       
+        }       
+
+        // stop_times.txt
+        // v1.6.6: Functionality moved into TransxchangeStopTimes.java
    	}
 	
 	/*
@@ -495,9 +566,11 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	        stopsOut = new PrintWriter(new FileWriter(outfile));
 	        stopsOut.println("stop_id,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url");
 		}
+		String stopId;
 		for (int i = 0; i < this.getStops().getListStops__stop_id().size(); i++) {
-			if (((String)(((ValueList)this.getStops().getListStops__stop_id().get(i))).getValue(0)).length() > 0) {
-				stopsOut.print(((ValueList)this.getStops().getListStops__stop_id().get(i)).getValue(0));
+			stopId = ((ValueList)this.getStops().getListStops__stop_id().get(i)).getValue(0);
+			if (stopId.length() > 0 && (!skipOrphanStops || stops.hasStop(stopId))) {
+				stopsOut.print(stopId);
 				stopsOut.print(",");
 				stopsOut.print(((ValueList)this.getStops().getListStops__stop_name().get(i)).getValue(0));
 				stopsOut.print(",");
@@ -553,16 +626,20 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	 * Clear data structures except for stops
 	 */
 	public void clearDataSansAgenciesStopsRoutes() {
-		trips = null;
+//		trips = null;
 		stopTimes = null;
 		calendar = null;
 		calendarDates = null;
 	}
 
+	public void closeStopTimes() {
+		stopTimes.closeStopTimesOutput();
+	}
+	
 	/*
 	 * Close Google Transit Feed file set from Google Transit Feed data structures
 	 */
-	public static String closeOutput(String rootDirectory, String workDirectory) 
+	public String closeOutput(String rootDirectory, String workDirectory) 
 	throws IOException
 	{	
 		// Close out PrintWriter's
