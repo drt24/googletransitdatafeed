@@ -45,6 +45,8 @@ public class Transxchange2GoogleTransit {
 	static HashMap										modeList = null;
 	static ArrayList									stopColumns = null;
 	static String										stopfilecolumnseparator;
+	static int											naptanHelperStopColumn = -1;
+	static HashMap										naptanStopnames = null;
 
 	public static void main(String[] args) {
 
@@ -79,9 +81,9 @@ public class Transxchange2GoogleTransit {
         	if (args.length == 3)
         		args = readConfigFile(args[0], args[2]);
         	if (args.length == 6)
-        		handler.parse(args[0], args[1], args[2], args[3], "", args[4], args[5], useAgencyShortname, skipEmptyService, skipOrphanStops, modeList, stopColumns, stopfilecolumnseparator);
+        		handler.parse(args[0], args[1], args[2], args[3], "", args[4], args[5], useAgencyShortname, skipEmptyService, skipOrphanStops, modeList, stopColumns, stopfilecolumnseparator, naptanHelperStopColumn, naptanStopnames);
         	else
-        		handler.parse(args[0], args[1], args[2], args[3], "", args[4], "", useAgencyShortname, skipEmptyService, skipOrphanStops, modeList, stopColumns, stopfilecolumnseparator);
+        		handler.parse(args[0], args[1], args[2], args[3], "", args[4], "", useAgencyShortname, skipEmptyService, skipOrphanStops, modeList, stopColumns, stopfilecolumnseparator, naptanHelperStopColumn, naptanStopnames);
 		} catch (ParserConfigurationException e) {
         	System.out.println("transxchange2GTFS ParserConfiguration parse error:");
         	System.out.println(e.getMessage());
@@ -144,13 +146,22 @@ public class Transxchange2GoogleTransit {
 						result[3] = new String(configurationValue);
 					if (tagToken.toLowerCase().equals("output-directory"))
 						result[4] = new String(configurationValue);
-					if (tagToken.toLowerCase().equals("stopfile"))
+					if (tagToken.toLowerCase().equals("stopfile")) {
 						result[5] = new String(configurationValue);
+						if (naptanStopnames == null)
+							naptanStopnames = NaPTANHelper.readStopfile(configurationValue);
+					}
 					if (tagToken.toLowerCase().equals("naptanstopcolumn")) {
 						if (stopColumns == null)
 							stopColumns = new ArrayList();
 						stopColumns.add(configurationValue);
 					}
+					if (tagToken.toLowerCase().equals("naptanstophelper"))
+						if (stopColumns == null)
+							naptanHelperStopColumn = 0;
+						else
+							naptanHelperStopColumn = stopColumns.size();
+					
 					if (tagToken.toLowerCase().equals("stopfilecolumnseparator"))
 						stopfilecolumnseparator = new String(configurationValue);
 						

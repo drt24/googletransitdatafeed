@@ -440,42 +440,49 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	    // Roll stop locality and indicator into stopname
     	ArrayList stopColumns = handler.getStopColumns();
     	if (stopColumns == null)
-		    for (i = 0; i < listStops__stop_name.size(); i++) {
-		    	indicator = "";
-		    	locality = "";
-		    	iterator = (ValueList)listStops__stop_name.get(i);
-		    	stopId = (String)iterator.getKeyName();
-		    	j = 0; // Find locality
-		    	hot = true;
-		    	jterator = null;
-		    	while (hot && j < _listStops__stop_locality.size()) {
-		    		jterator = (ValueList)_listStops__stop_locality.get(j);
-		    		if (jterator.getKeyName().equals(stopId))
-		    			hot = false;
-		    		else
-		    			j++;
-		    	}
-		    	if (!hot)
-		    		locality = (String)jterator.getValue(0);
-		    	j = 0; // Find indicator
-		    	hot = true;
-		    	jterator = null;
-		    	while (hot && j < _listStops__stop_indicator.size()) {
-		    		jterator = (ValueList)_listStops__stop_indicator.get(j);
-		    		if (jterator.getKeyName().equals(stopId))
-		    			hot = false;
-		    		else
-		    			j++;
-		    	}
-		    	if (!hot)
-		    		indicator = (String)jterator.getValue(0);
-		    	
-		    	if (locality.length() > 0 && iterator != null) // Prefix locality
-		    		iterator.setValue(0, locality + ", " + (String)iterator.getValue(0));
-		    	if (indicator.length() > 0 && iterator != null) // Postfix indicator
-		        	iterator.setValue(0, (String)iterator.getValue(0) + ", "+ indicator);
-		    }
-   		else 
+    		if (handler.getNaptanHelperStopColumn() == -1)
+			    for (i = 0; i < listStops__stop_name.size(); i++) {
+			    	indicator = "";
+			    	locality = "";
+			    	iterator = (ValueList)listStops__stop_name.get(i);
+			    	stopId = (String)iterator.getKeyName();
+			    	j = 0; // Find locality
+			    	hot = true;
+			    	jterator = null;
+			    	while (hot && j < _listStops__stop_locality.size()) {
+			    		jterator = (ValueList)_listStops__stop_locality.get(j);
+			    		if (jterator.getKeyName().equals(stopId))
+			    			hot = false;
+			    		else
+			    			j++;
+			    	}
+			    	if (!hot)
+			    		locality = (String)jterator.getValue(0);
+			    	j = 0; // Find indicator
+			    	hot = true;
+			    	jterator = null;
+			    	while (hot && j < _listStops__stop_indicator.size()) {
+			    		jterator = (ValueList)_listStops__stop_indicator.get(j);
+			    		if (jterator.getKeyName().equals(stopId))
+			    			hot = false;
+			    		else
+			    			j++;
+			    	}
+			    	if (!hot)
+			    		indicator = (String)jterator.getValue(0);
+			    	
+			    	if (locality.length() > 0 && iterator != null) // Prefix locality
+			    		iterator.setValue(0, locality + ", " + (String)iterator.getValue(0));
+			    	if (indicator.length() > 0 && iterator != null) // Postfix indicator
+			        	iterator.setValue(0, (String)iterator.getValue(0) + ", "+ indicator);
+			    }
+    		else
+			    for (i = 0; i < listStops__stop_name.size(); i++) {
+			    	iterator = (ValueList)listStops__stop_name.get(i);
+			    	stopId = (String)iterator.getKeyName();
+			    	iterator.setValue(0, handler.getNaPTANStopname(stopId));
+			    }
+    	else 
 		    for (i = 0; i < listStops__stop_name.size(); i++) {
 //		    	iterator = (ValueList)listStops__stop_id.get(i);
 //		    	stopId = (String)iterator.getValue(0);
@@ -564,7 +571,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 			return key_stops__stop_lon[2];
 	}
 	
-	private static int findColumn(String headline, String code) {
+/*	private static int findColumn(String headline, String code) {
 		if (headline == null || code == null)
 			return -1;
 		
@@ -583,7 +590,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 			return -1;
 		return counter;
 	}
-
+*/
 	public TransxchangeStops(TransxchangeHandlerEngine owner) { 
 		super(owner);
 		listStops__stop_id = new ArrayList();
@@ -617,11 +624,11 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 		int latIx;
 		int lonIx;
 		if ((line = bufFileIn.readLine()) != null) {
-			if ((stopcodeIx = findColumn(line, "\"ATCOCode\"")) == -1)
+			if ((stopcodeIx = NaPTANHelper.findColumn(line, "\"ATCOCode\"")) == -1)
 				throw new UnsupportedEncodingException("stopfile column ATCOCode not found");
-			if ((latIx = findColumn(line, "\"Lat\"")) == -1)
+			if ((latIx = NaPTANHelper.findColumn(line, "\"Lat\"")) == -1)
 				throw new UnsupportedEncodingException("stopfile column Lat not found");
-			if ((lonIx = findColumn(line, "\"Lon\"")) == -1)
+			if ((lonIx = NaPTANHelper.findColumn(line, "\"Lon\"")) == -1)
 				throw new UnsupportedEncodingException("stopfile column Lon not found");
 		} else
 			throw new UnsupportedEncodingException("stopfile is empty");
@@ -665,7 +672,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 				stopColumnIxs = new HashMap();
 				while (iterator.hasNext()) {
 					column = (String)iterator.next();
-					stopColumnIxs.put(column, (Integer)findColumn(line, column));
+					stopColumnIxs.put(column, (Integer)NaPTANHelper.findColumn(line, column));
 				}
 			} else
 				throw new UnsupportedEncodingException("stopfile is empty");

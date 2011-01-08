@@ -116,7 +116,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 		_journeyPattern = jp;
 	}
 	
-	String getService(String trip) {
+/*	String getService(String trip) {
 		if (trip == null || trip.length() == 0)
 			return "";
 		boolean found = false;
@@ -132,7 +132,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 			result = ((ValueList)listTrips__service_id.get(i)).getValue(0);
 		return result;
 	}
-
+*/
    	@Override
 	public void startElement(String uri, String name, String qName, Attributes atts)
 		throws SAXParseException {
@@ -182,6 +182,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	    		 /*
 	    		  * v1.5: Find out if out-of-line calendar dates where picked up earlier and assign to current VehicleJourney
 	    		  */
+	    		 String tripId;
 	    		 oolStart = handler.getCalendarDates().getListOOLDates_start();
 //	    		 List oolEnd = handler.getCalendarDates().getListOOLDates_end();
 
@@ -214,7 +215,9 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	    		 newTrips__route_id = new ValueList(_vehicleJourneyCode + "@" + _departureTime);
 	    		 listTrips__route_id.add(newTrips__route_id);
 	    		 newTrips__route_id.addValue(_lineName);
-	    		 newTrips__service_id = new ValueList(_vehicleJourneyCode + "@" + _departureTime);
+	    		 tripId = _vehicleJourneyCode + "@" + _departureTime;
+	    		 newTrips__service_id = new ValueList(tripId);
+	    		 handler.addTripServiceId(tripId, _serviceCode);
 	    		 listTrips__service_id.add(newTrips__service_id);
 	    		 newTrips__service_id.addValue(_serviceCode);
 	    		 newJourneyPatternRef = new ValueList(_vehicleJourneyCode + "@" + _departureTime);

@@ -81,9 +81,12 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	static HashMap modeList = null;
 	static ArrayList stopColumns = null;
 	static String stopfilecolumnseparator = ",";
+	static int naptanHelperStopColumn = -1;
+	static HashMap naptanStopnames = null;
 	
 	HashMap calendarServiceIds = null;
 	HashMap calendarDatesServiceIds = null;
+	HashMap tripServiceIds = null;
 	
 	static String rootDirectory = "";
 	static String workDirectory = "";
@@ -170,6 +173,22 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	public String getStopfilecolumnseparator() {
 		return stopfilecolumnseparator;
 	}
+	public void setNaptanHelperStopColumn(int column) {
+		naptanHelperStopColumn = column;
+	}
+	public int getNaptanHelperStopColumn() {
+		return naptanHelperStopColumn;
+	}
+	public void setNaPTANStopnames(HashMap stopnames) {
+		naptanStopnames = stopnames;
+	}
+	public String getNaPTANStopname(String atcoCode) {
+		if (naptanStopnames == null || atcoCode == null)
+			return "";
+		if (!naptanStopnames.containsKey(atcoCode))
+			return "";
+		return (String)naptanStopnames.get(atcoCode);
+	}
 	
 	public HashMap getModeList() {
 		return modeList;
@@ -217,6 +236,23 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		if (fileName == null || filenames == null)
 			return;
 		filenames.add(fileName);
+	}
+	
+	public void addTripServiceId(String tripId, String serviceId) {
+		if (tripServiceIds == null)
+			tripServiceIds = new HashMap();
+		tripServiceIds.put(tripId, serviceId);
+	}
+	public boolean hasTripServiceId(String testId) {
+		if (tripServiceIds == null || testId == null || testId.length() == 0)
+			return false;
+		return tripServiceIds.containsKey(testId);		
+	}
+	public String getTripServiceId(String tripId) {
+		if (tripServiceIds == null || tripId == null || tripId.length() == 0)
+			return "";
+		return (String)tripServiceIds.get(tripId);
+		
 	}
 	
 	public boolean hasCalendarServiceId(String testId) {
@@ -626,7 +662,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	 * Clear data structures except for stops
 	 */
 	public void clearDataSansAgenciesStopsRoutes() {
-//		trips = null;
+		trips = null;
 		stopTimes = null;
 		calendar = null;
 		calendarDates = null;

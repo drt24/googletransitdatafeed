@@ -80,7 +80,8 @@ public class TransxchangeHandler {
 	public void parse(String filename, String url, String timezone, String defaultRouteType,
 			String rootDirectory, String workDirectory, String stopFile,
 			boolean useAgencyShortName, boolean skipEmptyService, boolean skipOrphanStops,
-			HashMap modeList, ArrayList stopColumns, String stopfilecolumnseparator)
+			HashMap modeList, ArrayList stopColumns, String stopfilecolumnseparator, 
+			int naptanHelperStopColumn, HashMap naptanStopnames)
 	    throws SAXException, SAXParseException, IOException, ParserConfigurationException
 	{
 		ZipFile zipfile = null;
@@ -119,6 +120,8 @@ public class TransxchangeHandler {
 				parseHandler.setModeList(modeList);
 				parseHandler.setStopColumns(stopColumns);
 				parseHandler.setStopfilecolumnseparator(stopfilecolumnseparator);
+				parseHandler.setNaptanHelperStopColumn(naptanHelperStopColumn);
+				parseHandler.setNaPTANStopnames(naptanStopnames);
 				parseHandler.setRootDirectory(rootDirectory);
 				parseHandler.setWorkDirectory(workDirectory);
 		
@@ -177,7 +180,8 @@ public class TransxchangeHandler {
     				if (parser != null) {
     					st = new StringTokenizer(line, ",");
     					inTrip = st.nextToken(); // trip id is first column
-    					inService = parser.getTrips().getService(inTrip);
+//    					inService = parser.getTrips().getService(inTrip);
+    					inService = parser.getTripServiceId(inTrip);
     					st.nextToken();
     					st.nextToken();
     					inStop = st.nextToken();
