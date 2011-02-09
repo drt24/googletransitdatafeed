@@ -92,7 +92,11 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 	    if (key.equals(key_agency__agency_name[0])) {
 	   		newAgency__agency_name = new ValueList(key_agency__agency_name[0]);
 	   		listAgency__agency_name.add(newAgency__agency_name);
-	   		newAgency__agency_name.addValue(niceString);
+	   		String agencyOverride = handler.getAgencyOverride();
+	   		if (agencyOverride != null && agencyOverride.length() > 0)
+	   			newAgency__agency_name.addValue(agencyOverride);
+	   		else
+	   			newAgency__agency_name.addValue(niceString);
 	    }
 	}
 

@@ -23,7 +23,7 @@ public class NaPTANHelper {
 	    int stopcodeAltIx;
 	    int latIx;
 	    int lonIx;
-	    int stopnameIx;
+	    int commonNameIx;
 	    int indicatorIx;
 	    int directionIx;
 	    int streetIx;
@@ -37,7 +37,7 @@ public class NaPTANHelper {
 	            throw new UnsupportedEncodingException("stopfile column Lat not found");
 	        if ((lonIx = findColumn(line, "\"Lon\"")) == -1)
 	            throw new UnsupportedEncodingException("stopfile column Lon not found");
-	        if ((stopnameIx = findColumn(line, "\"CommonName\"")) == -1)
+	        if ((commonNameIx = findColumn(line, "\"CommonName\"")) == -1)
 	            throw new UnsupportedEncodingException("stopfile column CommonName not found");
 	        if ((indicatorIx = findColumn(line, "\"Identifier\"")) == -1)
 	            throw new UnsupportedEncodingException("stopfile column Identifier not found");
@@ -56,11 +56,12 @@ public class NaPTANHelper {
 	    } else
 	        throw new UnsupportedEncodingException("stopfile is empty");
 
+	    String commonName;
 	    String atcoCode;
 	    String stopcode;
 	    String smscode;
 	    String stopname;
-	    String indicator;
+	    String rawIndicator, indicator;
 	    String direction;
 	    String street;
 	    String locality;
@@ -92,59 +93,61 @@ public class NaPTANHelper {
             	stopcode = smscode;
 		            
             // Read CommonName, locality and the other relevant columns; remove quotation marks as necessary
-            indicator = tokens[indicatorIx].substring(1, tokens[indicatorIx].length() - 1);
+            commonName = tokens[commonNameIx].substring(1, tokens[commonNameIx].length() - 1);
+            rawIndicator = tokens[indicatorIx].substring(1, tokens[indicatorIx].length() - 1);
             direction = tokens[directionIx].substring(1, tokens[directionIx].length() - 1);
             street = tokens[streetIx].substring(1, tokens[streetIx].length() - 1);
             locality = tokens[localityIx].substring(1, tokens[localityIx].length() - 1);
             parentLocality = tokens[parentLocalityIx].substring(1, tokens[parentLocalityIx].length() - 1);
             busStopType = tokens[busStopTypeIx].substring(1, tokens[busStopTypeIx].length() - 1);
-
+            
             // Create NaPTAN stop name following rules
             stopname = "";
 		            
-            // Process indicator
-            indicatorSet = false;
-            switch (analyzeIndicator(indicator)) {
-            	case INDICATOR_BEFORE:
-            		indicator = getPreferredIndicator(indicator, indicatorsbefore);
-            		stopname += "(" + indicator + ") "; // + " " + stopname2;
-            		indicatorSet = true;
-            		break;
-            	default:
-            		if (indicator.length() > 0)
-            			stopname += "(" + indicator + ") ";
-            		break;
-            }
-	            
-            // on-Street
-            if (street != null && street.length() > 0 && !street.toUpperCase().equals("N/A")) // && !street.equals(stopname))
-            	stopname += "on " + street;
-	            
-            switch (analyzeIndicator(indicator)) {
-            	case INDICATOR_AFTER:
-            		indicator = getPreferredIndicator(indicator, indicatorsafter);
-            		stopname += " (" + indicator + ")";
-            		break;
-	            default:
-	            	if (!indicatorSet) {
-		            	if (indicator.length() <= 2 && indicator.length() > 0)
-		            		stopname += " (Stop " + indicator + ")"; // Use Stop position code
-		            	else
-		            		if (!direction.toUpperCase().equals("NA") && direction.length() > 0)
-		            			stopname += " (" + direction + "-bound)"; // No preferred indicator, use direction instead, unless NA"
-	            	}
-		            break;
-            }
-		            
             // Locality and parent locality
             if (locality != null && locality.length() > 0 || parentLocality != null && parentLocality.length() > 0) {
-            	stopname += ", "; //  + stopname2;
 	            if (locality != null && locality.length() > 0)
 	            	stopname += locality;
 	            if (parentLocality != null && parentLocality.length() > 0 && !locality.contains(parentLocality))
 	            	stopname += " " + parentLocality;
             }
 		            
+            // Indicator
+            indicatorSet = false;
+            switch (analyzeIndicator(rawIndicator)) {
+            	case INDICATOR_BEFORE:
+            		indicator = getPreferredIndicator(rawIndicator, indicatorsbefore);
+            		stopname += ", " + indicator; // + " " + stopname2;
+            		indicatorSet = true;
+            		break;
+            	default:
+//            		if (rawIndicator.length() > 0 && !rawIndicator.equals("---"))
+//            			stopname += ", " + rawIndicator;
+	            	if (rawIndicator.length() <= 2 && rawIndicator.length() > 0)
+	            		stopname += ", Stop " + rawIndicator; // Use Stop position code
+	            	else
+	            		if (!direction.toUpperCase().equals("NA") && direction.length() > 0)
+	            			stopname += ", (" + direction + "-bound)"; // No preferred indicator, use direction instead, unless NA"
+            		break;
+            }
+	            
+            // CommonName
+            stopname += " " + commonName;
+
+            // After-indicator
+            switch (analyzeIndicator(rawIndicator)) {
+            	case INDICATOR_AFTER:
+            		indicator = getPreferredIndicator(rawIndicator, indicatorsafter);
+            		stopname += " (" + indicator + ")";
+        		break;
+            	default:
+	            break;
+            }
+	            
+            // on-Street
+            if (street != null && street.length() > 0 && !street.toUpperCase().equals("N/A") && !street.equals("---"))
+            	stopname += " (on " + street + ")";
+	            
             // SMS code
             if (smscode != null && smscode.length() > 0)
             	stopname += " [SMS: " + smscode + "]";

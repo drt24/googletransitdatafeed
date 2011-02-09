@@ -47,6 +47,9 @@ public class TransxchangeHandler {
 	static TransxchangeHandlerEngine parseHandler = null;
 	static List parseHandlers = null;
 	
+	String agencyOverride = null;
+	
+	
 	/*
 	 * Utility methods to set and get attribute values
 	 */
@@ -73,7 +76,11 @@ public class TransxchangeHandler {
 	public String getDefaultRouteType() {
 		return googleTransitDefaultRouteType;
 	}
-		
+	
+	public void setAgencyOverride(String agency) {
+		agencyOverride = agency;
+	}
+	
 	/*
 	 * Generate Google Transit Feed structures
 	 */
@@ -124,6 +131,8 @@ public class TransxchangeHandler {
 				parseHandler.setNaPTANStopnames(naptanStopnames);
 				parseHandler.setRootDirectory(rootDirectory);
 				parseHandler.setWorkDirectory(workDirectory);
+				if (agencyOverride != null && agencyOverride.length() > 0)
+					parseHandler.setAgencyOverride(agencyOverride);
 		
 				SAXParserFactory parserFactory = SAXParserFactory.newInstance();
 				SAXParser parser = parserFactory.newSAXParser();

@@ -52,16 +52,14 @@ public class Transxchange2GoogleTransit {
 
 		TransxchangeHandler handler = null;
 
-		System.out.println();
+//		System.out.println();
         System.out.println("transxchange2GTFS 1.7.0");
         System.out.println("Please refer to LICENSE file for licensing information");
-        if ((args.length != 3 || args.length == 3 && !args[1].toLowerCase().equals("-c")))
+        if ((args.length != 3 || args.length == 3 && !args[1].toLowerCase().equals("-c")) || args.length == 4 && !args[2].toLowerCase().equals("-c"))
         	if (args.length < 5 || args.length > 6) {
 	        	System.out.println();
 	        	System.out.println("Usage: $ transxchange2GoogleTransit <transxchange input filename> -c <configuration file name>");
-	        	System.out.println();
-	        	System.out.println("             -- OR --");
-	        	System.out.println();
+	        	System.out.println("Usage: $ transxchange2GoogleTransit <transxchange input filename> <output-directory> <agency name> -c <configuration file name>");
 	        	System.out.println("Usage: $ transxchange2GoogleTransit <transxchange input filename> -");
 	        	System.out.println("         <url> <timezone> <default route type> <output-directory> [<stopfile>]");
 	        	System.out.println();
@@ -80,10 +78,16 @@ public class Transxchange2GoogleTransit {
         	// v1.6.4: Read configuration file
         	if (args.length == 3)
         		args = readConfigFile(args[0], args[2]);
+        	if (args.length == 5 && args[3].equals("-c")) {
+        		handler.setAgencyOverride(args[2]);
+        		String outdir = args[1];
+        		args = readConfigFile(args[0], args[4]);
+        		args[4] = outdir; // Copy work directory over
+        	}
         	if (args.length == 6)
         		handler.parse(args[0], args[1], args[2], args[3], "", args[4], args[5], useAgencyShortname, skipEmptyService, skipOrphanStops, modeList, stopColumns, stopfilecolumnseparator, naptanHelperStopColumn, naptanStopnames);
         	else
-        		handler.parse(args[0], args[1], args[2], args[3], "", args[4], "", useAgencyShortname, skipEmptyService, skipOrphanStops, modeList, stopColumns, stopfilecolumnseparator, naptanHelperStopColumn, naptanStopnames);
+       			handler.parse(args[0], args[1], args[2], args[3], "", args[4], "", useAgencyShortname, skipEmptyService, skipOrphanStops, modeList, stopColumns, stopfilecolumnseparator, naptanHelperStopColumn, naptanStopnames);
 		} catch (ParserConfigurationException e) {
         	System.out.println("transxchange2GTFS ParserConfiguration parse error:");
         	System.out.println(e.getMessage());

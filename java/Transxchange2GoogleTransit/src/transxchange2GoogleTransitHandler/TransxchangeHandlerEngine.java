@@ -91,6 +91,8 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	static String rootDirectory = "";
 	static String workDirectory = "";
 
+	static String agencyOverride = "";
+	
 	/*
 	 * Utility methods to set and get attribute values
 	 */
@@ -264,6 +266,13 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		if (testId == null || calendarDatesServiceIds == null)
 			return false;
 		return (calendarDatesServiceIds.containsKey(testId));
+	}
+	
+	public void setAgencyOverride(String agency) {
+		agencyOverride = agency;
+	}
+	public String getAgencyOverride() {
+		return agencyOverride;
 	}
 	
 	/*
