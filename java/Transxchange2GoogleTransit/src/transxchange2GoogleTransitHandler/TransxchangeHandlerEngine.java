@@ -92,6 +92,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	static String workDirectory = "";
 
 	static String agencyOverride = "";
+	static HashMap agencyMap = null;
 	
 	/*
 	 * Utility methods to set and get attribute values
@@ -205,6 +206,9 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	public void setWorkDirectory(String eWorkDirectory) {
 		workDirectory = eWorkDirectory;
 	}
+	public void setAgencyMap(HashMap agencies) {
+		agencyMap = agencies;
+	}
 	public String getRootDirectory() {
 		return rootDirectory;
 	}
@@ -273,6 +277,9 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	}
 	public String getAgencyOverride() {
 		return agencyOverride;
+	}
+	public HashMap getAgencyMap() {
+		return agencyMap;
 	}
 	
 	/*

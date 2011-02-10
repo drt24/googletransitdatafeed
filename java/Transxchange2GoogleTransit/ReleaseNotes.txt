@@ -1,0 +1,173 @@
+GoogleTransitDataFeed transxchange2GoogleTransit
+
+Copyright 2007, 2008, 2009, 2010, 2011 GoogleTransitDataFeed
+
+This product includes software developed by:
+The Apache Software Foundation (http://www.apache.org/)
+
+
+
+RELEASE NOTES
+
+--------------------------------------------------------------
+v1.7.0:
+
+*** New command line argument combinations
+$ transxchange2GoogleTransit <transxchange input filename> <output-directory> -c <configuration file name>
+$ transxchange2GoogleTransit <transxchange input filename> <output-directory> <agency name> -c <configuration file name>
+Note:
+	<output-directory> overrides corresponding setting in configuration file
+	<agency name> overrides agency mappings in configuration file
+
+*** Skip empty services 
+Services sometimes do not contain a valid day pattern, and lead to the following types of records in calendar.txt:
+<service_id>,0,0,0,0,0,0,0,<start_date>,<end_date>
+Services which do not contain a valid day pattern can be skipped by specifying:
+skipemptyservice=true
+in the configuration file. 
+As a side effect, specific non-service days (<DaysOfNonOperation>) are also skipped in calendar_dates.txt, while records for specific 
+<DaysOfOperation> continue to be output in calendar_dates.txt 
+This option is not available as a command line argument, i.e. requires the use of a configuration file. 
+This setting addresses issue #253 in http://code.google.com/p/googletransitdatafeed/issues/list
+
+*** Skip orphan stops 
+TransXChange feeds sometimes contain stops which are not referenced in any of the services. 
+Stops which are not referenced by a service ("orphan stops") can be skipped by specifying:
+skiporhpanstops=true
+This option is not available as a command line argument, i.e. requires the use of a configuration file. 
+
+*** Service <Mode> override of default route type
+Services of a TransXChange feed that include a <Mode>, override the default route type, provided that the <Mode> is defined in the configuration file and associated with a valid GTFS route type. 
+Example:
+mode:rail=2
+mode:bus=3
+mode:ferry=4
+Any occurrence of a Service <Mode> "bus" in the TransXChange feed will be set to value "3" in column "route_type" of the routes.txt file.
+This option is not available as a command line argument, i.e. requires the use of a configuration file.
+This setting addresses issue #254 in http://code.google.com/p/googletransitdatafeed/issues/list
+
+*** NaPTAN stop name helper
+Without the NaPTAN stop name helper activated, the converter by default combines the values of <CommonName> and <LocalityName> into the stops.txt file's stop_name's.
+The NapTAN stop name helper implements the usable stop name rules v4 for NaPTAN and NPTG databases. It rolls out the following format:
+<LocalityName>,<Indicator><CommonName>(on <street>)[SMS: <NaptanCode>]
+naptanstophelper=true
+
+*** NaPTAN stop column pick
+When a NaPTAN stop column pick is defined in the configuration file, the converter picks the value of the respective column (attribute) from the stopfile for all stops referenced in the TransXChange input file. 
+A NaPTAN stop column pick definition in the configuration file overrides the NaPTAN stop name helper, if set to true.
+The columns are picked in the sequence they occur in the configuration file.
+Example:
+naptanstopcolumn="CommonName"
+naptanstopcolumn="NatGazLocality"
+naptanstopcolumn="ATCOCode"
+results in a stop_name that is a combination of a stops CommonName, NatGazLocality and ATCOCode. The respective values identify the columns in a NaPTAN csv file that is defined as stopfile.
+In the stops.txt file, the values of the picked columns are separated by a comma (,), or the definition of rhw NaPTAN stop column separator.
+
+*** NaPTAN stop column separator
+The stop column separator works in conjunction with the NaPTAN stop name helper and NaPTAN stop column pick definitions. 
+The value defined is used in place of the default comma (,).
+Example:
+stopfilecolumnseparator=;-
+
+*** Agency mapping
+Map an agency_id into an agency_name. Use '=' to separate key ("agency"), agency_id and the mapped agency name. Multiple such agency mappings can be defined, using separate rows.
+Example:
+agency=OId_LU=London Buses, operated by London United
+
+*** Bugfix processing zip files
+This release fixes issue #272 http://code.google.com/p/googletransitdatafeed/issues/detail?id=272
+
+--------------------------------------------------------------
+v1.6.6:
+
+*** The converter is now called Transxchange2GTFS
+
+*** Bug fix in calender_dates.txt
+In isolated cases, the start and end dates of a service were not converted correctly. Corrected to reflect values of <StartDate> and <EndDate>. 
+
+*** Memory optimizations
+
+
+--------------------------------------------------------------
+v1.6.5:
+
+*** Refined parsing of <RunTime> element
+Previously, runtimes were allowed only for a single unit, i.e. either minutes or seconds
+Now, runtimes can be mixed, e.g. hours and minutes combined
+
+
+--------------------------------------------------------------
+v1.6.4:
+
+*** New: Configuration file
+As an option, a configuration file can be used in place of the multiple command line arguments. Usage: 
+	$ transxchange2GoogleTransit <transxchange input filename> -c <configuration file name>
+The original approach of multiple command line arguments remains unchanged. 
+Mixing the new configuration file and the multiple command line arguments is not possible.
+
+Each entry (line) in the configuration file must follow the following syntax:
+	<argument>=<value>
+The following arguments are supported:
+	url=<Agency URL>
+	timezone=<List of timezones: http://en.wikipedia.org/wiki/List_of_tz_zones>
+	default-route-type=<0 - Tram, 1 - Subway, 2 - Rail, 3 - Bus, 4 - Ferry, 5 - Cable car, 6 - Gondola, 7 - Funicular>
+	output-directory=<outout path>
+	stopfile=<file name of optional stopfile name in NaPTAN CSV format>
+	useagencyshortname=<true|false> (Default: false)
+Sample configuration file:
+url=http://www.aagency.org
+timezone=Syndey/Australia
+default-route-type=3
+output-directory=output
+useagencyshortname=true
+
+*** New: Agency short name flag 
+As part of the introduction of the configuration file, a switch has been introduced that steers the converter to populates the GTFS 
+agency name with the TransXChange <OperatorShortName>.
+
+*** New: Inline coordinates
+TransXChange files rely on coordinate lookups from the UK NaPTAN database. 
+v1.6.4 supports inline coordinates (lat, lon) of <StopPoint>s that include <latitude> and <longitude> data 
+
+*** Bugfix: Correct conversion of <DaysOfOperation> to calender_dates.txt exception_type: 1 in individual <VehicleJourney>s
+In previous versions of transxchange2GoogleTransit, <DaysOfOperation> of a <VehicleJourney> were converted 
+to exception_type 2. The correct exception_type is 1, which is now written to calender_dates.txt. <DaysOfNoOperation> continue to be 
+written as exception_type 2.
+Discussion: 
+1.The primary vehicle to define <OperatingProfile>s is <Service>, which was not affected by this bug. 
+In practice, a fraction of <VehicleJourney>s include individual calendar days for service inclusion or exclusion. 
+2. This bug has not been reported. It was identified when validating a GTFS feed that was created whith 
+transxchange2GoogleTransit 1.6.3. The GTFS feed validator issued warnings for some <Service>s in converted published datasets (Sydney) 
+that flagged services without any active calendar dates. 
+
+
+--------------------------------------------------------------
+v1.6.3:
+
+*** Read NaPTAN format CSV stop file as specified in Command Line (CLI)
+A CLI argument has been added to allow user to specify a NaPTAN format CSV stop file. 
+	Note: 	An error in the NaPTAN format offsets the column headlines by one. 
+			This is accounted for, but the NaPTAN format may need correction.
+
+*** Java heap size increased
+The tXCh2GT batch files (.bat and .sh) have been updated to increase the heap size to 512MB 
+to accommodate the added memory needed to hold the regular UK NaPTAN stop records.
+
+*** Bank holidays revised
+Dynamic creation of (transit) bank holidays England and Wales for the years a service operates.
+	GoodFriday - the Friday before Easter Sunday.
+	EasterMonday - the Monday after Easter Sunday.
+	MayDay - the first Monday in May.
+	SpringBank - the last Monday in May.
+	LateSummerHolidayNotScotland - the last Monday in August.
+	ChristmasDay - 25th Dec.
+	BoxingDay - 26th Dec.
+	NewYearsDay - 1st Jan.
+
+*** Expose parse exceptions
+Send trace dump to console in case GTDF crashes when input files are parsed.
+
+*** GWT_Transxchange2GoogleTransit dropped
+Not included in releases any longer.
+
+--------------------------------------------------------------

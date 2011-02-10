@@ -47,18 +47,26 @@ public class Transxchange2GoogleTransit {
 	static String										stopfilecolumnseparator;
 	static int											naptanHelperStopColumn = -1;
 	static HashMap										naptanStopnames = null;
+	static HashMap										agencyMap = null;
 
 	public static void main(String[] args) {
 
 		TransxchangeHandler handler = null;
 
-//		System.out.println();
-        System.out.println("transxchange2GTFS 1.7.0");
+        System.out.println("transxchange2GTFS 1.7.0 RC-1");
         System.out.println("Please refer to LICENSE file for licensing information");
-        if ((args.length != 3 || args.length == 3 && !args[1].toLowerCase().equals("-c")) || args.length == 4 && !args[2].toLowerCase().equals("-c"))
-        	if (args.length < 5 || args.length > 6) {
+        int foundConfigFile = -1;
+        int i = 0;
+        while (i < args.length && foundConfigFile == -1)
+        	if (args[i].toLowerCase().equals("-c"))
+        		foundConfigFile = i;
+        	else
+        		i++;
+         if (foundConfigFile == -1 && (args.length < 5 || args.length > 6) ||
+        	foundConfigFile >= 0 && (args.length < 3 || args.length > 5)) {
 	        	System.out.println();
 	        	System.out.println("Usage: $ transxchange2GoogleTransit <transxchange input filename> -c <configuration file name>");
+	        	System.out.println("Usage: $ transxchange2GoogleTransit <transxchange input filename> <output-directory> -c <configuration file name>");
 	        	System.out.println("Usage: $ transxchange2GoogleTransit <transxchange input filename> <output-directory> <agency name> -c <configuration file name>");
 	        	System.out.println("Usage: $ transxchange2GoogleTransit <transxchange input filename> -");
 	        	System.out.println("         <url> <timezone> <default route type> <output-directory> [<stopfile>]");
@@ -78,16 +86,21 @@ public class Transxchange2GoogleTransit {
         	// v1.6.4: Read configuration file
         	if (args.length == 3)
         		args = readConfigFile(args[0], args[2]);
-        	if (args.length == 5 && args[3].equals("-c")) {
+        	if (args.length == 4 && foundConfigFile == 2) {
+        		String outdir = args[1];
+        		args = readConfigFile(args[0], args[3]);
+        		args[4] = outdir; // Copy work directory over
+        	}
+        	if (args.length == 5 && foundConfigFile == 3) {
         		handler.setAgencyOverride(args[2]);
         		String outdir = args[1];
         		args = readConfigFile(args[0], args[4]);
         		args[4] = outdir; // Copy work directory over
         	}
         	if (args.length == 6)
-        		handler.parse(args[0], args[1], args[2], args[3], "", args[4], args[5], useAgencyShortname, skipEmptyService, skipOrphanStops, modeList, stopColumns, stopfilecolumnseparator, naptanHelperStopColumn, naptanStopnames);
+        		handler.parse(args[0], args[1], args[2], args[3], "", args[4], args[5], useAgencyShortname, skipEmptyService, skipOrphanStops, modeList, stopColumns, stopfilecolumnseparator, naptanHelperStopColumn, naptanStopnames, agencyMap);
         	else
-       			handler.parse(args[0], args[1], args[2], args[3], "", args[4], "", useAgencyShortname, skipEmptyService, skipOrphanStops, modeList, stopColumns, stopfilecolumnseparator, naptanHelperStopColumn, naptanStopnames);
+       			handler.parse(args[0], args[1], args[2], args[3], "", args[4], "", useAgencyShortname, skipEmptyService, skipOrphanStops, modeList, stopColumns, stopfilecolumnseparator, naptanHelperStopColumn, naptanStopnames, agencyMap);
 		} catch (ParserConfigurationException e) {
         	System.out.println("transxchange2GTFS ParserConfiguration parse error:");
         	System.out.println(e.getMessage());
@@ -132,60 +145,67 @@ public class Transxchange2GoogleTransit {
 		BufferedReader in = new BufferedReader(new FileReader(configFilename));
 		String line;
 		int tokenCount;
-		String tagToken = "", configurationValue;
+		String configValues[] = {"", "", ""};
+//		String tagToken = "", configurationValue;
 		String txcMode = null;
 		while ((line = in.readLine()) != null) {
 			tokenCount = 0;
 			StringTokenizer st = new StringTokenizer(line, "=");
-			while (st.hasMoreTokens() && tokenCount < 2) {
-				if (tokenCount == 0)
-					tagToken = st.nextToken().trim().toLowerCase();
-				else {
-					configurationValue = st.nextToken().trim();
-					if (tagToken.toLowerCase().equals("url"))
-						result[1] = new String(configurationValue);
-					if (tagToken.toLowerCase().equals("timezone"))
-						result[2] = new String(configurationValue);
-					if (tagToken.toLowerCase().equals("default-route-type"))
-						result[3] = new String(configurationValue);
-					if (tagToken.toLowerCase().equals("output-directory"))
-						result[4] = new String(configurationValue);
-					if (tagToken.toLowerCase().equals("stopfile")) {
-						result[5] = new String(configurationValue);
+			while (st.hasMoreTokens() && tokenCount <= 2) {
+				configValues[tokenCount] = st.nextToken(); 
+				if (tokenCount == 1) {
+					configValues[0] = configValues[0].trim().toLowerCase();
+//					configurationValue = st.nextToken().trim();
+					if (configValues[0].equals("url"))
+						result[1] = new String(configValues[1]);
+					if (configValues[0].equals("timezone"))
+						result[2] = new String(configValues[1]);
+					if (configValues[0].equals("default-route-type"))
+						result[3] = new String(configValues[1]);
+					if (configValues[0].equals("output-directory"))
+						result[4] = new String(configValues[1]);
+					if (configValues[0].equals("stopfile")) {
+						result[5] = new String(configValues[1]);
 						if (naptanStopnames == null)
-							naptanStopnames = NaPTANHelper.readStopfile(configurationValue);
+							naptanStopnames = NaPTANHelper.readStopfile(configValues[1]);
 					}
-					if (tagToken.toLowerCase().equals("naptanstopcolumn")) {
+					if (configValues[0].equals("naptanstopcolumn")) {
 						if (stopColumns == null)
 							stopColumns = new ArrayList();
-						stopColumns.add(configurationValue);
+						stopColumns.add(configValues[1]);
 					}
-					if (tagToken.toLowerCase().equals("naptanstophelper"))
+					if (configValues[0].equals("naptanstophelper"))
 						if (stopColumns == null)
 							naptanHelperStopColumn = 0;
 						else
 							naptanHelperStopColumn = stopColumns.size();
 					
-					if (tagToken.toLowerCase().equals("stopfilecolumnseparator"))
-						stopfilecolumnseparator = new String(configurationValue);
+					if (configValues[0].equals("stopfilecolumnseparator"))
+						stopfilecolumnseparator = new String(configValues[1]);
 						
-					if (tagToken.toLowerCase().equals("useagencyshortname") && configurationValue != null && configurationValue.trim().toLowerCase().equals("true"))
+					if (configValues[0].equals("useagencyshortname") && configValues[1] != null && configValues[1].trim().toLowerCase().equals("true"))
 						useAgencyShortname = true;
-					if (tagToken.toLowerCase().equals("skipemptyservice") && configurationValue != null && configurationValue.trim().toLowerCase().equals("true"))
+					if (configValues[0].equals("skipemptyservice") && configValues[1] != null && configValues[1].trim().toLowerCase().equals("true"))
 						skipEmptyService = true;
-					if (tagToken.toLowerCase().equals("skiporphanstops") && configurationValue != null && configurationValue.trim().toLowerCase().equals("true"))
+					if (configValues[0].equals("skiporphanstops") && configValues[1] != null && configValues[1].trim().toLowerCase().equals("true"))
 						skipOrphanStops = true;
 					if (txcMode != null)
-						if (txcMode.length() > 0 && configurationValue.length() > 0) {
+						if (txcMode.length() > 0 && configValues[1].length() > 0) {
 							if (modeList == null)
 								modeList = new HashMap();
-							modeList.put(txcMode, configurationValue);
+							modeList.put(txcMode, configValues[1]);
 						}
 						txcMode = null;
 					}
-					if (tagToken.length() >= 5 && tagToken.substring(0, 5).equals("mode:")) {
-						txcMode = tagToken.substring(5, tagToken.length());
-				}	
+				if (tokenCount == 2) {
+					if (configValues[0].equals("agency")) {
+						if (agencyMap == null)
+							agencyMap = new HashMap();
+						agencyMap.put(configValues[1], configValues[2]);
+					}
+				}
+				if (configValues[0].length() >= 5 && configValues[0].substring(0, 5).equals("mode:"))
+					txcMode = configValues[0].substring(5, configValues[0].length());
 				tokenCount++;
 			}
 		}

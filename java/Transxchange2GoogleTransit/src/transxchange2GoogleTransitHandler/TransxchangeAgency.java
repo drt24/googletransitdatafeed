@@ -18,6 +18,7 @@ package transxchange2GoogleTransitHandler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXParseException;
@@ -45,6 +46,9 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 	List listAgency__agency_timezone;
 	ValueList newAgency__agency_timezone;
 	
+    String agencyId;
+
+	
 	public List getListAgency__agency_id() { // v1.5: Read Operator ID
 		return listAgency__agency_id;
 	}
@@ -63,7 +67,6 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 		throws SAXParseException {
 
 		int qualifierIx;
-	    String qualifierString;
 	
 		super.startElement(uri, name, qName, atts);
 		
@@ -74,10 +77,10 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 
 		if (qName.equals(key_agency__agency_id[0]) || qName.equals(key_agency__agency_lid[0])) { // v1.5: new: agency id
         	qualifierIx = atts.getIndex("id");
-        	qualifierString = atts.getValue(qualifierIx);
+        	agencyId = atts.getValue(qualifierIx);
         	newAgency__agency_id = new ValueList(key_agency__agency_id[0]);
         	listAgency__agency_id.add(newAgency__agency_id);
-        	newAgency__agency_id.addValue(qualifierString);
+        	newAgency__agency_id.addValue(agencyId);
 		}
 		if (qName.equals(key_agency__agency_name[0])) 
 			key = key_agency__agency_name[0];
@@ -95,8 +98,13 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 	   		String agencyOverride = handler.getAgencyOverride();
 	   		if (agencyOverride != null && agencyOverride.length() > 0)
 	   			newAgency__agency_name.addValue(agencyOverride);
-	   		else
-	   			newAgency__agency_name.addValue(niceString);
+	   		else {
+	   			HashMap agencyMap = handler.getAgencyMap();
+	   			if (agencyMap == null || !agencyMap.containsKey(agencyId))
+	   				newAgency__agency_name.addValue(niceString);
+	   			else
+	   				newAgency__agency_name.addValue((String)agencyMap.get(agencyId));
+	   		}
 	    }
 	}
 

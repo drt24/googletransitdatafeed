@@ -88,7 +88,8 @@ public class TransxchangeHandler {
 			String rootDirectory, String workDirectory, String stopFile,
 			boolean useAgencyShortName, boolean skipEmptyService, boolean skipOrphanStops,
 			HashMap modeList, ArrayList stopColumns, String stopfilecolumnseparator, 
-			int naptanHelperStopColumn, HashMap naptanStopnames)
+			int naptanHelperStopColumn, HashMap naptanStopnames,
+			HashMap agencyMap)
 	    throws SAXException, SAXParseException, IOException, ParserConfigurationException
 	{
 		ZipFile zipfile = null;
@@ -131,6 +132,7 @@ public class TransxchangeHandler {
 				parseHandler.setNaPTANStopnames(naptanStopnames);
 				parseHandler.setRootDirectory(rootDirectory);
 				parseHandler.setWorkDirectory(workDirectory);
+				parseHandler.setAgencyMap(agencyMap);
 				if (agencyOverride != null && agencyOverride.length() > 0)
 					parseHandler.setAgencyOverride(agencyOverride);
 		
