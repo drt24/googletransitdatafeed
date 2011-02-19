@@ -548,7 +548,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	    
 	}
 
-	public static String getLat(String stop) { 
+	private String getLat(String stop) { 
 
 		// v1.6.3: If no coordinates, return key
 		if (lat == null)
@@ -559,7 +559,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 		else
 			return key_stops__stop_lat[2];
 	}
-	public static String getLon(String stop) { 
+	private String getLon(String stop) { 
 
 		// v1.6.3: If no coordinates, return key
 		if (lon == null)

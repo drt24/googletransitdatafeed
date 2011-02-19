@@ -26,15 +26,23 @@ Services which do not contain a valid day pattern can be skipped by specifying:
 skipemptyservice=true
 in the configuration file. 
 As a side effect, specific non-service days (<DaysOfNonOperation>) are also skipped in calendar_dates.txt, while records for specific 
-<DaysOfOperation> continue to be output in calendar_dates.txt 
+<DaysOfOperation> continue to be output in calendar_dates.txt
 This option is not available as a command line argument, i.e. requires the use of a configuration file. 
 This setting addresses issue #253 in http://code.google.com/p/googletransitdatafeed/issues/list
+Default value=false
 
 *** Skip orphan stops 
 TransXChange feeds sometimes contain stops which are not referenced in any of the services. 
 Stops which are not referenced by a service ("orphan stops") can be skipped by specifying:
 skiporhpanstops=true
-This option is not available as a command line argument, i.e. requires the use of a configuration file. 
+This option is not available as a command line argument, i.e. requires the use of a configuration file.
+Default value=false
+
+*** Geocode coordinates where missing
+
+geocodemissingstops=true
+
+Default value=false
 
 *** Service <Mode> override of default route type
 Services of a TransXChange feed that include a <Mode>, override the default route type, provided that the <Mode> is defined in the configuration file and associated with a valid GTFS route type. 
@@ -51,6 +59,7 @@ Without the NaPTAN stop name helper activated, the converter by default combines
 The NapTAN stop name helper implements the usable stop name rules v4 for NaPTAN and NPTG databases. It rolls out the following format:
 <LocalityName>,<Indicator><CommonName>(on <street>)[SMS: <NaptanCode>]
 naptanstophelper=true
+Default value=false
 
 *** NaPTAN stop column pick
 When a NaPTAN stop column pick is defined in the configuration file, the converter picks the value of the respective column (attribute) from the stopfile for all stops referenced in the TransXChange input file. 

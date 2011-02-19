@@ -42,6 +42,7 @@ public class Transxchange2GoogleTransit {
 	static boolean 										useAgencyShortname = false;
 	static boolean 										skipEmptyService = false;
 	static boolean 										skipOrphanStops = false;
+	static boolean 										geocodeMissingStops = false;
 	static HashMap										modeList = null;
 	static ArrayList									stopColumns = null;
 	static String										stopfilecolumnseparator;
@@ -53,7 +54,7 @@ public class Transxchange2GoogleTransit {
 
 		TransxchangeHandler handler = null;
 
-        System.out.println("transxchange2GTFS 1.7.0 RC-1");
+        System.out.println("transxchange2GTFS 1.7.0 RC-2");
         System.out.println("Please refer to LICENSE file for licensing information");
         int foundConfigFile = -1;
         int i = 0;
@@ -98,9 +99,9 @@ public class Transxchange2GoogleTransit {
         		args[4] = outdir; // Copy work directory over
         	}
         	if (args.length == 6)
-        		handler.parse(args[0], args[1], args[2], args[3], "", args[4], args[5], useAgencyShortname, skipEmptyService, skipOrphanStops, modeList, stopColumns, stopfilecolumnseparator, naptanHelperStopColumn, naptanStopnames, agencyMap);
+        		handler.parse(args[0], args[1], args[2], args[3], "", args[4], args[5], useAgencyShortname, skipEmptyService, skipOrphanStops, geocodeMissingStops, modeList, stopColumns, stopfilecolumnseparator, naptanHelperStopColumn, naptanStopnames, agencyMap);
         	else
-       			handler.parse(args[0], args[1], args[2], args[3], "", args[4], "", useAgencyShortname, skipEmptyService, skipOrphanStops, modeList, stopColumns, stopfilecolumnseparator, naptanHelperStopColumn, naptanStopnames, agencyMap);
+       			handler.parse(args[0], args[1], args[2], args[3], "", args[4], "", useAgencyShortname, skipEmptyService, skipOrphanStops, geocodeMissingStops, modeList, stopColumns, stopfilecolumnseparator, naptanHelperStopColumn, naptanStopnames, agencyMap);
 		} catch (ParserConfigurationException e) {
         	System.out.println("transxchange2GTFS ParserConfiguration parse error:");
         	System.out.println(e.getMessage());
@@ -189,6 +190,8 @@ public class Transxchange2GoogleTransit {
 						skipEmptyService = true;
 					if (configValues[0].equals("skiporphanstops") && configValues[1] != null && configValues[1].trim().toLowerCase().equals("true"))
 						skipOrphanStops = true;
+					if (configValues[0].equals("geocodemissingstops") && configValues[1] != null && configValues[1].trim().toLowerCase().equals("true"))
+						geocodeMissingStops = true;
 					if (txcMode != null)
 						if (txcMode.length() > 0 && configValues[1].length() > 0) {
 							if (modeList == null)

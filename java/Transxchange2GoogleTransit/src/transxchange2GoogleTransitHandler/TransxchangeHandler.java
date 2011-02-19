@@ -86,7 +86,7 @@ public class TransxchangeHandler {
 	 */
 	public void parse(String filename, String url, String timezone, String defaultRouteType,
 			String rootDirectory, String workDirectory, String stopFile,
-			boolean useAgencyShortName, boolean skipEmptyService, boolean skipOrphanStops,
+			boolean useAgencyShortName, boolean skipEmptyService, boolean skipOrphanStops, boolean geocodeMissingStops, 
 			HashMap modeList, ArrayList stopColumns, String stopfilecolumnseparator, 
 			int naptanHelperStopColumn, HashMap naptanStopnames,
 			HashMap agencyMap)
@@ -125,6 +125,7 @@ public class TransxchangeHandler {
 				parseHandler.setUseAgencyShortname(useAgencyShortName);
 				parseHandler.setSkipEmptyService(skipEmptyService);
 				parseHandler.setSkipOrphanStops(skipOrphanStops);
+				parseHandler.setGeocodeMissingStops(geocodeMissingStops);
 				parseHandler.setModeList(modeList);
 				parseHandler.setStopColumns(stopColumns);
 				parseHandler.setStopfilecolumnseparator(stopfilecolumnseparator);

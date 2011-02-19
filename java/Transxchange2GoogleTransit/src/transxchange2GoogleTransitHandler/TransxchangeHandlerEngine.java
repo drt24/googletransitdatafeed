@@ -25,6 +25,21 @@ import java.util.zip.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import java.net.URL;
+import java.net.URLEncoder;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import javax.xml.xpath.XPathConstants;
+
 /*
  * This class extends DefaultHandler to parse a TransXChange v2.1 xml file,	
  * 	build corresponding Google Transit Feed data structures
@@ -78,6 +93,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	static boolean useAgencyShortName = false;
 	static boolean skipEmptyService = false;
 	static boolean skipOrphanStops = false;
+	static boolean geocodeMissingStops = false;
 	static HashMap modeList = null;
 	static ArrayList stopColumns = null;
 	static String stopfilecolumnseparator = ",";
@@ -162,6 +178,9 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	public void setSkipOrphanStops(boolean flag) {
 		skipOrphanStops = flag;
 	}
+	public void setGeocodeMissingStops(boolean flag) {
+		geocodeMissingStops = flag;
+	}
 	public void setModeList(HashMap list) {
 		modeList = list;
 	}
@@ -236,6 +255,9 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	}
 	public boolean isSkipOrphanStops() {
 		return skipOrphanStops;
+	}
+	public boolean isGeocodeMissingStops() {
+		return geocodeMissingStops;
 	}
 	
 	public void addFilename(String fileName) {
@@ -618,19 +640,33 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	        stopsOut = new PrintWriter(new FileWriter(outfile));
 	        stopsOut.println("stop_id,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url");
 		}
-		String stopId;
+		String stopId, stopName;
 		for (int i = 0; i < this.getStops().getListStops__stop_id().size(); i++) {
 			stopId = ((ValueList)this.getStops().getListStops__stop_id().get(i)).getValue(0);
 			if (stopId.length() > 0 && (!skipOrphanStops || stops.hasStop(stopId))) {
+				stopName = ((ValueList)this.getStops().getListStops__stop_name().get(i)).getValue(0);
+				String[] coordinates = {((ValueList)this.getStops().getListStops__stop_lat().get(i)).getValue(0), 
+					((ValueList)this.getStops().getListStops__stop_lon().get(i)).getValue(0) };
+
+				// If requested, geocode lat/lon
+				if (isGeocodeMissingStops() && coordinates[0].equals("OpenRequired") || coordinates[1].equals("OpenRequired")) {
+					try {
+						geocodeMissingStop(stopName, coordinates);
+						System.out.println("Geocoded stop: " + stopName);
+					} catch (Exception e) {
+						System.out.println("Geocoding exception: " + e.getMessage() + " for stop: " + stopName);
+					}
+				}
+					
 				stopsOut.print(stopId);
 				stopsOut.print(",");
-				stopsOut.print(((ValueList)this.getStops().getListStops__stop_name().get(i)).getValue(0));
+				stopsOut.print(stopName);
 				stopsOut.print(",");
 				stopsOut.print(((ValueList)this.getStops().getListStops__stop_desc().get(i)).getValue(0));
 				stopsOut.print(",");
-				stopsOut.print(((ValueList)this.getStops().getListStops__stop_lat().get(i)).getValue(0));
+				stopsOut.print(coordinates[0]);
 				stopsOut.print(",");
-				stopsOut.print(((ValueList)this.getStops().getListStops__stop_lon().get(i)).getValue(0));
+				stopsOut.print(coordinates[1]);
 				stopsOut.print(","); // no zone id
 				stopsOut.println(","); // no stop URL
 // Below a number of attributes (stop_street to stop_country) which have been deprecated in the Google Transit Feed Specification (9-Apr-2007 release of the spec)
@@ -738,7 +774,35 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
         // Return path and name of google_transit zip file
         return workDirectory + /* "/" + serviceStartDate + */ "/" + "google_transit.zip";
 	}
-		
+
+	private void geocodeMissingStop(String stopname, String[] coordinates) 
+		throws MalformedURLException, UnsupportedEncodingException, XPathExpressionException, IOException, ParserConfigurationException, SAXException
+	{
+		if (stopname == null || coordinates == null || coordinates.length != 2)
+			return;
+
+	    URL url = new URL("http://maps.google.com/maps/api/geocode/xml?address=" + URLEncoder.encode(stopname, "UTF-8") + "&sensor=false");
+	    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+	    conn.connect();
+	    InputSource inputStream = new InputSource(conn.getInputStream());
+	    Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
+
+	    XPath xp = XPathFactory.newInstance().newXPath();
+	    NodeList geocodedNodes = (NodeList) xp.evaluate("/GeocodeResponse/result[1]/geometry/location/*", doc, XPathConstants.NODESET);
+	    float lat = Float.NaN;
+	    float lng = Float.NaN;
+	    Node node;
+	    for(int i = 0; i < geocodedNodes.getLength(); i++) {
+	    	node = geocodedNodes.item(i);
+	    	if("lat".equals(node.getNodeName()))
+	    		lat = Float.parseFloat(node.getTextContent());
+	    	if("lng".equals(node.getNodeName()))
+	    		lng = Float.parseFloat(node.getTextContent());
+	    }
+	    coordinates[0] = "" + lat;
+	    coordinates[1] = "" + lng;
+	}
+	
 	/*
 	 * Initialize Google Transit Feed data structures
 	 */
@@ -752,4 +816,5 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		calendar = new TransxchangeCalendar(this);
 		calendarDates = new TransxchangeCalendarDates(this);
 	}
+	
 }
