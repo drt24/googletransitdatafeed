@@ -24,6 +24,7 @@ import org.xml.sax.helpers.*;
 import java.util.zip.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.StringTokenizer;
 
 import java.net.URL;
 import java.net.URLEncoder;
@@ -651,8 +652,8 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 				// If requested, geocode lat/lon
 				if (isGeocodeMissingStops() && coordinates[0].equals("OpenRequired") || coordinates[1].equals("OpenRequired")) {
 					try {
+						System.out.println("Geocoding stop: " + stopName);
 						geocodeMissingStop(stopName, coordinates);
-						System.out.println("Geocoded stop: " + stopName);
 					} catch (Exception e) {
 						System.out.println("Geocoding exception: " + e.getMessage() + " for stop: " + stopName);
 					}
@@ -778,10 +779,73 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	private void geocodeMissingStop(String stopname, String[] coordinates) 
 		throws MalformedURLException, UnsupportedEncodingException, XPathExpressionException, IOException, ParserConfigurationException, SAXException
 	{
+		float[] coordFloat = {-999999, -999999};
+		String broadenedStopname;
+		String token;
+		StringTokenizer st;
+
+		geocodeStop(stopname, coordFloat);
+		
+		// If no result: Broaden search. First try: remove cross street
+		if ((coordFloat[0] == -999999 || coordFloat[1] == -999999) && stopname.contains("/")) {
+			broadenedStopname = "";
+			st = new StringTokenizer(stopname, ",");
+			while (st.hasMoreTokens()) {
+				token = st.nextToken();
+				if (token.contains("/"))
+					token = token.substring(0, token.indexOf("/"));
+				if (broadenedStopname.length() > 0)
+					broadenedStopname += ", ";
+				broadenedStopname += token;
+			}
+			if (!broadenedStopname.equals(stopname)) {
+				stopname = broadenedStopname;
+				geocodeStop(stopname, coordFloat);
+			}
+		}
+
+		// Next try: Remove qualifiers in brackets
+		if ((coordFloat[0] == -999999 || coordFloat[1] == -999999) && stopname.contains("(")) {
+			broadenedStopname = "";
+			st = new StringTokenizer(stopname, ",");
+			while (st.hasMoreTokens()) {
+				token = st.nextToken();
+				if (token.contains("("))
+					token = token.substring(0, token.indexOf("("));
+				if (broadenedStopname.length() > 0)
+					broadenedStopname += ", ";
+				broadenedStopname += token;
+			}
+			if (!broadenedStopname.equals(stopname)) {
+				stopname = broadenedStopname;
+				geocodeStop(stopname, coordFloat);
+			}
+		}
+		
+		// Go for broke: remove elements from least specific to broadest
+		while ((coordFloat[0] == -999999 || coordFloat[1] == -999999) && stopname.lastIndexOf(",") >= 0) {
+			stopname = stopname.substring(0, stopname.lastIndexOf(","));
+			geocodeStop(stopname, coordFloat);
+		}
+		
+		if (coordFloat[0] == -999999)
+			coordinates[0] = "OpenRequired";
+		else
+			coordinates[0] = "" + coordFloat[0];
+		if (coordFloat[1] == -999999)
+			coordinates[1] = "OpenRequired";
+		else
+			coordinates[1] = "" + coordFloat[1];
+		
+	}
+	private void geocodeStop(String stopname, float[] coordinates) 
+		throws MalformedURLException, UnsupportedEncodingException, XPathExpressionException, IOException, ParserConfigurationException, SAXException
+	{
 		if (stopname == null || coordinates == null || coordinates.length != 2)
 			return;
 
 	    URL url = new URL("http://maps.google.com/maps/api/geocode/xml?address=" + URLEncoder.encode(stopname, "UTF-8") + "&sensor=false");
+		System.out.println("	Trying: " + url.toString());
 	    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 	    conn.connect();
 	    InputSource inputStream = new InputSource(conn.getInputStream());
@@ -789,18 +853,18 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 
 	    XPath xp = XPathFactory.newInstance().newXPath();
 	    NodeList geocodedNodes = (NodeList) xp.evaluate("/GeocodeResponse/result[1]/geometry/location/*", doc, XPathConstants.NODESET);
-	    float lat = Float.NaN;
-	    float lng = Float.NaN;
+	    float lat = -999999;
+	    float lon = -999999;
 	    Node node;
-	    for(int i = 0; i < geocodedNodes.getLength(); i++) {
+	    for (int i = 0; i < geocodedNodes.getLength(); i++) {
 	    	node = geocodedNodes.item(i);
 	    	if("lat".equals(node.getNodeName()))
 	    		lat = Float.parseFloat(node.getTextContent());
 	    	if("lng".equals(node.getNodeName()))
-	    		lng = Float.parseFloat(node.getTextContent());
+	    		lon = Float.parseFloat(node.getTextContent());
 	    }
-	    coordinates[0] = "" + lat;
-	    coordinates[1] = "" + lng;
+	    coordinates[0] = lat;
+	    coordinates[1] = lon;
 	}
 	
 	/*
