@@ -54,7 +54,7 @@ public class Transxchange2GoogleTransit {
 
 		TransxchangeHandler handler = null;
 
-        System.out.println("transxchange2GTFS 1.7.0 RC-3");
+        System.out.println("transxchange2GTFS 1.7.0");
         System.out.println("Please refer to LICENSE file for licensing information");
         int foundConfigFile = -1;
         int i = 0;
@@ -200,6 +200,11 @@ public class Transxchange2GoogleTransit {
 						}
 						txcMode = null;
 					}
+				if (configValues[0].length() >= 7 && configValues[0].substring(0, 7).equals("agency:")) {
+					configValues[1] = configValues[0].substring(7, configValues[0].length());
+					configValues[0] = "agency";
+					tokenCount++;
+				}
 				if (tokenCount == 2) {
 					if (configValues[0].equals("agency")) {
 						if (agencyMap == null)

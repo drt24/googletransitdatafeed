@@ -12,79 +12,94 @@ RELEASE NOTES
 --------------------------------------------------------------
 v1.7.0:
 
-*** New command line argument combinations
-$ transxchange2GoogleTransit <transxchange input filename> <output-directory> -c <configuration file name>
-$ transxchange2GoogleTransit <transxchange input filename> <output-directory> <agency name> -c <configuration file name>
-Note:
-	<output-directory> overrides corresponding setting in configuration file
-	<agency name> overrides agency mappings in configuration file
-
-*** Skip empty services 
-Services sometimes do not contain a valid day pattern, and lead to the following types of records in calendar.txt:
+*** Skip empty services (new configuration file setting)
+Services sometimes do not combine to a valid day pattern, and lead to the following types of records in calendar.txt:
 <service_id>,0,0,0,0,0,0,0,<start_date>,<end_date>
 Services which do not contain a valid day pattern can be skipped by specifying:
 skipemptyservice=true
 in the configuration file. 
-As a side effect, specific non-service days (<DaysOfNonOperation>) are also skipped in calendar_dates.txt, while records for specific 
-<DaysOfOperation> continue to be output in calendar_dates.txt
-This option is not available as a command line argument, i.e. requires the use of a configuration file. 
-This setting addresses issue #253 in http://code.google.com/p/googletransitdatafeed/issues/list
+As a side effect, specific non-service days (<DaysOfNonOperation>) are also skipped in calendar_dates.txt, while records for specific active 
+<DaysOfOperation> continue to be included in calendar_dates.txt
+This option is not available as a command line option, i.e. requires the use of a configuration file. 
+This setting addresses issue #253 in http://code.google.com/p/googletransitdatafeed/issues/detail?id=253
 Default value=false
 
-*** Skip orphan stops 
+*** Skip orphan stops (new configuration file setting)
 TransXChange feeds sometimes contain stops which are not referenced in any of the services. 
 Stops which are not referenced by a service ("orphan stops") can be skipped by specifying:
 skiporhpanstops=true
-This option is not available as a command line argument, i.e. requires the use of a configuration file.
+This option is not available as a command line option, i.e. requires the use of a configuration file.
 Default value=false
 
-*** Geocode coordinates where missing
-
+*** Geocode stop coordinates where missing (new configuration file setting)
+The GTFS specification requires WGS-84 coordinates for each stop in stops.txt. 
+Some coordinates for stops of a TransXChange input, possibly in concert with a NapTAN stop file, may not be available however.
+With this option active, the converter makes an attempt to geocode the stop's coordinates, using Google's Maps API. (http://code.google.com/apis/maps/documentation/geocoding/)
+The converter logs geocoding attempts in the console.
+Note: Geocoded coordinates are expected to have insufficient accuracy for most uses. This feature allows to reach formal compliance to validate against the GTFS specification.
 geocodemissingstops=true
-
+This option is not available as a command line option, i.e. requires the use of a configuration file.
 Default value=false
 
-*** Service <Mode> override of default route type
-Services of a TransXChange feed that include a <Mode>, override the default route type, provided that the <Mode> is defined in the configuration file and associated with a valid GTFS route type. 
+*** <Mode> override of default route type (new configuration file setting)
+Services of a TransXChange feed that include <Mode> tags are mapped to a mode as defined in the configuration file.
+Syntax: mode:<<Mode> tag value>=<GTFS mode value>
 Example:
 mode:rail=2
 mode:bus=3
 mode:ferry=4
-Any occurrence of a Service <Mode> "bus" in the TransXChange feed will be set to value "3" in column "route_type" of the routes.txt file.
-This option is not available as a command line argument, i.e. requires the use of a configuration file.
-This setting addresses issue #254 in http://code.google.com/p/googletransitdatafeed/issues/list
+With this mapping, occurrences of a Service <Mode> "bus" in the TransXChange feed will be set to value "3" in column "route_type" of the routes.txt file.
+This option is not available as a command line option, i.e. requires the use of a configuration file.
+This setting addresses issue #254 in http://code.google.com/p/googletransitdatafeed/issues/detail?id=254
 
-*** NaPTAN stop name helper
-Without the NaPTAN stop name helper activated, the converter by default combines the values of <CommonName> and <LocalityName> into the stops.txt file's stop_name's.
-The NapTAN stop name helper implements the usable stop name rules v4 for NaPTAN and NPTG databases. It rolls out the following format:
+*** NaPTAN stop name helper flag (new configuration file setting)
+Without the NaPTAN stop name helper activated, the converter combines the values of <CommonName> and <LocalityName> to stop_name values.
+The NapTAN stop name helper implements the "usable stop name rules v4 for NaPTAN and NPTG databases". It unrolls the following stop_name format from a NaPTAN v1 csv stop file:
 <LocalityName>,<Indicator><CommonName>(on <street>)[SMS: <NaptanCode>]
 naptanstophelper=true
+This option is not available as a command line option, i.e. requires the use of a configuration file.
 Default value=false
 
-*** NaPTAN stop column pick
-When a NaPTAN stop column pick is defined in the configuration file, the converter picks the value of the respective column (attribute) from the stopfile for all stops referenced in the TransXChange input file. 
-A NaPTAN stop column pick definition in the configuration file overrides the NaPTAN stop name helper, if set to true.
+*** NaPTAN stop column pick (new configuration file setting)
+When a NaPTAN stop column pick is defined, the converter picks the value of the respective column (attribute) from a NaPTAN v1 csv stop file. 
+A NaPTAN stop column pick definition in a configuration file overrides the NaPTAN stop name helper if activated.
 The columns are picked in the sequence they occur in the configuration file.
 Example:
 naptanstopcolumn="CommonName"
 naptanstopcolumn="NatGazLocality"
 naptanstopcolumn="ATCOCode"
-results in a stop_name that is a combination of a stops CommonName, NatGazLocality and ATCOCode. The respective values identify the columns in a NaPTAN csv file that is defined as stopfile.
-In the stops.txt file, the values of the picked columns are separated by a comma (,), or the definition of rhw NaPTAN stop column separator.
+results in a stop_name that is a combination of the stops' CommonName, NatGazLocality and ATCOCode. 
+Note that the respective values identify the columns in a NaPTAN  v1 csv stop file.
+In the stops.txt file, the values of the picked columns are separated by a comma (,), or by the definition of the NaPTAN stop column separator.
 
-*** NaPTAN stop column separator
+*** NaPTAN stop column separator (new configuration file setting)
 The stop column separator works in conjunction with the NaPTAN stop name helper and NaPTAN stop column pick definitions. 
 The value defined is used in place of the default comma (,).
 Example:
 stopfilecolumnseparator=;-
+This option is not available as a command line option, i.e. requires the use of a configuration file.
 
-*** Agency mapping
-Map an agency_id into an agency_name. Use '=' to separate key ("agency"), agency_id and the mapped agency name. Multiple such agency mappings can be defined, using separate rows.
+*** Agency mapping (new configuration file setting)
+This setting maps the agency_id as captured from the operator registration into an agency_name. 
+Use '=' to separate key ("agency"), agency_id and the mapped agency name. 
+Multiple agency mappings can be defined, using separate rows.
 Example:
-agency=OId_LU=London Buses, operated by London United
+agency:OId_LU=London Buses, operated by London United
+agency:OId_48=London Buses, operated by London General
+The resulting output in agency.txt uses OId_LU as agency_id, and "London Buses, operated by London United" as agency_name, and so forth.
+Without this setting, agency_name's are populated with the values of the <OperatorNameOnLicence> tag.
+
+*** Additional command line argument combinations
+$ transxchange2GoogleTransit <transxchange input filename> <output-directory> -c <configuration file name>
+$ transxchange2GoogleTransit <transxchange input filename> <output-directory> <agency name> -c <configuration file name>
+Note:
+	<output-directory> overrides the corresponding configuration file setting 
+	<agency name> overrides configuration file agency mappings 
 
 *** Bugfix processing zip files
 This release fixes issue #272 http://code.google.com/p/googletransitdatafeed/issues/detail?id=272
+
+*** Backward compatibility to Java 1.5 re-introduced
 
 --------------------------------------------------------------
 v1.6.6:

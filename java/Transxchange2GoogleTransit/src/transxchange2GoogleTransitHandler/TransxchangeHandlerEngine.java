@@ -652,7 +652,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 				// If requested, geocode lat/lon
 				if (isGeocodeMissingStops() && coordinates[0].equals("OpenRequired") || coordinates[1].equals("OpenRequired")) {
 					try {
-						System.out.println("Geocoding stop: " + stopName);
+						System.out.println("Geocoding stop (id / name): " + stopId + " / " + stopName);
 						geocodeMissingStop(stopName, coordinates);
 					} catch (Exception e) {
 						System.out.println("Geocoding exception: " + e.getMessage() + " for stop: " + stopName);
@@ -841,11 +841,14 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	private void geocodeStop(String stopname, float[] coordinates) 
 		throws MalformedURLException, UnsupportedEncodingException, XPathExpressionException, IOException, ParserConfigurationException, SAXException
 	{
+		final String geocoderPrefix = "http://maps.google.com/maps/api/geocode/xml?address=";
+		final String geocoderPostfix = "&sensor=false";
+		
 		if (stopname == null || coordinates == null || coordinates.length != 2)
 			return;
-
-	    URL url = new URL("http://maps.google.com/maps/api/geocode/xml?address=" + URLEncoder.encode(stopname, "UTF-8") + "&sensor=false");
-		System.out.println("	Trying: " + url.toString());
+		String geoaddress = geocoderPrefix + stopname + geocoderPostfix;
+		System.out.println("	Trying: " + geoaddress);
+		URL url = new URL(geocoderPrefix + URLEncoder.encode(stopname, "UTF-8") + geocoderPostfix);
 	    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 	    conn.connect();
 	    InputSource inputStream = new InputSource(conn.getInputStream());
