@@ -650,7 +650,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 					((ValueList)this.getStops().getListStops__stop_lon().get(i)).getValue(0) };
 
 				// If requested, geocode lat/lon
-				if (isGeocodeMissingStops() && coordinates[0].equals("OpenRequired") || coordinates[1].equals("OpenRequired")) {
+				if (isGeocodeMissingStops() && (coordinates[0].equals("OpenRequired") || coordinates[1].equals("OpenRequired"))) {
 					try {
 						System.out.println("Geocoding stop (id / name): " + stopId + " / " + stopName);
 						geocodeMissingStop(stopName, coordinates);
