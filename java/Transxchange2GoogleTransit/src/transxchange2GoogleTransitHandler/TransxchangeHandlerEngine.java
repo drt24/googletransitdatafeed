@@ -555,15 +555,24 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
         	calendarDatesServiceIds = new HashMap();
         	String calendarDateServiceId;
         	String calendarDateExceptionType;
+        	HashMap calendarExceptions = new HashMap();
         	for (int i = 0; i < this.getCalendarDates().getListCalendarDates__service_id().size(); i++) {
         		calendarDateServiceId = ((ValueList)this.getCalendarDates().getListCalendarDates__service_id().get(i)).getValue(0);
         		calendarDateExceptionType = ((ValueList)this.getCalendarDates().getListCalendarDates__exception_type().get(i)).getValue(0);
         		if (this.hasCalendarServiceId(calendarDateServiceId) || !calendarDateExceptionType.equals("2") || !skipEmptyService) {
-	        		calendarDatesOut.print(calendarDateServiceId);
-	        		calendarDatesOut.print(",");
-	        		calendarDatesOut.print(((ValueList)this.getCalendarDates().getListCalendarDates__date().get(i)).getValue(0));
-	        		calendarDatesOut.print(",");
-	        		calendarDatesOut.println(calendarDateExceptionType);
+        			outLine = calendarDateServiceId + "," + 
+        				((ValueList)this.getCalendarDates().getListCalendarDates__date().get(i)).getValue(0) + "," + 
+        				calendarDateExceptionType;
+        			if (!calendarExceptions.containsKey(outLine)) {
+//	        		calendarDatesOut.print(calendarDateServiceId);
+//	        		calendarDatesOut.print(",");
+//	        		calendarDatesOut.print(((ValueList)this.getCalendarDates().getListCalendarDates__date().get(i)).getValue(0));
+//	        		calendarDatesOut.print(",");
+//	        		calendarDatesOut.println(calendarDateExceptionType);
+	        			calendarDatesOut.println(outLine);
+	        			calendarExceptions.put(outLine, "");
+        			}
+        			
 	        		if (skipEmptyService)
 	        			calendarDatesServiceIds.put(calendarDateServiceId, calendarDateServiceId);
             	}       

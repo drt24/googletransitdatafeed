@@ -207,6 +207,13 @@ public class TransxchangeHandler {
     		stop_timesOut.close();
     		stop_timesIn.close();
     		infile.delete();
+        } else {
+			Iterator parsers = parseHandlers.iterator();
+			while (parsers.hasNext()) {
+				TransxchangeHandlerEngine parser = (TransxchangeHandlerEngine)parsers.next();
+				if (parser != null) 
+					parser.getStops().flagAllStops("1");
+			}
         }
 		consolidateAgencies(); // Eliminiate possible duplicates from multiple input files in zip archive
 		consolidateStops(); // Eliminiate possible duplicates from multiple input files in zip archive

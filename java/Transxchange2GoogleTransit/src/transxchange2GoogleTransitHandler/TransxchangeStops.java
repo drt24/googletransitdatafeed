@@ -159,6 +159,13 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 			return;
 		stops.put(stopId, "1");
 	}
+	public void flagAllStops(String flag) {
+		if (stops == null || flag == null)
+			return;
+		for (Object key : stops.keySet()) {
+			stops.put((String)key, flag);
+		}
+	}
 
    	@Override
 	public void startElement(String uri, String name, String qName, Attributes atts)

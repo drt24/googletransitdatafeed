@@ -10,6 +10,12 @@ The Apache Software Foundation (http://www.apache.org/)
 RELEASE NOTES
 
 --------------------------------------------------------------
+v1.7.1:
+
+*** Bugfix for duplicate entries in calendar_dates.txt
+This addresses in part issue #284 in http://code.google.com/p/googletransitdatafeed/issues/detail?id=284
+
+--------------------------------------------------------------
 v1.7.0:
 
 *** Skip empty services (new configuration file setting)
