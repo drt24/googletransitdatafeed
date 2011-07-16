@@ -38,9 +38,9 @@ import org.xml.sax.SAXParseException;
 public class TransxchangeCalendarDates extends TransxchangeDataAspect {
 
 	// xml keys and output field fillers
-	static final String[] key_calendar_dates__service_id = new String[] {"__transxchange2GoogleTransit_drawDefault", "", ""};
-	static final String[] key_calendar_dates__date = new String[] {"__transxchange2GoogleTransit_drawDefault", "", ""};
-	static final String[] key_calendar_dates__exception_type = new String[] {"__transxchange2GoogleTransit_drawDefault", "", ""};
+	static final String[] key_calendar_dates__service_id = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
+	static final String[] key_calendar_dates__date = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
+	static final String[] key_calendar_dates__exception_type = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
 
 	// Parsed data 
 	List listCalendarDates__service_id;
@@ -49,11 +49,11 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
 	ValueList newCalendarDates__date;
 	List listCalendarDates__exception_type;
 	ValueList newCalendarDates__exception_type;
-	List listCalendar_OOL_start_date = null; // v1.5: Out-of-line date range start date. A out-of-line date range is a date range which is not associated to a service
+	List listCalendar_OOL_start_date = null; // Out-of-line date range start date. A out-of-line date range is a date range which is not associated to a service
 	ValueList newCalendar_OOL_start_date;
-	List listCalendar_OOL_end_date = null;  // v1.5: Out-of-line date range end date
+	List listCalendar_OOL_end_date = null;  // Out-of-line date range end date
 	ValueList newCalendar_OOL_end_date;
-	List listCalendar_OOL_exception_type = null;  // v1.5: Out-of-line date range end date
+	List listCalendar_OOL_exception_type = null;  // Out-of-line date range end date
 	ValueList newCalendarDates__OOL_exception_type;
 	
 	// XML markups
@@ -62,7 +62,7 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
 	static final String[] _key_calendar_no_dates_start = {"Service", "SpecialDaysOperation", "DaysOfNonOperation", "StartDate", "2"};
 	static final String[] _key_calendar_no_dates_end = {"Service", "SpecialDaysOperation", "DaysOfNonOperation", "EndDate", "2"};
 
-	// v1.5: Bank holiday XML markups
+	// Bank holiday XML markups
 	static final String[] _key_calendar_bankholiday_operation_spring = {"Service", "BankHolidayOperation", "DaysOfOperation", "SpringHoliday", "1"};
 	static final String[] _key_calendar_bankholiday_nooperation_all = {"Service", "BankHolidayOperation", "DaysOfNonOperation", "AllBankHolidays", "2"};
 	static final String[] _key_calendar_bankholiday_operation_all = {"Service", "BankHolidayOperation", "DaysOfOperation", "AllBankHolidays", "1"};
@@ -70,21 +70,21 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
 	// Parse keys
 	String keyOperationDays = "";
 	String keyOperationDaysStart = "";
-	String keyOperationDaysBank = ""; // v1.5: key for bank holidays
+	String keyOperationDaysBank = ""; // key for bank holidays
 	String keyOperationDaysType = "";
 
 	// Some support variables
 	String calendarDateOperationDayStart = "";
 	boolean dayOfNoOperation = false;
 
-	// v1.5: Bank holidays support map
+	// Bank holidays support map
 	// V1.6.3 ArrayList to dynamically create the years covered by the service 
 	ArrayList bankHolidays;
 	HashMap years = new HashMap(); //  years as HashMap to maintain unique entries
 	ArrayList yearsList = new ArrayList(); // years as list to allow iterating through years
 	
 	/*
-	 * Utility methods to retrieve Google Transit feed structures
+	 * Utility methods to retrieve GTFS feed structures
 	 */
 	public List getListCalendarDates__service_id() {
 		return listCalendarDates__service_id;
@@ -98,22 +98,22 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
 		return listCalendarDates__exception_type;
 	}
 
-	// v1.5: Out-of-line dates start
+	// Out-of-line dates start
 	public List getListOOLDates_start() {
 		return listCalendar_OOL_start_date;
 	}
 
-	// v1.5: Out-of-line dates end
+	// Out-of-line dates end
 	public List getListOOLDates_end() {
 		return listCalendar_OOL_end_date;
 	}
 
-	// v1.5: Reset out-of-line date list
+	// Reset out-of-line date list
 	public void resetOOLDates_start() {
 		listCalendar_OOL_start_date = null;
 	}
 
-	// v1.5: Reset out-of-line date list
+	// Reset out-of-line date list
 	public void resetOOLDates_end() {
 		listCalendar_OOL_end_date = null;		
 	}
@@ -153,7 +153,7 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
 	    	niceString = "";    	
 	    }
 	    
-	    // v1.5 Bank holiday keys
+	    // Bank holiday keys
 	    // Non Operation (All Holidays)
 	    if (key.equals(_key_calendar_bankholiday_nooperation_all[0]) && qName.equals(_key_calendar_bankholiday_nooperation_all[1])) // also covers all other bank holiday cases
 	    	keyNested = _key_calendar_bankholiday_nooperation_all[1];
@@ -194,7 +194,7 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
 					GregorianCalendar gcOperationDay = new GregorianCalendar();
 					gcOperationDay.setTime(calendarDatesOperationDay);           		
 					service = handler.getCalendar().getService();
-					if (service.length() == 0) { // v1.5: Out-of-line OperatingProfile? E.g. special operations days for a single vehicle journey as opposed for a service. 
+					if (service.length() == 0) { // Out-of-line OperatingProfile? E.g. special operations days for a single vehicle journey as opposed for a service. 
 						if (listCalendar_OOL_start_date == null)
 							listCalendar_OOL_start_date = new ArrayList(); // If previously found OOL dates were read and reset some place else, recreate list 
 						if (listCalendar_OOL_end_date == null)
@@ -563,7 +563,7 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
 	}
 	
 	/*
-	 * v1.5: create all bank holidays
+	 * Create all bank holidays
 	 */
 	private void createBankHolidaysAll(String bankService, Map bankHolidayMap, String exceptionType) {        		
 		
@@ -584,7 +584,7 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
 	}
 
 	/*
-	 * v1.5: create a particular bank holiday
+	 * Create a particular bank holiday
 	 */
 	private void createBankHoliday(String bankService, String holiday, Map bankHolidayMap, String exceptionType) {        		
 

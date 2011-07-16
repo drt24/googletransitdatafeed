@@ -10,6 +10,16 @@ The Apache Software Foundation (http://www.apache.org/)
 RELEASE NOTES
 
 --------------------------------------------------------------
+v1.7.2:
+
+*** Bugfix to handle DaysOfOperation:AllBankHolidays correctly
+This addresses issue #288 in http://code.google.com/p/googletransitdatafeed/issues/detail?id=288
+
+*** Added configuration file settings in support of optional columns of agency.txt file
+lang=<value>
+phone=<value>
+
+--------------------------------------------------------------
 v1.7.1:
 
 *** Bugfix for duplicate entries in calendar_dates.txt

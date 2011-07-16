@@ -31,13 +31,13 @@ import org.xml.sax.SAXParseException;
 public class TransxchangeStopTimes extends TransxchangeDataAspect {
 
 	// xml keys and output field fillers
-	static final String[] key_stop_times__trip_id = new String[] {"__tdD", "", "OpenRequired"}; // Google Transit required
-	static final String[] key_stop_times__arrival_time = new String[] {"__tdD", "", "OpenRequired"}; // Google Transit required
-	static final String[] key_stop_times__departure_time = new String[] {"__tdD", "", "OpenRequired"}; // Google Transit required
-	static final String[] key_stop_times__stop_id = new String[] {"StopPointRef", "OpenRequired"}; // Google Transit required
-	static final String[] key_stop_times__stop_sequence = new String[] {"__tdD", "OpenRequired"}; // Google Transit required
-	static final String[] key_stop_times__pickup_type = new String[] {"NStp", "", "0"}; // Google Transit required
-	static final String[] key_stop_times__drop_off_type = new String[] {"__tdD", "", "0"}; // Google Transit required
+	static final String[] key_stop_times__trip_id = new String[] {"__tdD", "", "OpenRequired"}; // GTFS required
+	static final String[] key_stop_times__arrival_time = new String[] {"__tdD", "", "OpenRequired"}; // GTFS required
+	static final String[] key_stop_times__departure_time = new String[] {"__tdD", "", "OpenRequired"}; // GTFS required
+	static final String[] key_stop_times__stop_id = new String[] {"StopPointRef", "OpenRequired"}; // GTFS required
+	static final String[] key_stop_times__stop_sequence = new String[] {"__tdD", "OpenRequired"}; // GTFS required
+	static final String[] key_stop_times__pickup_type = new String[] {"NStp", "", "0"}; // GTFS required
+	static final String[] key_stop_times__drop_off_type = new String[] {"__tdD", "", "0"}; // GTFS required
 	
 	// Parsed data 
 	List listStoptimes__trip_id;
@@ -82,16 +82,16 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	static final String[] _key_journeypattern_timinglink = {"JourneyPatternSection", "JourneyPatternTimingLink"};
 	static final String[] _key_journeypattern_timinglink_key = {"JPTL"};
 	static final String[] _key_stoptimes_from = new String [] {"JourneyPatternTimingLink", "From", "StopPointRef"};
-	static final String[] _key_stoptimes_waittimeto = new String [] {"JourneyPatternTimingLink", "To", "WaitTime"}; // v1.5: waitTimeTo link
-	static final String[] _key_stoptimes_waittimefrom = new String [] {"JourneyPatternTimingLink", "From", "WaitTime"}; // v1.5: waitTimeFrom link
+	static final String[] _key_stoptimes_waittimeto = new String [] {"JourneyPatternTimingLink", "To", "WaitTime"}; 
+	static final String[] _key_stoptimes_waittimefrom = new String [] {"JourneyPatternTimingLink", "From", "WaitTime"};
 	static final String[] _key_stoptimes_to = new String [] {"JourneyPatternTimingLink", "To", "StopPointRef"};
 	static final String[] _key_stoptimes_runtime = new String [] {"JourneyPatternTimingLink", "RunTime"};
 	boolean inJourneyPatternSection = false;
 	String keyNestedRunTime = "";
 	String runTime = "";
-	String waitTimeTo = ""; // v1.5 waitTimeTo link
-	String waitTimeToDeferred = ""; // v1.5 deferred waitTimeTo - required to correecly assign wait time leading TO timing link, i.e. next TimingLink
-	String waitTimeFrom = ""; // v1.5 waitTimeFrom link
+	String waitTimeTo = "";
+	String waitTimeToDeferred = ""; // waitTimeTo - required to correecly assign wait time leading TO timing link, i.e. next TimingLink
+	String waitTimeFrom = ""; 
 	String journeyPatternTimingLink = "";
 	String journeyPatternSection = "";
 	List _listTimingLinksJourneyPatternTimingLink;
@@ -252,7 +252,7 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	    	stopPointFrom = niceString; 
 	    	keyNestedRunTime = "";
 	    }
-	    if (key.equals(_key_stoptimes_waittimeto[0]) && keyNested.equals(_key_stoptimes_waittimeto[1])&& keyNestedRunTime.equals(_key_stoptimes_waittimeto[2])) { // v1.5: Set waitTimeTo
+	    if (key.equals(_key_stoptimes_waittimeto[0]) && keyNested.equals(_key_stoptimes_waittimeto[1])&& keyNestedRunTime.equals(_key_stoptimes_waittimeto[2])) {
 	    	waitTimeTo = niceString; 
 	    	keyNestedRunTime = "";
 	    }
@@ -278,7 +278,7 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	    	newTimingLinksRunTime = new ValueList(stopPointFrom);
 	    	_listTimingLinksRunTime.add(newTimingLinksRunTime);
 	    	newTimingLinksRunTime.addValue(niceString);
-	    	if (waitTimeToDeferred.length() > 0) { // v1.5: also add waitTime to link
+	    	if (waitTimeToDeferred.length() > 0) {
 	        	newTimingLinksRunTime.addValue(waitTimeToDeferred);
 	        	waitTimeToDeferred = "";
 	      	}
@@ -435,7 +435,7 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	       							newStoptimes__arrival_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
 	       						else { 
 	       							
-	       							// v1.6.2: Conformance with GTFS revision 20-Nov-2007: If first stop, arrival time = departure time
+	       							// Conformance with GTFS revision 20-Nov-2007: If first stop, arrival time = departure time
 	       							if (sequenceNumber == 1)
 	       								newStoptimes__arrival_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
 	       							else
@@ -527,7 +527,7 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	   			newStoptimes__departure_time = new ValueList(iterator.getKeyName()); // departure time
 	   			listStoptimes__departure_time.add(newStoptimes__departure_time);
 
-	   			// v1.6.2: conformance with GTFS revision 20-Nov-2007: Departure time at last stop
+	   			// Conformance with GTFS revision 20-Nov-2007: Departure time at last stop
 	   			newStoptimes__departure_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));   	    	
 	   			newStoptimes__stop_id = new ValueList(journeyPatternSectionRef); 
 	   			listStoptimes__stop_id.add(newStoptimes__stop_id);

@@ -19,47 +19,46 @@ package transxchange2GoogleTransitHandler;
 import java.util.*;
 
 public class ValueList {
-	  private String keyName;
-	  private List values;
+    private String keyName;
+    private List values;
 
-      public void addValue(String addValue) {
-          StringBuffer val = new StringBuffer(addValue);
-          values.add(val);
-  }
+    public void addValue(String addValue) {
+        StringBuffer val = new StringBuffer(addValue);
+        values.add(val);
+    }
 
-  public String getValue(int i) {
-          if (i < 0 || i >= values.size())
-                  return null;
+    public String getValue(int i) {
+        if (i < 0 || i >= values.size())
+            return null;
 
-          return (String)(((StringBuffer)values.get(i)).toString());
-  }
+        return (String)(((StringBuffer)values.get(i)).toString());
+    }
 
-  public void setValue(int i, String value) {
-      if (i < 0 || i >= values.size())
-          return;
+    public void setValue(int i, String value) {
+    	if (i < 0 || i >= values.size())
+    		  return;
 
-      StringBuffer val = new StringBuffer(value);
-      values.set(i, val);
-  }
+  	    StringBuffer val = new StringBuffer(value);
+  	    values.set(i, val);
+    }
 
-  public void dumpValues() {
-          Iterator i = values.iterator();
-          while (i.hasNext()) {
-                  System.out.println(keyName + " " + i.next());
-          }
-  }
+    public void dumpValues() {
+        Iterator i = values.iterator();
+        while (i.hasNext()) {
+                System.out.println(keyName + " " + i.next());
+        }
+    }
 
-  public String getKeyName() {
-          return keyName;
-  }
+    public String getKeyName() {
+        return keyName;
+    }
 
-  public int size() {
-          return values.size();
-  }
+    public int size() {
+        return values.size();
+    }
 
-  public ValueList(String key) {
-          
-          keyName = key;
-          values = new ArrayList();
-  }
+    public ValueList(String key) {
+        keyName = key;
+        values = new ArrayList();
+    }
 }

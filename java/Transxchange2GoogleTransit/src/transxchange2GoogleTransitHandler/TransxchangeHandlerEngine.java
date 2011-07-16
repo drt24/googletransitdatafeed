@@ -43,12 +43,12 @@ import javax.xml.xpath.XPathConstants;
 
 /*
  * This class extends DefaultHandler to parse a TransXChange v2.1 xml file,	
- * 	build corresponding Google Transit Feed data structures
- *  and write these to a Google Transit Feed Specification (9-Apr-2007) compliant file set
+ * 	build corresponding GTFS data structures
+ *  and write these to a GTFS (9-Apr-2007) compliant file set
  */
 public class TransxchangeHandlerEngine extends DefaultHandler {
 
-	// Google Transit Feed structures
+	// GTFS structures
 	TransxchangeAgency agencies;
 	TransxchangeStops stops;
 	TransxchangeRoutes routes;
@@ -61,14 +61,15 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	static String parseError = "";
 	static String parseInfo = "";
 
-	// Additional contributions to resulting Google Transit file set which cannot be extracted from a TransXChange input file
-	static String googleTransitUrl = "";
-	static String googleTransitTimezone = "";
-	static String googleTransitDefaultRouteType = "";
-	static String googleTransitOutfile = "";
-// 11-Mar-2009	static String naptanStopFile = ""; // v1.6.2
+	// Additional contributions to resulting GTFS file set which cannot be extracted from a TransXChange input file
+	static String gtfsUrl = "";
+	static String gtfsTimezone = "";
+	static String gtfsDefaultRouteType = "";
+	static String gtfsLang = "";
+	static String gtfsPhone = "";
+	static String gtfsOutfile = "";
 	
-	// Google Transit Feed Specification file names
+	// GTFS file names
 	static final String agencyFilename = "agency";
 	static final String stopsFilename = "stops";
 	static final String routesFilename = "routes";
@@ -77,7 +78,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	static final String calendarFilename = "calendar";
 	static final String calendar_datesFilename = "calendar_dates";
 	static final String extension = ".txt";
-	static final String googleTransitZipfileName = "google_transit.zip";
+	static final String gtfsZipfileName = "google_transit.zip";
 	
 	// output files
 	static PrintWriter agenciesOut = null;
@@ -115,61 +116,59 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	 * Utility methods to set and get attribute values
 	 */
 	public void setUrl(String url) {
-		googleTransitUrl = url;
+		gtfsUrl = url;
 	}
-
 	public void setTimezone(String timezone) {
-		googleTransitTimezone = timezone;
+		gtfsTimezone = timezone;
 	}
-
 	public void setDefaultRouteType(String defaultRouteType) {
-		googleTransitDefaultRouteType = defaultRouteType;
+		gtfsDefaultRouteType = defaultRouteType;
 	}
-	
+	public void setLang(String lang) {
+		gtfsLang = lang;
+	}
+	public void setPhone(String phone) {
+		gtfsPhone = phone;
+	}
 	public String getUrl() {
-		return googleTransitUrl;
+		return gtfsUrl;
 	}
-
 	public String getTimezone() {
-		return googleTransitTimezone;
+		return gtfsTimezone;
 	}
-
 	public String getDefaultRouteType() {
-		return googleTransitDefaultRouteType;
+		return gtfsDefaultRouteType;
 	}
-	
+	public String getLang() {
+		return gtfsLang;
+	}
+	public String getPhone() {
+		return gtfsPhone;
+	}
 	public TransxchangeAgency getAgencies() {
 		return agencies;
 	}
-	
 	public TransxchangeStops getStops() {
 		return stops;
 	}
-	
 	public TransxchangeRoutes getRoutes() {
 		return routes;
 	}
-	
 	public TransxchangeTrips getTrips() {
 		return trips;
 	}
-
 	public TransxchangeStopTimes getStopTimes() {
 		return stopTimes;
 	}
-	
 	public TransxchangeCalendar getCalendar() {
 		return calendar;
 	}
-	
 	public TransxchangeCalendarDates getCalendarDates() {
 		return calendarDates;
 	}
-	
 	public void setParseError(String txt) {
 		parseError = txt;
 	}
-	
 	public void setUseAgencyShortname(boolean flag) {
 		useAgencyShortName = flag;
 	}
@@ -357,7 +356,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	}
 
 	/*
-	 * Complete (and dump) Google Transit Feed data structures. Called when end of TransXChange input file is reached
+	 * Complete (and dump) GTFS data structures. Called when end of TransXChange input file is reached
 	 */   	
 	public void endDocument() {
     
@@ -398,7 +397,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 
 
 	/*
-	 * Prepare Google Transit Feed file set files
+	 * Prepare GTFS file set files
 	 */
 	public static void prepareOutput(String rootDirectory, String workDirectory)
 	throws IOException
@@ -414,7 +413,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		new File(outdir + "/" + stop_timesFilename + extension).delete();
 		new File(outdir + "/" + calendarFilename + extension).delete();
 		new File(outdir + "/" + calendar_datesFilename + extension).delete();
-		new File(outdir + "/" + googleTransitZipfileName).delete();
+		new File(outdir + "/" + gtfsZipfileName).delete();
 		
 		// Create output directory
 		// Note service start date not any longer used to determine directory name for outfiles
@@ -422,7 +421,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	}
 	
 	/*
-	 * Create Google Transit Feed file set from Google Transit Feed data structures except for stops
+	 * Create GTFS file set from GTFS data structures except for stops
 	 */
 	public void writeOutputSansAgenciesStopsRoutes() 
 	throws IOException
@@ -448,9 +447,9 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
         for (int i = 0; i < this.getCalendar().getListCalendar__service_id().size(); i++) {
         	outLine = "";
         	serviceId = (String)(((ValueList)this.getCalendar().getListCalendar__service_id().get(i))).getValue(0);
-        	// v1.5: Service ID added to calendar data structure in class TransxchangeCalendar. 
-        	// 	If match and no journey pattern associated with daytype, 
-        	//  then daytype applies to service, not journey pattern. Otherwise daytpe is set to 0 as daytype applies to journey pattern, not service
+        	// Service ID added to calendar data structure in class TransxchangeCalendar. 
+        	// If match and no journey pattern associated with daytype, 
+        	// then daytype applies to service, not journey pattern. Otherwise daytpe is set to 0 as daytype applies to journey pattern, not service
         	
         	// Monday
         	daytypesJourneyPattern = (String)((ValueList)this.getCalendar().getListCalendar__monday().get(i)).getValue(1); 
@@ -536,7 +535,8 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	        	calendarsOut.print(outLine);
 	        	calendarsOut.print(((ValueList)this.getCalendar().getListCalendar__start_date().get(i)).getValue(0));
 	        	calendarsOut.print(",");
-	        	calendarsOut.println(((ValueList)this.getCalendar().getListCalendar__end_date().get(i)).getValue(0));
+	        	calendarsOut.print(((ValueList)this.getCalendar().getListCalendar__end_date().get(i)).getValue(0));
+	        	calendarsOut.println();
 	        	if (skipEmptyService)
 	        		calendarServiceIds.put(serviceId, serviceId);
             }       
@@ -604,16 +604,14 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	        	tripsOut.print(",");
 	        	tripsOut.print(",");
 	        	tripsOut.print(((ValueList)this.getTrips().getListTrips__block_id().get(i)).getValue(0));
-	        	tripsOut.println(",");
+	        	tripsOut.print(",");
+	        	tripsOut.println();
             }       
         }       
-
-        // stop_times.txt
-        // v1.6.6: Functionality moved into TransxchangeStopTimes.java
    	}
 	
 	/*
-	 * Create Google Transit Feed file set from Google Transit Feed data structures except for stops
+	 * Create GTFS file set from GTFS data structures except for stops
 	 */
 	public void writeOutputAgenciesStopsRoutes() 
 	throws IOException
@@ -627,18 +625,22 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 			outfile = new File(outdir + /* "/" + serviceStartDate + */ "/"  + outfileName);
 			filenames.add(outfileName);
 			agenciesOut = new PrintWriter(new FileWriter(outfile));
-			agenciesOut.println("agency_id,agency_name,agency_url,agency_timezone,agency_lang");
+			agenciesOut.println("agency_id,agency_name,agency_url,agency_timezone,agency_lang,agency_phone");
 		}
 		for (int i = 0; i < this.getAgencies().getListAgency__agency_name().size(); i++) {
 			if (((String)(((ValueList)this.getAgencies().getListAgency__agency_id().get(i))).getValue(0)).length() > 0) {
-				agenciesOut.print(((ValueList)this.getAgencies().getListAgency__agency_id().get(i)).getValue(0)); // v1.5: new: agency id
+				agenciesOut.print(((ValueList)this.getAgencies().getListAgency__agency_id().get(i)).getValue(0));
 				agenciesOut.print(","); 
 				agenciesOut.print(((ValueList)this.getAgencies().getListAgency__agency_name().get(i)).getValue(0));
 				agenciesOut.print(",");
 				agenciesOut.print(((ValueList)this.getAgencies().getListAgency__agency_url().get(i)).getValue(0));
 				agenciesOut.print(",");
 				agenciesOut.print(((ValueList)this.getAgencies().getListAgency__agency_timezone().get(i)).getValue(0));
-				agenciesOut.println(","); // no agency language
+				agenciesOut.print(","); 
+				agenciesOut.print(((ValueList)this.getAgencies().getListAgency__agency_lang().get(i)).getValue(0));
+				agenciesOut.print(","); 
+				agenciesOut.print(((ValueList)this.getAgencies().getListAgency__agency_phone().get(i)).getValue(0));
+				agenciesOut.println();
 	        }
         }
        
@@ -678,8 +680,9 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 				stopsOut.print(",");
 				stopsOut.print(coordinates[1]);
 				stopsOut.print(","); // no zone id
-				stopsOut.println(","); // no stop URL
-// Below a number of attributes (stop_street to stop_country) which have been deprecated in the Google Transit Feed Specification (9-Apr-2007 release of the spec)
+				stopsOut.print(","); // no stop URL
+				stopsOut.println();
+// Below a number of attributes (stop_street to stop_country) which have been deprecated in the GTFS (9-Apr-2007 release of the spec)
 //        		stopsOut.print(((ValueList)this.getStops().getListStops__stop_street().get(i)).getValue(0));
 //        		stopsOut.print(",");
 //        		stopsOut.print(((ValueList)this.getStops().getListStops__stop_city().get(i)).getValue(0));
@@ -688,7 +691,8 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 //        		stopsOut.print(",");
 //        		stopsOut.print(((ValueList)this.getStops().getListStops__stop_region().get(i)).getValue(0));
 //        		stopsOut.print(",");
-//        		stopsOut.println(((ValueList)this.getStops().getListStops__stop_country().get(i)).getValue(0));
+//        		stopsOut.print(((ValueList)this.getStops().getListStops__stop_country().get(i)).getValue(0));
+//				stopsOut.println();
 			}
 		}		
 
@@ -704,7 +708,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 			if (((String)(((ValueList)this.getRoutes().getListRoutes__route_id().get(i))).getValue(0)).length() > 0) {
 				routesOut.print(((ValueList)this.getRoutes().getListRoutes__route_id().get(i)).getValue(0));
 				routesOut.print(",");
-				routesOut.print(((ValueList)this.getRoutes().getListRoutes__agency_id().get(i)).getValue(0)); // v1.5: agency ID
+				routesOut.print(((ValueList)this.getRoutes().getListRoutes__agency_id().get(i)).getValue(0));
 				routesOut.print(",");
 				routesOut.print(((ValueList)this.getRoutes().getListRoutes__route_short_name().get(i)).getValue(0));
 				routesOut.print(",");
@@ -715,7 +719,8 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 				routesOut.print(((ValueList)this.getRoutes().getListRoutes__route_type().get(i)).getValue(0));
 				routesOut.print(","); // no route url
 				routesOut.print(","); // no route color
-				routesOut.println(","); // no route text color
+				routesOut.print(","); // no route text color
+				routesOut.println();
 	        }       
         }       
 	}
@@ -735,7 +740,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	}
 	
 	/*
-	 * Close Google Transit Feed file set from Google Transit Feed data structures
+	 * Close GTFS file set from GTFS data structures
 	 */
 	public String closeOutput(String rootDirectory, String workDirectory) 
 	throws IOException
@@ -759,7 +764,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		calendarDatesOut = null;
 		
 		// Compress the files
-        ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(outdir + /* "/" + serviceStartDate + */ "/" + googleTransitZipfileName));
+        ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(outdir + /* "/" + serviceStartDate + */ "/" + gtfsZipfileName));
         byte[] buf = new byte[1024]; // Create a buffer for reading the files
         for (int i = 0; i < filenames.size(); i++) {
             FileInputStream in = new FileInputStream(outdir + /* "/" + serviceStartDate + */ "/" + (String)filenames.get(i));
@@ -781,7 +786,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
         // Complete the ZIP file
         zipOut.close();
 
-        // Return path and name of google_transit zip file
+        // Return path and name of GTFS zip file
         return workDirectory + /* "/" + serviceStartDate + */ "/" + "google_transit.zip";
 	}
 
@@ -880,7 +885,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	}
 	
 	/*
-	 * Initialize Google Transit Feed data structures
+	 * Initialize GTFS data structures
 	 */
 	public TransxchangeHandlerEngine ()
 		throws UnsupportedEncodingException, IOException {
@@ -892,5 +897,4 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		calendar = new TransxchangeCalendar(this);
 		calendarDates = new TransxchangeCalendarDates(this);
 	}
-	
 }

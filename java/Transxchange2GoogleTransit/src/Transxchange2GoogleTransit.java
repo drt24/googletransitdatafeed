@@ -32,7 +32,7 @@ import java.util.StringTokenizer;
 import transxchange2GoogleTransitHandler.*;
 
 /*
- * Transxchange2GoogleTransit 
+ * Transxchange2GTFS 
  * 	$ transxchange2GoogleTransit <transxchange input filename> <url> <timezone> <default route type> <output-directory> <stopfile>
  * 
  * <default route type>: 0 - Tram, 1 - Subway, 2 - Rail, 3 - Bus, 4 - Ferry, 5 - Cable car, 6 - Gondola, 7 - Funicular
@@ -72,14 +72,13 @@ public class Transxchange2GoogleTransit {
 	        	System.out.println("Usage: $ transxchange2GoogleTransit <transxchange input filename> -");
 	        	System.out.println("         <url> <timezone> <default route type> <output-directory> [<stopfile>]");
 	        	System.out.println();
-	        	System.out.println("         <timezone>: Please refer to ");
-	        	System.out.println("             http://en.wikipedia.org/wiki/List_of_tz_zones");
-	        	System.out.println("         <default route type>:");
-	        	System.out.println("             0 - Tram, 1 - Subway, 2 - Rail, 3 - Bus, 4 - Ferry, 5 - Cable car, 6 - Gondola, 7 - Funicular");
+	        	System.out.println("         Please refer to ");
+	        	System.out.println("             http://code.google.com/transit/spec/transit_feed_specification.html");
+	        	System.out.println("         for instructions about the values of the arguments <url>, <timezone> and <default route type>.");
 	        	System.exit(1);
 	        }
     
-        // Parse transxchange input file and create initial Google Transit output files
+        // Parse transxchange input file and create initial GTFS output files
         try {
         	
         	handler = new TransxchangeHandler();
@@ -98,14 +97,21 @@ public class Transxchange2GoogleTransit {
         		args = readConfigFile(args[0], args[4]);
         		args[4] = outdir; // Copy work directory over
         	}
-        	if (args.length == 6)
-        		handler.parse(args[0], args[1], args[2], args[3], "", args[4], args[5], useAgencyShortname, skipEmptyService, skipOrphanStops, geocodeMissingStops, modeList, stopColumns, stopfilecolumnseparator, naptanHelperStopColumn, naptanStopnames, agencyMap);
-        	else
-       			handler.parse(args[0], args[1], args[2], args[3], "", args[4], "", useAgencyShortname, skipEmptyService, skipOrphanStops, geocodeMissingStops, modeList, stopColumns, stopfilecolumnseparator, naptanHelperStopColumn, naptanStopnames, agencyMap);
+        	switch (args.length) {
+        	case 8:
+        		handler.parse(args[0], args[1], args[2], args[3], "", args[4], args[5], args[6], args[7], useAgencyShortname, skipEmptyService, skipOrphanStops, geocodeMissingStops, modeList, stopColumns, stopfilecolumnseparator, naptanHelperStopColumn, naptanStopnames, agencyMap);
+        		break;
+        	case 6:
+       			handler.parse(args[0], args[1], args[2], args[3], "", args[4], args[5], "", "", useAgencyShortname, skipEmptyService, skipOrphanStops, geocodeMissingStops, modeList, stopColumns, stopfilecolumnseparator, naptanHelperStopColumn, naptanStopnames, agencyMap);
+       			break;
+       		default:
+       			handler.parse(args[0], args[1], args[2], args[3], "", args[4], "", "", "", useAgencyShortname, skipEmptyService, skipOrphanStops, geocodeMissingStops, modeList, stopColumns, stopfilecolumnseparator, naptanHelperStopColumn, naptanStopnames, agencyMap);
+       			break;
+        	}
 		} catch (ParserConfigurationException e) {
         	System.out.println("transxchange2GTFS ParserConfiguration parse error:");
         	System.out.println(e.getMessage());
-        	System.exit(1);			
+        	System.exit(1);
 		}
 		catch (SAXException e) {
 			System.out.println("transxchange2GTFS SAX parse error:");
@@ -113,7 +119,7 @@ public class Transxchange2GoogleTransit {
 			System.out.println(e.getException());
 			System.exit(1);						
 		}
-		catch (UnsupportedEncodingException e) { // v1.5: resource file ukstops.txt incorrect encoding
+		catch (UnsupportedEncodingException e) {
 			System.out.println("transxchange2GTFS NaPTAN stop file:");
 			System.out.println(e.getMessage());
 			System.exit(1);						
@@ -124,7 +130,7 @@ public class Transxchange2GoogleTransit {
 			System.exit(1);						
 		}
 
-       // Create final Google Transit output files
+       // Create final GTFS output files
         try {
         	handler.writeOutput("", args[4]);
         } catch (IOException e) {
@@ -140,7 +146,7 @@ public class Transxchange2GoogleTransit {
 		throws IOException
 	
 	{
-		String[] result = {inputFileName, "", "", "", "", ""};
+		String[] result = {inputFileName, "", "", "", "", "", "", ""};
 		useAgencyShortname = false;
 		
 		BufferedReader in = new BufferedReader(new FileReader(configFilename));
@@ -163,6 +169,10 @@ public class Transxchange2GoogleTransit {
 						result[2] = new String(configValues[1]);
 					if (configValues[0].equals("default-route-type"))
 						result[3] = new String(configValues[1]);
+					if (configValues[0].equals("lang"))
+						result[6] = new String(configValues[1]);
+					if (configValues[0].equals("phone"))
+						result[7] = new String(configValues[1]);
 					if (configValues[0].equals("output-directory"))
 						result[4] = new String(configValues[1]);
 					if (configValues[0].equals("stopfile")) {

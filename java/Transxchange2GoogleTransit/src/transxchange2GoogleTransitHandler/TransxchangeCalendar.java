@@ -30,16 +30,16 @@ import org.xml.sax.SAXParseException;
 public class TransxchangeCalendar extends TransxchangeDataAspect {
 
 	// xml keys and output field fillers
-	static final String[] key_calendar__service_id = new String[] {"Service", "ServiceCode", "OpenRequired"}; // Google Transit required
-	static final String[] key_calendar__monday = new String[] {"__transxchange2GoogleTransit_drawDefault", "", "0"}; // Google Transit required
-	static final String[] key_calendar__tuesday = new String[] {"__transxchange2GoogleTransit_drawDefault", "", "0"}; // Google Transit required
-	static final String[] key_calendar__wednesday = new String[] {"__transxchange2GoogleTransit_drawDefault", "", "0"}; // Google Transit required
-	static final String[] key_calendar__thursday = new String[] {"__transxchange2GoogleTransit_drawDefault", "", "0"}; // Google Transit required
-	static final String[] key_calendar__friday = new String[] {"__transxchange2GoogleTransit_drawDefault", "", "0"}; // Google Transit required
-	static final String[] key_calendar__saturday = new String[] {"__transxchange2GoogleTransit_drawDefault", "", "0"}; // Google Transit required
-	static final String[] key_calendar__sunday = new String[] {"__transxchange2GoogleTransit_drawDefault", "", "0"}; // Google Transit required
-	static final String[] key_calendar__start_date = new String[] {"Service", "StartDate", "20060901"}; // Google Transit required
-	static final String[] key_calendar__end_date = new String[] {"Service", "EndDate", "20091231"}; // Google Transit required
+	static final String[] key_calendar__service_id = new String[] {"Service", "ServiceCode", "OpenRequired"}; // GTFS required
+	static final String[] key_calendar__monday = new String[] {"__transxchange2GTFS_drawDefault", "", "0"}; // GTFS required
+	static final String[] key_calendar__tuesday = new String[] {"__transxchange2GTFS_drawDefault", "", "0"}; // GTFS required
+	static final String[] key_calendar__wednesday = new String[] {"__transxchange2GTFS_drawDefault", "", "0"}; // GTFS required
+	static final String[] key_calendar__thursday = new String[] {"__transxchange2GTFS_drawDefault", "", "0"}; // GTFS required
+	static final String[] key_calendar__friday = new String[] {"__transxchange2GTFS_drawDefault", "", "0"}; // GTFS required
+	static final String[] key_calendar__saturday = new String[] {"__transxchange2GTFS_drawDefault", "", "0"}; // GTFS required
+	static final String[] key_calendar__sunday = new String[] {"__transxchange2GTFS_drawDefault", "", "0"}; // GTFS required
+	static final String[] key_calendar__start_date = new String[] {"Service", "StartDate", "20060901"}; // GTFS required
+	static final String[] key_calendar__end_date = new String[] {"Service", "EndDate", "20091231"}; // GTFS required
 
 	// Parsed data
 	List listCalendar__service_id;
@@ -94,7 +94,7 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 	String friday = "";
 	String saturday = "";
 	String sunday = "";
-	boolean watchForNotDays = false; // v1.5: This works in conjunction with keyDaysOfWeek. If not-day like </NotTuesday> occurs without prior definition of daytype, reverse initial 0000000 Mon-Sun 
+	boolean watchForNotDays = false; 
 
 	public List getListCalendar__service_id() {
 		return listCalendar__service_id;
@@ -199,7 +199,7 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 	    	friday = key_calendar__friday[2];
 	    	saturday = key_calendar__saturday[2];
 	    	sunday = key_calendar__sunday[2];
-	    	watchForNotDays = true; // v1.5: This works in conjunction with keyDaysOfWeek. If not-day like </NotTuesday> occurs without prior definition of daytype, reverse initial 0000000 Mon-Sun
+	    	watchForNotDays = true;
 	    }
 	    if (key.equals(_key_operatingperiod[0]) && qName.equals(_key_operatingperiod[1]))
 	    	inOperatingPeriod = true;
@@ -282,7 +282,7 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 		}
 		if (keyDaysOfWeek.equals(_key_daytype_not_mo[2]) && qName.equals(_key_daytype_not_mo[3])) {
 			if (watchForNotDays) {
-				tuesday = "1"; // v1.5: For first not-day </NotMonday>: reverse initial 0000000 Mon-Sun
+				tuesday = "1";
 				wednesday = "1";
 				thursday = "1";
 				friday = "1";
@@ -294,7 +294,7 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 		}
 		if (keyDaysOfWeek.equals(_key_daytype_not_tu[2]) && qName.equals(_key_daytype_not_tu[3])) {
 			if (watchForNotDays) {
-				monday = "1"; // v1.5: For first not-day </NotTuesday>: reverse initial 0000000 Mon-Sun
+				monday = "1";
 				wednesday = "1";
 				thursday = "1";
 				friday = "1";
@@ -306,7 +306,7 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 		}
 		if (keyDaysOfWeek.equals(_key_daytype_not_we[2]) && qName.equals(_key_daytype_not_we[3])) {
 			if (watchForNotDays) {
-				monday = "1"; // v1.5: For first not-day </NotWednesday>: reverse initial 0000000 Mon-Sun
+				monday = "1";
 				tuesday = "1";
 				thursday = "1";
 				friday = "1";
@@ -318,7 +318,7 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 		}
 		if (keyDaysOfWeek.equals(_key_daytype_not_th[2]) && qName.equals(_key_daytype_not_th[3])) {
 			if (watchForNotDays) {
-				monday = "1"; // v1.5: For first not-day </NotThursday>: reverse initial 0000000 Mon-Sun
+				monday = "1";
 				tuesday = "1";
 				wednesday = "1";
 				friday = "1";
@@ -330,7 +330,7 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 		}
 		if (keyDaysOfWeek.equals(_key_daytype_not_fr[2]) && qName.equals(_key_daytype_not_fr[3])) {
 			if (watchForNotDays) {
-				monday = "1"; // v1.5: For first not-day </NotFriday>: reverse initial 0000000 Mon-Sun
+				monday = "1";
 				tuesday = "1";
 				wednesday = "1";
 				thursday = "1";
@@ -342,7 +342,7 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 		}
 		if (keyDaysOfWeek.equals(_key_daytype_not_sa[2]) && qName.equals(_key_daytype_not_sa[3])) {
 			if (watchForNotDays) {
-				monday = "1"; // v1.5: For first not-day </NotSaturday>: reverse initial 0000000 Mon-Sun
+				monday = "1";
 				tuesday = "1";
 				wednesday = "1";
 				thursday = "1";
@@ -354,7 +354,7 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 		}
 		if (keyDaysOfWeek.equals(_key_daytype_not_su[2]) && qName.equals(_key_daytype_not_su[3])) {
 			if (watchForNotDays) {
-				monday = "1"; // v1.5: For first not-day </NotSunday>: reverse initial 0000000 Mon-Sun
+				monday = "1";
 				tuesday = "1";
 				wednesday = "1";
 				thursday = "1";
@@ -365,41 +365,41 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 			sunday = "0";
 		}
 		if (qName.equals(keyDaysOfWeek)) {
-			watchForNotDays = false; // v1.5 we found a daytype definition - run with it for the rest of the <DaysOfWeek>
+			watchForNotDays = false;
 	   		newCalendar__monday = new ValueList(key_calendar__monday[0]);
 	   		listCalendar__monday.add(newCalendar__monday);
 	   		newCalendar__monday.addValue(monday);
-	   		newCalendar__monday.addValue(handler.getTrips().getJourneyPattern()); // v1.5: capture JourneyPattern specific OperatingProfile
+	   		newCalendar__monday.addValue(handler.getTrips().getJourneyPattern());
 	   		newCalendar__monday.addValue(service); // and service
 	   		newCalendar__tuesday = new ValueList(key_calendar__tuesday[0]);
 	   		listCalendar__tuesday.add(newCalendar__tuesday);
 	   		newCalendar__tuesday.addValue(tuesday);
-	   		newCalendar__tuesday.addValue(handler.getTrips().getJourneyPattern()); // v1.5: capture JourneyPattern specific OperatingProfile
+	   		newCalendar__tuesday.addValue(handler.getTrips().getJourneyPattern());
 	   		newCalendar__tuesday.addValue(service); // and service
 	   		newCalendar__wednesday = new ValueList(key_calendar__wednesday[0]);
 	   		listCalendar__wednesday.add(newCalendar__wednesday);
 	   		newCalendar__wednesday.addValue(wednesday);
-	   		newCalendar__wednesday.addValue(handler.getTrips().getJourneyPattern()); // v1.5: capture JourneyPattern specific OperatingProfile
+	   		newCalendar__wednesday.addValue(handler.getTrips().getJourneyPattern());
 	   		newCalendar__wednesday.addValue(service); // and service
 	   		newCalendar__thursday = new ValueList(key_calendar__thursday[0]);
 	   		listCalendar__thursday.add(newCalendar__thursday);
 	   		newCalendar__thursday.addValue(thursday);
-	   		newCalendar__thursday.addValue(handler.getTrips().getJourneyPattern()); // v1.5: capture JourneyPattern specific OperatingProfile
+	   		newCalendar__thursday.addValue(handler.getTrips().getJourneyPattern());
 	   		newCalendar__thursday.addValue(service); // and service
 	   		newCalendar__friday = new ValueList(key_calendar__friday[0]);
 	   		listCalendar__friday.add(newCalendar__friday);
 	   		newCalendar__friday.addValue(friday);
-	   		newCalendar__friday.addValue(handler.getTrips().getJourneyPattern()); // v1.5: capture JourneyPattern specific OperatingProfile
+	   		newCalendar__friday.addValue(handler.getTrips().getJourneyPattern());
 	   		newCalendar__friday.addValue(service); // and service
 	   		newCalendar__saturday = new ValueList(key_calendar__saturday[0]);
 	   		listCalendar__saturday.add(newCalendar__saturday);
 	   		newCalendar__saturday.addValue(saturday);
-	   		newCalendar__saturday.addValue(handler.getTrips().getJourneyPattern()); // v1.5: capture JourneyPattern specific OperatingProfile
+	   		newCalendar__saturday.addValue(handler.getTrips().getJourneyPattern());
 	   		newCalendar__saturday.addValue(service); // and service
 	   		newCalendar__sunday = new ValueList(key_calendar__sunday[0]);
 	   		listCalendar__sunday.add(newCalendar__sunday);
 	   		newCalendar__sunday.addValue(sunday);
-	   		newCalendar__sunday.addValue(handler.getTrips().getJourneyPattern()); // v1.5: capture JourneyPattern specific OperatingProfile
+	   		newCalendar__sunday.addValue(handler.getTrips().getJourneyPattern());
 	   		newCalendar__sunday.addValue(service); // and service
 		}
 	}
@@ -415,11 +415,11 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 		if (qName.equals(key_calendar__service_id[0])) {
 			key = "";
 			service = "";
-			handler.getTrips().setJourneyPattern(""); // v1.5: clear JourneyPattern at end of service
+			handler.getTrips().setJourneyPattern("");
 		}
 		if (qName.equals(keyDaysOfWeek)) {
 			keyDaysOfWeek = "";
-			watchForNotDays = false; // v1.5: This works in conjunction with keyDaysOfWeek. If not-day like </NotTuesday> occurs without prior definition of daytype, reverse initial 0000000 Mon-Sun
+			watchForNotDays = false;
 		}
 	}
 
@@ -541,9 +541,6 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 	    }
 	}
 
-	/*
-	 * v1.5: duplicate service
-	 */
 	public void calendarDuplicateService(String existingServiceId, String newServiceId) {
 		int i = 0;
 		boolean found = false;

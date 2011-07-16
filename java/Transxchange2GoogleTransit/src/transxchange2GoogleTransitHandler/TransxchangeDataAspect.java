@@ -139,7 +139,7 @@ public abstract class TransxchangeDataAspect {
 		    for (j = 0; j < iterator.size(); j++) {
 		    	s = (String)iterator.getValue(j);
 		    	if (s != null) { // v1.6.3: may contain null value
-			    	if (s.lastIndexOf(",") != -1 || s.lastIndexOf("\"") != -1)
+			    	if (s.lastIndexOf(",") != -1) // || s.lastIndexOf("\"") != -1) // v1.7.2: Remove addition of \" here, leads to duplication if \" used in configuration file
 			    		s = "\"" + s + "\"";
 			    	iterator.setValue(j, s);
 		    	}
@@ -148,7 +148,7 @@ public abstract class TransxchangeDataAspect {
 	}
 
 	/*
-	 * Return date in Google Transit Data Feed format
+	 * Return date in GTFS format
 	 * introduced to support Java 1.4.2
 	 */
 	static Integer iYear;
@@ -181,7 +181,7 @@ public abstract class TransxchangeDataAspect {
 	}
 
 	/*
-	 * Return time in Google Transit Data Feed format
+	 * Return time in GTFS format
 	 * introduced to support Java 1.4.2
 	 */
 	static String result;

@@ -1,2 +1,2 @@
-agency_id,agency_name,agency_url,agency_timezone,agency_lang
-O1,Amphisbaena Buses,http://www.bagency.org,Europe/London,
+agency_id,agency_name,agency_url,agency_timezone,agency_lang,agency_phone
+O1,Amphisbaena Buses,http://www.bagency.org,Europe/London,,

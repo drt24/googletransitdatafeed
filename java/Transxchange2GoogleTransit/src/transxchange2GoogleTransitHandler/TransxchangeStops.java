@@ -34,20 +34,19 @@ import org.xml.sax.SAXParseException;
 public class TransxchangeStops extends TransxchangeDataAspect{
 
 	// xml keys and output field fillers
-	static final String[] key_stops__stop_id = new String[] {"StopPoints", "AtcoCode", "OpenRequired"}; // Google Transit required
-	static final String[] key_stops__stop_id2 = new String[] {"StopPoints", "StopPointRef", "OpenRequired"}; // Google Transit required
-	static final String[] key_stops__stop_name = new String[] {"StopPoints", "CommonName", "OpenRequired"}; // Google Transit required
-	static final String[] key_stops__stop_desc = new String[] {"__transxchange2GoogleTransit_drawDefault", "", ""};
+	static final String[] key_stops__stop_id = new String[] {"StopPoints", "AtcoCode", "OpenRequired"}; // GTFS required
+	static final String[] key_stops__stop_id2 = new String[] {"StopPoints", "StopPointRef", "OpenRequired"}; // GTFS required
+	static final String[] key_stops__stop_name = new String[] {"StopPoints", "CommonName", "OpenRequired"}; // GTFS required
+	static final String[] key_stops__stop_desc = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
 	static final String[] key_stops__stop_east = new String[] {"StopPoints", "Easting", "OpenRequired"}; 
 	static final String[] key_stops__stop_north = new String[] {"StopPoints", "Northing", "OpenRequired"}; 
-    // v1.6.4 Embedded coordinates
-	static final String[] key_stops__stop_lat = new String[] {"StopPoints", "Latitude", "OpenRequired"}; // Google Transit required
-	static final String[] key_stops__stop_lon = new String[] {"StopPoints", "Longitude", "OpenRequired"}; // Google Transit required
-	static final String[] key_stops__stop_street = new String[] {"__transxchange2GoogleTransit_drawDefault", "", ""};
-	static final String[] key_stops__stop_city = new String[] {"__transxchange2GoogleTransit_drawDefault", "", ""};
-	static final String[] key_stops__stop_region = new String[] {"__transxchange2GoogleTransit_drawDefault", "", ""};
-	static final String[] key_stops__stop_postcode = new String[] {"__transxchange2GoogleTransit_drawDefault", "", ""};
-	static final String[] key_stops__stop_country = new String[] {"__transxchange2GoogleTransit_drawDefault", "", ""};
+	static final String[] key_stops__stop_lat = new String[] {"StopPoints", "Latitude", "OpenRequired"}; // GTFS required
+	static final String[] key_stops__stop_lon = new String[] {"StopPoints", "Longitude", "OpenRequired"}; // GTFS required
+	static final String[] key_stops__stop_street = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
+	static final String[] key_stops__stop_city = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
+	static final String[] key_stops__stop_region = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
+	static final String[] key_stops__stop_postcode = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
+	static final String[] key_stops__stop_country = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
 
 	static final String [] _key_stops__stop_locality = new String[] {"StopPoints", "LocalityName"}; 
 	List _listStops__stop_locality;
@@ -68,8 +67,8 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	String stopPointToLat = ""; // Store current lat of stop-to to maintain lat of last stop in route link
 	String stopPointToLon = ""; // same for lon
 	
-	static Map lat = null; // v1.5 lat, lon
-	static Map lon = null; // v1.5 lat, lon
+	static Map lat = null;
+	static Map lon = null;
 	static HashMap stopIx = null;
 	
 	static HashMap stops = null;
@@ -193,7 +192,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 				keyNested = key_stops__stop_north[1];
 			} 
 
-	    // v1.6.4 Embedded coordinates
+	    // Embedded coordinates
 		if (key.equals(key_stops__stop_lat[0])) 
 			if (qName.equals(key_stops__stop_lat[1])) {
 				keyNested = key_stops__stop_lat[1];
@@ -303,7 +302,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	       	newStops__stop_lon.addValue(niceString);
        	}
 
-	    // v1.6.4 Embedded coordinates
+	    // Embedded coordinates
 	    if (key.equals(key_stops__stop_lat[0]) && keyNested.equals(key_stops__stop_lat[1])) { 
 	    	newStops__stop_lat = new ValueList(keyRef);
 	    	listStops__stop_lat.add(newStops__stop_lat);
@@ -405,7 +404,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
     	if (key.equals(key_stops__stop_north[0]))
     		keyNested = "";
 
-	    // v1.6.4 Embedded coordinates
+	    // Embedded coordinates
     	if (key.equals(key_stops__stop_lat[0]))
     		keyNested = "";
     	if (key.equals(key_stops__stop_lon[0]))
@@ -557,7 +556,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 
 	private String getLat(String stop) { 
 
-		// v1.6.3: If no coordinates, return key
+		// If no coordinates, return key
 		if (lat == null)
 			return key_stops__stop_lat[2];
 		
@@ -568,7 +567,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	}
 	private String getLon(String stop) { 
 
-		// v1.6.3: If no coordinates, return key
+		// If no coordinates, return key
 		if (lon == null)
 			return key_stops__stop_lon[2];
 
@@ -619,13 +618,13 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	public static void readStopfile(String stopsFileName, ArrayList stopColumns) 
 		throws UnsupportedEncodingException, IOException {
 
-		// v1.6.3: read Naptan format stop file
+		// Read Naptan format stop file
 		if (!(stopsFileName != null && stopsFileName.length() > 0))
 			return;
 		
 		BufferedReader bufFileIn = new BufferedReader(new FileReader(stopsFileName));
 
-		// v1.6.3: Read first line to find column positions of stopcode, lat and lon
+		// Read first line to find column positions of stopcode, lat and lon
 		String line;
 		int stopcodeIx;
 		int latIx;
@@ -670,7 +669,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 		}
 		bufFileIn.close();
 		
-		// v1.7.0 read columns
+		// Read columns
 		if (stopColumns != null && stopColumns.size() > 0) {
 			bufFileIn = new BufferedReader(new FileReader(stopsFileName));
 			if ((line = bufFileIn.readLine()) != null) {

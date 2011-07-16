@@ -29,11 +29,11 @@ import org.xml.sax.SAXParseException;
 public class TransxchangeTrips extends TransxchangeDataAspect {
 
 	// xml keys and output field fillers
-	static final String[] key_trips__route_id = new String[] {"VehicleJourney", "LineRef", "OpenRequired"}; // Google Transit required
-	static final String[] key_trips__service_id = new String[] {"VehicleJourney", "ServiceRef", "OpenRequired"}; // Google Transit required
-	static final String[] key_trips__trip_id = new String[] {"VehicleJourney", "VehicleJourneyCode", "OpenRequired"}; // Google Transit required
+	static final String[] key_trips__route_id = new String[] {"VehicleJourney", "LineRef", "OpenRequired"}; // GTFS required
+	static final String[] key_trips__service_id = new String[] {"VehicleJourney", "ServiceRef", "OpenRequired"}; // GTFS required
+	static final String[] key_trips__trip_id = new String[] {"VehicleJourney", "VehicleJourneyCode", "OpenRequired"}; // GTFS required
 	static final String[] key_trips__trip_headsign = new String [] {"JourneyPattern", "DestinationDisplay", "OpenRequired"};
-	static final String[] key_trips__block_id = new String[] {"__transxchange2GoogleTransit_drawDefault", "", ""};
+	static final String[] key_trips__block_id = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
 
 	// Parsed data
 	List listTrips__route_id;      
@@ -175,12 +175,12 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	    boolean hot;
 
 	    /*
-	     * v1.5: Local class to create trip structure either for single trip, or unrolled based on frequency (called further below)
+	     * Local class to create trip structure either for single trip, or unrolled based on frequency (called further below)
 	     */
 	    class TripStructure {
 	    	 void createTripStructure() {
 	    		 /*
-	    		  * v1.5: Find out if out-of-line calendar dates where picked up earlier and assign to current VehicleJourney
+	    		  * Find out if out-of-line calendar dates where picked up earlier and assign to current VehicleJourney
 	    		  */
 	    		 String tripId;
 	    		 oolStart = handler.getCalendarDates().getListOOLDates_start();
@@ -263,7 +263,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
         }
         if (key.equals(_key_trips_frequency[0]) && keyNested.equals(_key_trips_frequency[1])) {
         	_scheduledFrequency = niceString;
-        	// Unroll transxchange:vehicle journeys with frequency to google transit:descrete trips. In the first few versions of GTFS, there did not exist frequency.txt
+        	// Unroll transxchange:vehicle journeys with frequency to GTFS: descrete trips. In the first few versions of GTFS, there did not exist frequency.txt
         	frequency = 0;
         	departureTimehhmmss[0] = -1;
         	departureTimehhmmss[1] = -1;

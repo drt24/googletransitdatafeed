@@ -33,16 +33,18 @@ import java.util.StringTokenizer;
 
 /*
  * This class extends DefaultHandler to parse a TransXChange v2.1 xml file,	
- * 	build corresponding Google Transit Feed data structures
- *  and write these to a Google Transit Feed Specification (9-Apr-2007) compliant file set
+ * 	build corresponding GTFS data structures
+ *  and write these to a GTFS (9-Apr-2007) compliant file set
  */
 public class TransxchangeHandler {
 
-	// Additional contributions to resulting Google Transit file set which cannot be extracted from a TransXChange input file
-	static String googleTransitUrl = "";
-	static String googleTransitTimezone = "";
-	static String googleTransitDefaultRouteType = "";
-	static String googleTransitOutfile = "";
+	// Additional contributions to resulting GTFS file set which cannot be extracted from a TransXChange input file
+	static String gtfsUrl = "";
+	static String gtfsTimezone = "";
+	static String gtfsDefaultRouteType = "";
+	static String gtfsOutfile = "";
+	static String gtfsLang = "";
+	static String gtfsPhone = "";
 	
 	static TransxchangeHandlerEngine parseHandler = null;
 	static List parseHandlers = null;
@@ -54,38 +56,45 @@ public class TransxchangeHandler {
 	 * Utility methods to set and get attribute values
 	 */
 	public void setUrl(String url) {
-		googleTransitUrl = url;
+		gtfsUrl = url;
 	}
-
 	public void setTimezone(String timezone) {
-		googleTransitTimezone = timezone;
+		gtfsTimezone = timezone;
 	}
-
 	public void setDefaultRouteType(String defaultRouteType) {
-		googleTransitDefaultRouteType = defaultRouteType;
+		gtfsDefaultRouteType = defaultRouteType;
 	}
-	
+	public void setLang(String lang) {
+		gtfsLang = lang;
+	}
+	public void setPhone(String phone) {
+		gtfsPhone = phone;
+	}
 	public String getUrl() {
-		return googleTransitUrl;
+		return gtfsUrl;
 	}
-
 	public String getTimezone() {
-		return googleTransitTimezone;
+		return gtfsTimezone;
 	}
-
 	public String getDefaultRouteType() {
-		return googleTransitDefaultRouteType;
+		return gtfsDefaultRouteType;
 	}
-	
+	public String getLang() {
+		return gtfsLang;
+	}
+	public String getPhone() {
+		return gtfsPhone;
+	}
 	public void setAgencyOverride(String agency) {
 		agencyOverride = agency;
 	}
 	
 	/*
-	 * Generate Google Transit Feed structures
+	 * Generate GTFS structures
 	 */
 	public void parse(String filename, String url, String timezone, String defaultRouteType,
 			String rootDirectory, String workDirectory, String stopFile,
+			String lang, String phone,
 			boolean useAgencyShortName, boolean skipEmptyService, boolean skipOrphanStops, boolean geocodeMissingStops, 
 			HashMap modeList, ArrayList stopColumns, String stopfilecolumnseparator, 
 			int naptanHelperStopColumn, HashMap naptanStopnames,
@@ -93,12 +102,12 @@ public class TransxchangeHandler {
 	    throws SAXException, SAXParseException, IOException, ParserConfigurationException
 	{
 		ZipFile zipfile = null;
-		boolean zipinput = true; // v1.5.1: Handle zip files
+		boolean zipinput = true; // Handle zip files
 		boolean processing = true;
 		java.util.Enumeration enumer = null;
 		
 		// Open infile, zip or single xml
-		try { // v1.5.1: Try to open filename as zip file
+		try { // Try to open filename as zip file
 			zipfile = new ZipFile(filename);
 		} catch (IOException e) {
 			zipinput = false; // Opening file as zip file crashed; assume it is a single XML file
@@ -118,10 +127,12 @@ public class TransxchangeHandler {
 			if (zipinput)
 				enumer = zipfile.entries(); 
 			do { 
-				parseHandler = new TransxchangeHandlerEngine();	// v1.6.2
+				parseHandler = new TransxchangeHandlerEngine();
 				parseHandler.setUrl(url);
 				parseHandler.setTimezone(timezone);
 				parseHandler.setDefaultRouteType(defaultRouteType);
+				parseHandler.setLang(lang);
+				parseHandler.setPhone(phone);
 				parseHandler.setUseAgencyShortname(useAgencyShortName);
 				parseHandler.setSkipEmptyService(skipEmptyService);
 				parseHandler.setSkipOrphanStops(skipOrphanStops);
@@ -162,7 +173,7 @@ public class TransxchangeHandler {
 	}
 	
 	/*
-	 * Create Google Transit Feed file set from Google Transit Feed data structures
+	 * Create GTFS file set from GTFS data structures
 	 */
 	public String writeOutput(String rootDirectory, String workDirectory)
 		throws IOException
