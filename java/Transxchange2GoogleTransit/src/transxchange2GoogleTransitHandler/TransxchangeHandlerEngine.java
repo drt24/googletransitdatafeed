@@ -589,8 +589,12 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		}
 		String tripsRouteId;
 		String tripsServiceId;
+		String tripsDirectionId; // v.1.7.3
+		String tripsRouteRef; // v.1.7.3
         for (int i = 0; i < this.getTrips().getListTrips__route_id().size(); i++) {
         	tripsServiceId = ((ValueList)this.getTrips().getListTrips__service_id().get(i)).getValue(0);
+        	tripsDirectionId = ((ValueList)this.getTrips().getListTrips__direction_id().get(i)).getValue(0); // v.1.7.3
+        	tripsRouteRef = ((ValueList)this.getTrips().getListTrips__routeref().get(i)).getValue(0); // v.1.7.3
         	if (!skipEmptyService || this.hasCalendarServiceId(tripsServiceId) || this.hasCalendarDatesServiceId(tripsServiceId)) {
         		tripsRouteId = ((ValueList)this.getTrips().getListTrips__route_id().get(i)).getValue(0);
 	        	tripsOut.print(tripsRouteId);
@@ -599,9 +603,10 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	        	tripsOut.print(",");
 	        	tripsOut.print(((ValueList)this.getTrips().getListTrips__trip_id().get(i)).getKeyName());
 	        	tripsOut.print(",");
-	        	tripsOut.print((this.getRoutes().getHeadsign(tripsRouteId)));
-	//        	tripsOut.print(((ValueList)this.getTrips().getListTrips__trip_headsign().get(i)).getValue(0));
+	        	tripsOut.print((this.getRoutes().getRouteDescription(tripsRouteRef))); // v.1.7.3: Route Description
+//	        	tripsOut.print((this.getRoutes().getHeadsign(tripsRouteId, tripsDirectionId.equals("1")))); // v.1.7.3: Consider direction in selecting destination
 	        	tripsOut.print(",");
+	        	tripsOut.print(tripsDirectionId); // v1.7.3
 	        	tripsOut.print(",");
 	        	tripsOut.print(((ValueList)this.getTrips().getListTrips__block_id().get(i)).getValue(0));
 	        	tripsOut.print(",");

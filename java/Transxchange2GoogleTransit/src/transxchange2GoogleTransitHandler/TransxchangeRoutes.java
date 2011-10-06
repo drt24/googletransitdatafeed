@@ -30,6 +30,7 @@ import org.xml.sax.SAXParseException;
 public class TransxchangeRoutes extends TransxchangeDataAspect {
 
 	// xml keys and output field fillers
+	static final String[] key_route__description = new String[] {"Route", "Description"}; // v1.7.3: Read id of <Route> and <Route> <Description>
 	static final String[] key_routes__route_id = new String[] {"Service", "Line", "OpenRequired"}; // GTFS required
 	static final String[] key_routes__agency_id = new String[] {"Service", "RegisteredOperatorRef", ""};
 	static final String[] key_routes__route_short_name = new String[] {"Service", "LineName", "OpenRequired"}; // GTFS required
@@ -41,6 +42,7 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 	static final String[] key_routes__route_mode = new String[] {"Service", "Mode"};
 	
 	// Parsed data 
+	HashMap listRoutes; // v1.7.3
 	List listRoutes__route_id;      
 	ValueList newRoutes__route_id;
 	List listRoutes__agency_id;      
@@ -52,6 +54,7 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 	List listRoutes__route_desc;      
 	ValueList newRoutes__route_desc;
 	HashMap listRoutes__route_dest;      
+	HashMap listRoutes__route_origin;
 //	ValueList newRoutes__route_dest;
 	List listRoutes__route_type;      
 	ValueList newRoutes__route_type;
@@ -65,6 +68,7 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 	
 	HashMap modeList = null;
 	
+	String routeId = ""; // v1.7.3
 	String currentRouteId;
 
 	public List getListRoutes__route_id() {
@@ -85,13 +89,30 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 	public HashMap getListRoutes__route_dest() {
 		return listRoutes__route_dest;
 	}
-	public String getHeadsign(String routeId) {
-		if (routeId == null || listRoutes__route_dest == null || !listRoutes__route_dest.containsKey(routeId))
-			return "";
-		return (String)listRoutes__route_dest.get(routeId);
+	public HashMap getListRoutes__route_origin() {
+		return listRoutes__route_origin;
 	}
+	public String getHeadsign(String routeId, boolean inbound) { // v1.7.3: Added inbound flag
+		if (inbound) { // v1.7.3: Reverse Origin/Destination inbound
+			if (routeId == null || listRoutes__route_origin == null || !listRoutes__route_origin.containsKey(routeId))
+				return "";
+			return (String)listRoutes__route_origin.get(routeId);
+		} else {
+			if (routeId == null || listRoutes__route_dest == null || !listRoutes__route_dest.containsKey(routeId))
+				return "";
+			return (String)listRoutes__route_dest.get(routeId);
+		}
+	}
+
 	public List getListRoutes__route_type() {
 		return listRoutes__route_type;
+	}
+
+	// v1.7.3
+	String getRouteDescription(String routeId) {
+		if (routeId == null || !listRoutes.containsKey(routeId))
+			return "";
+		return (String)listRoutes.get(routeId);
 	}
 
    	@Override
@@ -102,7 +123,16 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 	    String qualifierString;
 
 	    super.startElement(uri, name, qName, atts);
-		if (key.equals(key_routes__route_id[0]) && qName.equals(key_routes__route_id[1])) {
+
+	    // v1.7.3
+		if (qName.equals(key_route__description[0])) {
+			routeId = atts.getValue("id");
+			key = key_route__description[0]; 
+		}
+		if (key.equals(key_route__description[0]) && qName.equals(key_route__description[1]))
+			keyNested = key_route__description[1]; 
+	    
+	    if (key.equals(key_routes__route_id[0]) && qName.equals(key_routes__route_id[1])) {
 	        qualifierIx = atts.getIndex("id");
 	        qualifierString = atts.getValue(qualifierIx);
 	        newRoutes__route_id = new ValueList(qualifierString);
@@ -141,6 +171,13 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 		
 		modeList = handler.getModeList();
 
+		// v1.7.3
+		if (key.equals(key_route__description[0]) && keyNested.equals(key_route__description[1])) {
+			listRoutes.put(routeId, niceString);
+        	key = "";
+        	keyNested = "";
+		}
+		
 		if (key.equals(key_routes__route_short_name[0]) && keyNested.equals(key_routes__route_short_name[1])) {
 			newRoutes__route_short_name = new ValueList(key_routes__route_short_name[1]);
 			listRoutes__route_short_name.add(newRoutes__route_short_name);
@@ -163,11 +200,11 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 			_origin = niceString;
 		}		
 		if (key.equals(key_routes__route_destination[0]) && keyNested.equals(key_routes__route_destination[1])) {
-/*			newRoutes__route_dest = new ValueList(currentRouteId);
-			listRoutes__route_dest.add(_newRouteDesc);
-			newRoutes__route_dest.addValue(_origin + " - " + niceString);
-*/
 			listRoutes__route_dest.put(currentRouteId, niceString);
+			keyNested = "";
+		}		
+		if (key.equals(key_routes__route_origin[0]) && keyNested.equals(key_routes__route_origin[1])) {
+			listRoutes__route_origin.put(currentRouteId, niceString);
 			keyNested = "";
 		}		
 		if (key.equals(key_routes__route_desc[0]) && keyNested.equals(key_routes__route_desc[1])) {
@@ -260,6 +297,7 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
   	    csvProofList(listRoutes__route_long_name);
   	    csvProofList(listRoutes__route_desc);
 //  	    csvProofList(listRoutes__route_dest);
+//	    	csvProofList(listRoutes__route_origin);
   	    csvProofList(listRoutes__route_type);
 	}
 	
@@ -293,16 +331,22 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 		    iterator = (ValueList)listRoutes__route_dest.get(i);
 		    iterator.dumpValues();
 		}
+		for (i = 0; i < listRoutes__route_origin.size(); i++) {
+		    iterator = (ValueList)listRoutes__route_origin.get(i);
+		    iterator.dumpValues();
+		}
 	}
 
 	public TransxchangeRoutes(TransxchangeHandlerEngine owner) {
 		super(owner);
+		listRoutes = new HashMap();
 		listRoutes__route_id = new ArrayList();
 		listRoutes__agency_id = new ArrayList();
 		listRoutes__route_short_name = new ArrayList();
 		listRoutes__route_long_name = new ArrayList();
 		listRoutes__route_desc = new ArrayList();
 		listRoutes__route_dest = new HashMap();
+		listRoutes__route_origin = new HashMap();
 		listRoutes__route_type = new ArrayList();
 		listRoutes__service_id = new ArrayList();
 		

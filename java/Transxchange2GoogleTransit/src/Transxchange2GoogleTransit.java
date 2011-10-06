@@ -23,7 +23,6 @@ import java.io.FileReader;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,7 +53,7 @@ public class Transxchange2GoogleTransit {
 
 		TransxchangeHandler handler = null;
 
-        System.out.println("transxchange2GTFS 1.7.2");
+        System.out.println("transxchange2GTFS 1.7.3");
         System.out.println("Please refer to LICENSE file for licensing information");
         int foundConfigFile = -1;
         int i = 0;
