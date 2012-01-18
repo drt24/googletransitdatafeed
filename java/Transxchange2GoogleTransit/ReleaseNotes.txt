@@ -10,6 +10,12 @@ The Apache Software Foundation (http://www.apache.org/)
 RELEASE NOTES
 
 --------------------------------------------------------------
+v1.7.4:
+
+*** Improve robustness of stop file read
+
+
+--------------------------------------------------------------
 v1.7.3:
 
 *** Carry <Direction> of JourneyPatterns through to direction_in in trips.txt. Mapping

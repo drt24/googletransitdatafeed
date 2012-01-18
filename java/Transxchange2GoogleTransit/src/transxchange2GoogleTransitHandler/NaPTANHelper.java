@@ -77,91 +77,97 @@ public class NaPTANHelper {
 	    initializeIndicatorMap();
 	    boolean indicatorSet;
 	    while((line = bufFileIn.readLine()) != null) {
-            StringTokenizer st = new StringTokenizer(line, ",");
-            i = 0;
-            while (st.hasMoreTokens() && i < 30) {
-                tokens[i] = st.nextToken();
-                i++;
-            }
-
-            // Stop code (for queries to server and display as "stop number"
-            atcoCode = tokens[stopcodeAltIx].substring(1, tokens[stopcodeAltIx].length() - 1);
-            smscode = tokens[smscodeIx].substring(1, tokens[smscodeIx].length() - 1); // Use SMS code as stop code - Remove quotation marks
-            if (smscode == null || smscode.length() == 0)
-	            stopcode = atcoCode; // In the absence of SMS code: Go for alternative stop code		            	
-            else
-            	stopcode = smscode;
+	    	
+	    	try { // v1.7.4
+	            StringTokenizer st = new StringTokenizer(line, ",");
+	            i = 0;
+	            while (st.hasMoreTokens() && i < 30) {
+	                tokens[i] = st.nextToken();
+	                i++;
+	            }
+	            
+	            // Stop code (for queries to server and display as "stop number"
+	            atcoCode = tokens[stopcodeAltIx].substring(1, tokens[stopcodeAltIx].length() - 1);
+	            smscode = tokens[smscodeIx].substring(1, tokens[smscodeIx].length() - 1); // Use SMS code as stop code - Remove quotation marks
+	            if (smscode == null || smscode.length() == 0)
+		            stopcode = atcoCode; // In the absence of SMS code: Go for alternative stop code		            	
+	            else
+	            	stopcode = smscode;
+			            
+	            // Read CommonName, locality and the other relevant columns; remove quotation marks as necessary
+	            commonName = tokens[commonNameIx].substring(1, tokens[commonNameIx].length() - 1);
+	            rawIndicator = tokens[indicatorIx].substring(1, tokens[indicatorIx].length() - 1);
+	            direction = tokens[directionIx].substring(1, tokens[directionIx].length() - 1);
+	            street = tokens[streetIx].substring(1, tokens[streetIx].length() - 1);
+	            locality = tokens[localityIx].substring(1, tokens[localityIx].length() - 1);
+	            parentLocality = tokens[parentLocalityIx].substring(1, tokens[parentLocalityIx].length() - 1);
+	            busStopType = tokens[busStopTypeIx].substring(1, tokens[busStopTypeIx].length() - 1);
+	            
+	            // Create NaPTAN stop name following rules
+	            stopname = "";
+			            
+	            // Locality and parent locality
+	            if (locality != null && locality.length() > 0 || parentLocality != null && parentLocality.length() > 0) {
+		            if (locality != null && locality.length() > 0)
+		            	stopname += locality;
+		            if (parentLocality != null && parentLocality.length() > 0 && !locality.contains(parentLocality))
+		            	stopname += " " + parentLocality;
+	            }
+			            
+	            // Indicator
+	            indicatorSet = false;
+	            switch (analyzeIndicator(rawIndicator)) {
+	            	case INDICATOR_BEFORE:
+	            		indicator = getPreferredIndicator(rawIndicator, indicatorsbefore);
+	            		stopname += ", " + indicator; // + " " + stopname2;
+	            		indicatorSet = true;
+	            		break;
+	            	default:
+	//            		if (rawIndicator.length() > 0 && !rawIndicator.equals("---"))
+	//            			stopname += ", " + rawIndicator;
+		            	if (rawIndicator.length() <= 2 && rawIndicator.length() > 0)
+		            		stopname += ", Stop " + rawIndicator; // Use Stop position code
+		            	else
+		            		if (!direction.toUpperCase().equals("NA") && direction.length() > 0)
+		            			stopname += ", (" + direction + "-bound)"; // No preferred indicator, use direction instead, unless NA"
+	            		break;
+	            }
 		            
-            // Read CommonName, locality and the other relevant columns; remove quotation marks as necessary
-            commonName = tokens[commonNameIx].substring(1, tokens[commonNameIx].length() - 1);
-            rawIndicator = tokens[indicatorIx].substring(1, tokens[indicatorIx].length() - 1);
-            direction = tokens[directionIx].substring(1, tokens[directionIx].length() - 1);
-            street = tokens[streetIx].substring(1, tokens[streetIx].length() - 1);
-            locality = tokens[localityIx].substring(1, tokens[localityIx].length() - 1);
-            parentLocality = tokens[parentLocalityIx].substring(1, tokens[parentLocalityIx].length() - 1);
-            busStopType = tokens[busStopTypeIx].substring(1, tokens[busStopTypeIx].length() - 1);
-            
-            // Create NaPTAN stop name following rules
-            stopname = "";
+	            // CommonName
+	            stopname += " " + commonName;
+	
+	            // After-indicator
+	            switch (analyzeIndicator(rawIndicator)) {
+	            	case INDICATOR_AFTER:
+	            		indicator = getPreferredIndicator(rawIndicator, indicatorsafter);
+	            		stopname += " (" + indicator + ")";
+	        		break;
+	            	default:
+		            break;
+	            }
 		            
-            // Locality and parent locality
-            if (locality != null && locality.length() > 0 || parentLocality != null && parentLocality.length() > 0) {
-	            if (locality != null && locality.length() > 0)
-	            	stopname += locality;
-	            if (parentLocality != null && parentLocality.length() > 0 && !locality.contains(parentLocality))
-	            	stopname += " " + parentLocality;
-            }
+	            // on-Street
+	            if (street != null && street.length() > 0 && !street.toUpperCase().equals("N/A") && !street.equals("---"))
+	            	stopname += " (on " + street + ")";
 		            
-            // Indicator
-            indicatorSet = false;
-            switch (analyzeIndicator(rawIndicator)) {
-            	case INDICATOR_BEFORE:
-            		indicator = getPreferredIndicator(rawIndicator, indicatorsbefore);
-            		stopname += ", " + indicator; // + " " + stopname2;
-            		indicatorSet = true;
-            		break;
-            	default:
-//            		if (rawIndicator.length() > 0 && !rawIndicator.equals("---"))
-//            			stopname += ", " + rawIndicator;
-	            	if (rawIndicator.length() <= 2 && rawIndicator.length() > 0)
-	            		stopname += ", Stop " + rawIndicator; // Use Stop position code
-	            	else
-	            		if (!direction.toUpperCase().equals("NA") && direction.length() > 0)
-	            			stopname += ", (" + direction + "-bound)"; // No preferred indicator, use direction instead, unless NA"
-            		break;
-            }
+	            // SMS code
+	            if (smscode != null && smscode.length() > 0)
+	            	stopname += " [SMS: " + smscode + "]";
+		            
+	            stopname = stopname.trim();
 	            
-            // CommonName
-            stopname += " " + commonName;
-
-            // After-indicator
-            switch (analyzeIndicator(rawIndicator)) {
-            	case INDICATOR_AFTER:
-            		indicator = getPreferredIndicator(rawIndicator, indicatorsafter);
-            		stopname += " (" + indicator + ")";
-        		break;
-            	default:
-	            break;
-            }
-	            
-            // on-Street
-            if (street != null && street.length() > 0 && !street.toUpperCase().equals("N/A") && !street.equals("---"))
-            	stopname += " (on " + street + ")";
-	            
-            // SMS code
-            if (smscode != null && smscode.length() > 0)
-            	stopname += " [SMS: " + smscode + "]";
-	            
-            stopname = stopname.trim();
+	            if (busStopType.equals("CUS"))
+	            	stopname += " (unmarked)";
+	            if (busStopType.equals("HAR"))
+	            	stopname += " (Hail-and-Ride)";
+	
+	            if (!busStopType.equals("FLX")) // Do not include flex service stops
+	            	result.put(atcoCode, stopname);
             
-            if (busStopType.equals("CUS"))
-            	stopname += " (unmarked)";
-            if (busStopType.equals("HAR"))
-            	stopname += " (Hail-and-Ride)";
-
-            if (!busStopType.equals("FLX")) // Do not include flex service stops
-            	result.put(atcoCode, stopname);
-            
+	    	} catch (Exception e) { // v1.7.4
+	    		System.out.println("Exception: " + e.getMessage());
+	    		System.out.println("At line: " + line);
+		    }
 	    }
 	    bufFileIn.close();
 	    
