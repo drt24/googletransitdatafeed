@@ -1,5 +1,5 @@
 /*
- * Copyright 2007, 2008, 2009, 2010, 2011 GoogleTransitDataFeed
+ * Copyright 2007, 2008, 2009, 2010, 2011, 2012 GoogleTransitDataFeed
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -249,24 +249,38 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
         				yearsList.add(i);
         		}
     		}
-    		service = handler.getCalendar().getService();
-    		HashMap holidays;
-        	Iterator i;
-        	i = yearsList.iterator();
-        	while (i.hasNext()) {
-        		holidays = (HashMap)years.get(i.next());
-        		// Non Operating Holidays
-            	if (key.equals(_key_calendar_bankholiday_nooperation_all[0]) && keyNested.equals(_key_calendar_bankholiday_nooperation_all[1]) && keyOperationDaysBank.equals(_key_calendar_bankholiday_nooperation_all[2]))       
-            		createBankHolidaysAll(service, holidays, _key_calendar_bankholiday_nooperation_all[4]);
-            	
-            	// Operating Holidays
-            	if (key.equals(_key_calendar_bankholiday_operation_all[0]) && keyNested.equals(_key_calendar_bankholiday_operation_all[1]) 
-            			&& keyOperationDaysBank.equals(_key_calendar_bankholiday_operation_all[2])
-        			&& keyOperationDaysType.equals(_key_calendar_bankholiday_operation_all[3]))       
-            		createBankHolidaysAll(service, holidays, _key_calendar_bankholiday_operation_all[4]);
-            	else
-	           		if (key.equals(_key_calendar_bankholiday_operation_spring[0]) && keyNested.equals(_key_calendar_bankholiday_operation_spring[1]) && keyOperationDaysBank.equals(_key_calendar_bankholiday_operation_spring[2]))       
-	           			createBankHoliday(service, qName, holidays, _key_calendar_bankholiday_nooperation_all[4]);
+
+        	service = handler.getCalendar().getService(); 
+    		
+        	// v.1.7.4: Bug fix: correctly dereference service ID if not determined in global call above
+        	if (service == null || service.length() == 0) {
+	    		List serviceIds = calendar.getListCalendar__service_id();
+	    		service = "";
+	    		if (serviceIds.size() > 0) {
+	    			ValueList values = (ValueList)serviceIds.get(0);
+	    			service = values.getValue(0);
+	    		}
+    		}
+    		
+    		if (!service.equals("")) {
+	    		HashMap holidays;
+	        	Iterator i;
+	        	i = yearsList.iterator();
+	        	while (i.hasNext()) {
+	        		holidays = (HashMap)years.get(i.next());
+	        		// Non Operating Holidays
+	            	if (key.equals(_key_calendar_bankholiday_nooperation_all[0]) && keyNested.equals(_key_calendar_bankholiday_nooperation_all[1]) && keyOperationDaysBank.equals(_key_calendar_bankholiday_nooperation_all[2]))       
+	            		createBankHolidaysAll(service, holidays, _key_calendar_bankholiday_nooperation_all[4]);
+	            	
+	            	// Operating Holidays
+	            	if (key.equals(_key_calendar_bankholiday_operation_all[0]) && keyNested.equals(_key_calendar_bankholiday_operation_all[1]) 
+	            			&& keyOperationDaysBank.equals(_key_calendar_bankholiday_operation_all[2])
+	        			&& keyOperationDaysType.equals(_key_calendar_bankholiday_operation_all[3]))       
+	            		createBankHolidaysAll(service, holidays, _key_calendar_bankholiday_operation_all[4]);
+	            	else
+		           		if (key.equals(_key_calendar_bankholiday_operation_spring[0]) && keyNested.equals(_key_calendar_bankholiday_operation_spring[1]) && keyOperationDaysBank.equals(_key_calendar_bankholiday_operation_spring[2]))       
+		           			createBankHoliday(service, qName, holidays, _key_calendar_bankholiday_nooperation_all[4]);
+	        	}
         	}
         }    
 	}

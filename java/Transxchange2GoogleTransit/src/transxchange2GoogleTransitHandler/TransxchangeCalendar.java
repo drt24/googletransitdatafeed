@@ -1,5 +1,5 @@
 /*
- * Copyright 2007, 2008, 2009, 2010, 2011 GoogleTransitDataFeed
+ * Copyright 2007, 2008, 2009, 2010, 2011, 2012 GoogleTransitDataFeed
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -159,7 +159,6 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 				highestYear = testYear;
 			
 		}
-		
 		return highestYear;
 	}
 
@@ -206,7 +205,7 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 	}
 
    	@Override
-	public void endElement (String uri, String name, String qName) {
+	public void endElement(String uri, String name, String qName) {
 		if (niceString == null || niceString.length() > 0) {
 			if (key.equals(key_calendar__service_id[0]) && keyNested.equals(key_calendar__service_id[1])) {
 				service = niceString;
@@ -405,7 +404,7 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 	}
 
    	@Override
-	public void clearKeys (String qName) {
+	public void clearKeys(String qName) {
 		if (qName.equals(key_calendar__service_id[1])) 
 			keyNested = "";
 		if (qName.equals(key_calendar__start_date[1]))
