@@ -58,8 +58,8 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	static final String[] _key_route_section = {"RouteSection"};
 	static final String[] _key_route_link_from = new String [] {"RouteLink", "From", "StopPointRef"};
 	static final String[] _key_route_link_to = new String [] {"RouteLink", "To", "StopPointRef"};
-	static final String[] _key_route_link_location_x = new String [] {"RouteLink", "Easting"};
-	static final String[] _key_route_link_location_y = new String [] {"RouteLink", "Northing"};
+	static final String[] _key_route_link_location_x = new String [] {"RouteLink", "Easting-removed!"}; // v1.7.5. Do not pick up Easting/Northing from route links any longer
+	static final String[] _key_route_link_location_y = new String [] {"RouteLink", "Northing-removed!"}; // v1.7.5
 	boolean inRouteSection = false;
 	String keyNestedLocation = "";
 	String stopPointFrom = "";

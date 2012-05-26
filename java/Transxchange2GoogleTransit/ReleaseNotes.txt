@@ -10,6 +10,11 @@ The Apache Software Foundation (http://www.apache.org/)
 RELEASE NOTES
 
 --------------------------------------------------------------
+v1.7.5:
+
+*** Bugfix: Easting and Northing of route links interfered with correctly carrying over lat/lon data from the NapTAN stops.csv file. 
+
+--------------------------------------------------------------
 v1.7.4:
 
 *** Improve robustness of stop file read
