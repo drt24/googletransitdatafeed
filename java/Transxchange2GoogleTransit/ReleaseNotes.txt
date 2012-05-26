@@ -12,7 +12,9 @@ RELEASE NOTES
 --------------------------------------------------------------
 v1.7.5:
 
-*** Bugfix: Easting and Northing of route links interfered with correctly carrying over lat/lon data from the NapTAN stops.csv file. 
+*** Bugfix for stops.txt: Easting and Northing of route links interfered with correctly carrying over lat/lon data from the NapTAN stops.csv file. 
+*** Bugfix for trips.txt: CSV-proof output of trip headsign
+*** routes.txt: Align output of route_desc with GTFS feed validator requirement that route description shall not be same as route short or long name
 
 --------------------------------------------------------------
 v1.7.4:

@@ -603,7 +603,10 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	        	tripsOut.print(",");
 	        	tripsOut.print(((ValueList)this.getTrips().getListTrips__trip_id().get(i)).getKeyName());
 	        	tripsOut.print(",");
-	        	tripsOut.print((this.getRoutes().getRouteDescription(tripsRouteRef))); // v.1.7.3: Route Description
+	        	String tripHeadsign = this.getRoutes().getRouteDescription(tripsRouteRef);
+	        	if (tripHeadsign.contains(",")) // v1.7.5: csv-proof output
+	        		tripHeadsign = "\"" + tripHeadsign + "\"";
+	        	tripsOut.print(tripHeadsign); // v.1.7.3: Route Description
 //	        	tripsOut.print((this.getRoutes().getHeadsign(tripsRouteId, tripsDirectionId.equals("1")))); // v.1.7.3: Consider direction in selecting destination
 	        	tripsOut.print(",");
 	        	tripsOut.print(tripsDirectionId); // v1.7.3
@@ -715,11 +718,15 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 				routesOut.print(",");
 				routesOut.print(((ValueList)this.getRoutes().getListRoutes__agency_id().get(i)).getValue(0));
 				routesOut.print(",");
-				routesOut.print(((ValueList)this.getRoutes().getListRoutes__route_short_name().get(i)).getValue(0));
+				String routeShortname = ((ValueList)this.getRoutes().getListRoutes__route_short_name().get(i)).getValue(0);
+				routesOut.print(routeShortname);
 				routesOut.print(",");
-				routesOut.print(((ValueList)this.getRoutes().getListRoutes__route_long_name().get(i)).getValue(0));
+				String routeLongname = ((ValueList)this.getRoutes().getListRoutes__route_long_name().get(i)).getValue(0);
+				routesOut.print(routeLongname);
 				routesOut.print(",");
-				routesOut.print(((ValueList)this.getRoutes().getListRoutes__route_desc().get(i)).getValue(0));
+				String routeDesc = ((ValueList)this.getRoutes().getListRoutes__route_desc().get(i)).getValue(0); // v1.7.5: Do not write route description if equal to route short or long name
+				if (routeDesc != null && !(routeDesc.equals(routeShortname) || routeDesc.equals(routeLongname)))
+					routesOut.print(routeDesc);
 				routesOut.print(",");
 				routesOut.print(((ValueList)this.getRoutes().getListRoutes__route_type().get(i)).getValue(0));
 				routesOut.print(","); // no route url
