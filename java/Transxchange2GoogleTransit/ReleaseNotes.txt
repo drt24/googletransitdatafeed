@@ -106,10 +106,10 @@ A NaPTAN stop column pick definition in a configuration file overrides the NaPTA
 The columns are picked in the sequence they occur in the configuration file.
 Example:
 naptanstopcolumn="CommonName"
-naptanstopcolumn="NatGazLocality"
-naptanstopcolumn="ATCOCode"
-results in a stop_name that is a combination of the stops' CommonName, NatGazLocality and ATCOCode. 
-Note that the respective values identify the columns in a NaPTAN  v1 csv stop file.
+naptanstopcolumn="LocalityName"
+naptanstopcolumn="AtcoCode"
+results in a stop_name that is a combination of the stops' CommonName, LocalityName and AtcoCode. 
+Note that the respective values identify the columns in a NaPTAN  v2 csv stop file.
 In the stops.txt file, the values of the picked columns are separated by a comma (,), or by the definition of the NaPTAN stop column separator.
 
 *** NaPTAN stop column separator (new configuration file setting)

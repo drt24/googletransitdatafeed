@@ -343,7 +343,7 @@ agency:OId_EB=London Buses, operated by H R Richmond
 agency:OId_NL=London Buses, operated by N S L
 #
 # Proposed manual augmentation for missing stops in NaPTANcsv/Stops.csv
-"ATCOCode","GridType","Easting","Northing","Lon","Lat","CommonName","Identifier","Direction","Street","Landmark","NatGazID","NatGazLocality","ParentLocality","GrandParentLocality","Town","Suburb","StopType","BusStopType","BusRegistrationStatus","RecordStatus","Notes","LocalityCentre","SMSNumber","LastChanged"
+"AtcoCode","GridType","Easting","Northing","Longitude","Latitude","CommonName","Indicator","Bearing","Street","Landmark","NptgLocalityCode","LocalityName","ParentLocalityName","GrandParentLocality","Town","Suburb","StopType","BusStopType","BusRegistrationStatus","RecordStatus","Notes","LocalityCentre","NaptanCode","LastChanged"
 "9300RQP","","","",-0.305037,51.456417,"Richmond Pier","","NA","Richmond St.","","","Richmond St. Helena Pier","Richmond","","","","","","","","","","",
 "9300WAP","","","",-0.199003,51.462742,"Wandsworth Pier","","NA","Point Pleasant","","","Wandsworth Riverside Quarter Pier","Wandsworth","","","","","","","","","","",
 "9400ZZLUDGY1","","","",0.14754,51.54164,"Dagenham Heathway Underground Station","Entrance unknown","NA","-","TBA","E0033934","Dagenham","","","","","MET","","","ACT","","","",

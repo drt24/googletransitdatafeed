@@ -31,28 +31,28 @@ public class NaPTANHelper {
 	    int parentLocalityIx;
 	    int busStopTypeIx;
 	    if ((line = bufFileIn.readLine()) != null) {
-	        if ((stopcodeAltIx = findColumn(line, "\"ATCOCode\"")) == -1)
-	            throw new UnsupportedEncodingException("stopfile column ATCOCode not found");
-	        if ((latIx = findColumn(line, "\"Lat\"")) == -1)
-	            throw new UnsupportedEncodingException("stopfile column Lat not found");
-	        if ((lonIx = findColumn(line, "\"Lon\"")) == -1)
-	            throw new UnsupportedEncodingException("stopfile column Lon not found");
+	        if ((stopcodeAltIx = findColumn(line, "\"AtcoCode\"")) == -1)
+	            throw new UnsupportedEncodingException("stopfile column AtcoCode not found");
+	        if ((latIx = findColumn(line, "\"Latitude\"")) == -1)
+	            throw new UnsupportedEncodingException("stopfile column Latitude not found");
+	        if ((lonIx = findColumn(line, "\"Longitude\"")) == -1)
+	            throw new UnsupportedEncodingException("stopfile column Longitude not found");
 	        if ((commonNameIx = findColumn(line, "\"CommonName\"")) == -1)
 	            throw new UnsupportedEncodingException("stopfile column CommonName not found");
-	        if ((indicatorIx = findColumn(line, "\"Identifier\"")) == -1)
-	            throw new UnsupportedEncodingException("stopfile column Identifier not found");
-	        if ((directionIx = findColumn(line, "\"Direction\"")) == -1)
-	            throw new UnsupportedEncodingException("stopfile column Direction not found");
+	        if ((indicatorIx = findColumn(line, "\"Indicator\"")) == -1)
+	            throw new UnsupportedEncodingException("stopfile column Indicator not found");
+	        if ((directionIx = findColumn(line, "\"Bearing\"")) == -1)
+	            throw new UnsupportedEncodingException("stopfile column Bearing not found");
 	        if ((streetIx = findColumn(line, "\"Street\"")) == -1)
 	            throw new UnsupportedEncodingException("stopfile column Street not found");
-	        if ((localityIx = findColumn(line, "\"NatGazLocality\"")) == -1)
-	            throw new UnsupportedEncodingException("stopfile column NatGazLocality not found");
-	        if ((parentLocalityIx = findColumn(line, "\"ParentLocality\"")) == -1)
-	            throw new UnsupportedEncodingException("stopfile column ParentLocality not found");
+	        if ((localityIx = findColumn(line, "\"LocalityName\"")) == -1)
+	            throw new UnsupportedEncodingException("stopfile column LocalityName not found");
+	        if ((parentLocalityIx = findColumn(line, "\"ParentLocalityName\"")) == -1)
+	            throw new UnsupportedEncodingException("stopfile column ParentLocalityName not found");
 	        if ((busStopTypeIx = findColumn(line, "\"BusStopType\"")) == -1)
 	            throw new UnsupportedEncodingException("stopfile column BusStopType not found");
-	        if ((smscodeIx = findColumn(line, "\"SMSNumber\"")) == -1)
-	            throw new UnsupportedEncodingException("stopfile column SMSNumber not found");
+	        if ((smscodeIx = findColumn(line, "\"NaptanCode\"")) == -1)
+	            throw new UnsupportedEncodingException("stopfile column NaptanCode not found");
 	    } else
 	        throw new UnsupportedEncodingException("stopfile is empty");
 

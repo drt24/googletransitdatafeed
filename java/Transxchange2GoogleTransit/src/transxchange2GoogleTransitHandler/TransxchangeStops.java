@@ -630,12 +630,12 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 		int latIx;
 		int lonIx;
 		if ((line = bufFileIn.readLine()) != null) {
-			if ((stopcodeIx = NaPTANHelper.findColumn(line, "\"ATCOCode\"")) == -1)
-				throw new UnsupportedEncodingException("stopfile column ATCOCode not found");
-			if ((latIx = NaPTANHelper.findColumn(line, "\"Lat\"")) == -1)
-				throw new UnsupportedEncodingException("stopfile column Lat not found");
-			if ((lonIx = NaPTANHelper.findColumn(line, "\"Lon\"")) == -1)
-				throw new UnsupportedEncodingException("stopfile column Lon not found");
+			if ((stopcodeIx = NaPTANHelper.findColumn(line, "\"AtcoCode\"")) == -1)
+				throw new UnsupportedEncodingException("stopfile column AtcoCode not found");
+			if ((latIx = NaPTANHelper.findColumn(line, "\"Latitude\"")) == -1)
+				throw new UnsupportedEncodingException("stopfile column Latitude not found");
+			if ((lonIx = NaPTANHelper.findColumn(line, "\"Longitude\"")) == -1)
+				throw new UnsupportedEncodingException("stopfile column Longitude not found");
 		} else
 			throw new UnsupportedEncodingException("stopfile is empty");
 			
