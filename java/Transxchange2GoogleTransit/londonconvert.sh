@@ -115,7 +115,7 @@ then
         echo "-E- "$TXC2GTFS"/transxchange2GoogleTransit.jar not found. Please correctly set TXC2GTFS"
         exit 1
 fi
-echo "-I- Using converter " $TXC2GTFS"/transxchange2GoogleTransit.jar"
+echo "-I- Using converter "$TXC2GTFS"/transxchange2GoogleTransit.jar"
 
 #
 DATASOURCE='http://www.tfl.gov.uk/tfl/businessandpartners/syndication/example-feeds/journeyplannertimetables/journey-planner-timetables.zip' # Note: This is a link to an example feed only. Request the current stream.zip as listed in dependency declaration above
@@ -208,7 +208,7 @@ rm LondonBuses/*.xml
 if [ ! -z "$(ls london/)" ]
 then
         echo "-W- The following TransXChange input file(s) have not been accounted for. Cause: Unkown operator(s)"
-        ls -l london
+        ls london
         echo "It is recommended to modify this script to reflect operator change(s)"
         read -p "Press return to continue, ^C to stop"
 fi
