@@ -100,23 +100,34 @@ echo
 if [ ! -f /usr/bin/zip ]
 then
         echo "-E- zip not found. Please install zip"
-        exit
+        exit 1
 fi
 if [ ! -f /usr/bin/unzip ]
 then
         echo "-E- unzip not found. Please install unzip"
-        exit
+        exit 1
 fi
 #
 # Set directory that contains converter's executable JAR file transxchange2GoogleTransit.jar. CHANGE DIRECTORY REFERENCE AS NECESSARY
-TXC2GTFS='/usr/lib/TransXChange2GTFS/dist'
-echo "-I- Using converter in directory $TXC2GTFS"
+[ "$TXC2GTFS" ] || TXC2GTFS='/usr/lib/TransXChange2GTFS/dist'
+if [ ! -f $TXC2GTFS"/transxchange2GoogleTransit.jar" ]
+then
+        echo "-E- "$TXC2GTFS"/transxchange2GoogleTransit.jar not found. Please correctly set TXC2GTFS"
+        exit 1
+fi
+echo "-I- Using converter " $TXC2GTFS"/transxchange2GoogleTransit.jar"
+
 #
 DATASOURCE='http://www.tfl.gov.uk/tfl/businessandpartners/syndication/example-feeds/journeyplannertimetables/journey-planner-timetables.zip' # Note: This is a link to an example feed only. Request the current stream.zip as listed in dependency declaration above
 #
 # Download Demo TransXChange file from TfL and unzip
 # echo "-I- Downloading Demo London data set from $DATASOURCE"
-# curl $DATASOURCE >stream.zip # Example only. 
+# curl $DATASOURCE >stream.zip # Example only.
+if [ ! -f stream.zip ]
+then
+        echo "-E- stream.zip not found. Please put the data set in a zip called stream.zip in the CWD."
+        exit 1
+fi
 echo "-I- Unzipping London data set: stream.zip"
 tflrmdir london
 unzip -q stream.zip -d london
