@@ -113,7 +113,7 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 	String getRouteDescription(String routeId) {
 		if (routeId == null || !listRoutes.containsKey(routeId))
 			return "";
-		return listRoutes.get(routeId);
+		return listRoutes.get(routeId).trim();
 	}
 
    	@Override
