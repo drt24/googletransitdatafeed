@@ -102,7 +102,11 @@ public class NaPTANHelper {
 	            street = tokens[streetIx].substring(1, tokens[streetIx].length() - 1);
 	            locality = tokens[localityIx].substring(1, tokens[localityIx].length() - 1);
 	            parentLocality = tokens[parentLocalityIx].substring(1, tokens[parentLocalityIx].length() - 1);
+	            if (tokens[busStopTypeIx].length() > 2){
 	            busStopType = tokens[busStopTypeIx].substring(1, tokens[busStopTypeIx].length() - 1);
+	            } else {
+	              busStopType = "";
+	            }
 	            
 	            // Create NaPTAN stop name following rules
 	            stopname = "";
