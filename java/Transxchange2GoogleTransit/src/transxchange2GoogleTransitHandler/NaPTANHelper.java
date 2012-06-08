@@ -115,7 +115,7 @@ public class NaPTANHelper {
 	            if (locality != null && locality.length() > 0 || parentLocality != null && parentLocality.length() > 0) {
 		            if (locality != null && locality.length() > 0)
 		            	stopname += locality;
-		            if (parentLocality != null && parentLocality.length() > 0 && !locality.contains(parentLocality))
+		            if (parentLocality != null && parentLocality.length() > 0 && (locality == null || !locality.contains(parentLocality)))
 		            	stopname += " " + parentLocality;
 	            }
 			            
