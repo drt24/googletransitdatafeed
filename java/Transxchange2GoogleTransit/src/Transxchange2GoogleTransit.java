@@ -110,24 +110,23 @@ public class Transxchange2GoogleTransit {
        			break;
         	}
 		} catch (ParserConfigurationException e) {
-        	System.out.println("transxchange2GTFS ParserConfiguration parse error:");
-        	System.out.println(e.getMessage());
+        	System.err.println("transxchange2GTFS ParserConfiguration parse error:");
+        	e.printStackTrace();
         	System.exit(1);
 		}
 		catch (SAXException e) {
-			System.out.println("transxchange2GTFS SAX parse error:");
-			System.out.println(e.getMessage());
-			System.out.println(e.getException());
+			System.err.println("transxchange2GTFS SAX parse error:");
+			e.printStackTrace();
 			System.exit(1);						
 		}
 		catch (UnsupportedEncodingException e) {
-			System.out.println("transxchange2GTFS NaPTAN stop file:");
-			System.out.println(e.getMessage());
+			System.err.println("transxchange2GTFS NaPTAN stop file:");
+			e.printStackTrace();
 			System.exit(1);						
 		}
  		catch (IOException e) {
-			System.out.println("transxchange2GTFS IO parse error:");
-			System.out.println(e.getMessage());
+			System.err.println("transxchange2GTFS IO parse error:");
+			e.printStackTrace();
 			System.exit(1);						
 		}
 

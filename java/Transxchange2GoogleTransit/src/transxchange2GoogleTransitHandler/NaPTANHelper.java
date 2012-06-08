@@ -170,8 +170,8 @@ public class NaPTANHelper {
 	            	result.put(atcoCode, stopname);
             
 	    	} catch (Exception e) { // v1.7.4
-	    		System.out.println("Exception: " + e.getMessage());
-	    		System.out.println("At line: " + line);
+	    		System.err.println("At line: " + line + " Exception: " + e.getMessage());
+	    		throw new IOException(e);
 		    }
 	    }
 	    bufFileIn.close();
