@@ -376,8 +376,8 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 			calendar.endDocument();
 			calendarDates.endDocument();
 		} catch (IOException e) {
-			System.out.println("transxchange2GTFS endDocument() exception: " + e.getMessage());
-			System.exit(0);
+			System.err.println("transxchange2GTFS endDocument() exception: " + e.getMessage());
+			System.exit(1);
 		}
 
 		// Complete data structures (by filling in default values if necessary)

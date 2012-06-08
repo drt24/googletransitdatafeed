@@ -134,8 +134,8 @@ public class Transxchange2GoogleTransit {
         try {
         	handler.writeOutput("", args[4]);
         } catch (IOException e) {
-        	System.out.println("transxchange2GTFS write error:");
-        	System.out.println(e.getMessage());
+        	System.err.println("transxchange2GTFS write error:");
+        	System.err.println(e.getMessage());
         	System.exit(1);
         }
 
