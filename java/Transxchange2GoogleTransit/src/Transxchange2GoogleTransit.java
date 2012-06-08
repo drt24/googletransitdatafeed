@@ -1,12 +1,12 @@
 /*
  * Copyright 2007, 2008, 2009, 2010, 2011, 2012 GoogleTransitDataFeed
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -33,13 +33,13 @@ import java.util.StringTokenizer;
 import transxchange2GoogleTransitHandler.*;
 
 /*
- * Transxchange2GTFS 
+ * Transxchange2GTFS
  * 	$ transxchange2GoogleTransit <transxchange input filename> <url> <timezone> <default route type> <output-directory> <stopfile>
- * 
+ *
  * <default route type>: 0 - Tram, 1 - Subway, 2 - Rail, 3 - Bus, 4 - Ferry, 5 - Cable car, 6 - Gondola, 7 - Funicular
  */
 public class Transxchange2GoogleTransit {
-	
+
 	static boolean 										useAgencyShortname = false;
 	static boolean 										skipEmptyService = false;
 	static boolean 										skipOrphanStops = false;
@@ -78,10 +78,10 @@ public class Transxchange2GoogleTransit {
 	        	System.out.println("         for instructions about the values of the arguments <url>, <timezone> and <default route type>.");
 	        	System.exit(1);
 	        }
-    
+
         // Parse transxchange input file and create initial GTFS output files
         try {
-        	
+
         	handler = new TransxchangeHandler();
 
         	// v1.6.4: Read configuration file
@@ -117,17 +117,17 @@ public class Transxchange2GoogleTransit {
 		catch (SAXException e) {
 			System.err.println("transxchange2GTFS SAX parse error:");
 			e.printStackTrace();
-			System.exit(1);						
+			System.exit(1);
 		}
 		catch (UnsupportedEncodingException e) {
 			System.err.println("transxchange2GTFS NaPTAN stop file:");
 			e.printStackTrace();
-			System.exit(1);						
+			System.exit(1);
 		}
  		catch (IOException e) {
 			System.err.println("transxchange2GTFS IO parse error:");
 			e.printStackTrace();
-			System.exit(1);						
+			System.exit(1);
 		}
 
        // Create final GTFS output files
@@ -138,17 +138,17 @@ public class Transxchange2GoogleTransit {
         	System.out.println(e.getMessage());
         	System.exit(1);
         }
-       
+
     	System.exit(0);
     }
-	
-	private static String[] readConfigFile(String inputFileName, String configFilename) 
+
+	private static String[] readConfigFile(String inputFileName, String configFilename)
 		throws IOException
-	
+
 	{
 		String[] result = {inputFileName, "", "", "", "", "", "", ""};
 		useAgencyShortname = false;
-		
+
 		BufferedReader in = new BufferedReader(new FileReader(configFilename));
 		String line;
 		int tokenCount;
@@ -159,7 +159,7 @@ public class Transxchange2GoogleTransit {
 			tokenCount = 0;
 			StringTokenizer st = new StringTokenizer(line, "=");
 			while (st.hasMoreTokens() && tokenCount <= 2) {
-				configValues[tokenCount] = st.nextToken(); 
+				configValues[tokenCount] = st.nextToken();
 				if (tokenCount == 1) {
 					configValues[0] = configValues[0].trim().toLowerCase();
 //					configurationValue = st.nextToken().trim();
@@ -190,10 +190,10 @@ public class Transxchange2GoogleTransit {
 							naptanHelperStopColumn = 0;
 						else
 							naptanHelperStopColumn = stopColumns.size();
-					
+
 					if (configValues[0].equals("stopfilecolumnseparator"))
 						stopfilecolumnseparator = new String(configValues[1]);
-						
+
 					if (configValues[0].equals("useagencyshortname") && configValues[1] != null && configValues[1].trim().toLowerCase().equals("true"))
 						useAgencyShortname = true;
 					if (configValues[0].equals("skipemptyservice") && configValues[1] != null && configValues[1].trim().toLowerCase().equals("true"))
@@ -228,7 +228,7 @@ public class Transxchange2GoogleTransit {
 			}
 		}
 		in.close();
-			
+
 		return result;
 	}
 }

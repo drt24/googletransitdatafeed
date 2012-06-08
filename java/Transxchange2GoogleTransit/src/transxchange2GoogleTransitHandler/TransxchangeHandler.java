@@ -1,12 +1,12 @@
 /*
  * Copyright 2007, 2008, 2009, 2010, 2011, 2012 GoogleTransitDataFeed
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -39,7 +39,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 /*
- * This class extends DefaultHandler to parse a TransXChange v2.1 xml file,	
+ * This class extends DefaultHandler to parse a TransXChange v2.1 xml file,
  * 	build corresponding GTFS data structures
  *  and write these to a GTFS (9-Apr-2007) compliant file set
  */
@@ -52,13 +52,13 @@ public class TransxchangeHandler {
 	static String gtfsOutfile = "";
 	static String gtfsLang = "";
 	static String gtfsPhone = "";
-	
+
 	static TransxchangeHandlerEngine parseHandler = null;
 	static List<TransxchangeHandlerEngine> parseHandlers = null;
-	
+
 	String agencyOverride = null;
-	
-	
+
+
 	/*
 	 * Utility methods to set and get attribute values
 	 */
@@ -95,15 +95,15 @@ public class TransxchangeHandler {
 	public void setAgencyOverride(String agency) {
 		agencyOverride = agency;
 	}
-	
+
 	/*
 	 * Generate GTFS structures
 	 */
 	public void parse(String filename, String url, String timezone, String defaultRouteType,
 			String rootDirectory, String workDirectory, String stopFile,
 			String lang, String phone,
-			boolean useAgencyShortName, boolean skipEmptyService, boolean skipOrphanStops, boolean geocodeMissingStops, 
-			Map<String, String> modeList, List<String> stopColumns, String stopfilecolumnseparator, 
+			boolean useAgencyShortName, boolean skipEmptyService, boolean skipOrphanStops, boolean geocodeMissingStops,
+			Map<String, String> modeList, List<String> stopColumns, String stopfilecolumnseparator,
 			int naptanHelperStopColumn, Map<String, String> naptanStopnames,
 			Map<String, String> agencyMap)
 	    throws SAXException, SAXParseException, IOException, ParserConfigurationException
@@ -112,27 +112,27 @@ public class TransxchangeHandler {
 		boolean zipinput = true; // Handle zip files
 		boolean processing = true;
 		java.util.Enumeration<? extends ZipEntry> enumer = null;
-		
+
 		// Open infile, zip or single xml
 		try { // Try to open filename as zip file
 			zipfile = new ZipFile(filename);
 		} catch (IOException e) {
 			zipinput = false; // Opening file as zip file crashed; assume it is a single XML file
 		}
-		
+
 		try {
-		
+
 			// Prepare output files
-			TransxchangeHandlerEngine.prepareOutput(rootDirectory, workDirectory);	
-			
+			TransxchangeHandlerEngine.prepareOutput(rootDirectory, workDirectory);
+
 			// Read stopfile
 			if (stopFile != null && stopFile.length() > 0)
 				TransxchangeStops.readStopfile(stopFile, stopColumns);
-	
+
 			// Roll single as well as zipped infiles into a unified data structure for later transparent processing (stops only, rest goes straight to output files)
 			parseHandlers = new ArrayList<TransxchangeHandlerEngine>();
 			if (zipinput)
-				enumer = zipfile.entries(); 
+				enumer = zipfile.entries();
 			do {
 				parseHandler = new TransxchangeHandlerEngine();
 				parseHandler.setUrl(url);
@@ -154,21 +154,21 @@ public class TransxchangeHandler {
 				parseHandler.setAgencyMap(agencyMap);
 				if (agencyOverride != null && agencyOverride.length() > 0)
 					parseHandler.setAgencyOverride(agencyOverride);
-		
+
 				SAXParserFactory parserFactory = SAXParserFactory.newInstance();
 				SAXParser parser = parserFactory.newSAXParser();
-	
+
 				if (zipinput) {
-					if (processing = enumer.hasMoreElements()) {			
+					if (processing = enumer.hasMoreElements()) {
 						ZipEntry zipentry = (ZipEntry)enumer.nextElement();
 						System.out.println(zipentry.getName());
 						InputStream in = zipfile.getInputStream(zipentry);
-						parser.parse(in, parseHandler);	
+						parser.parse(in, parseHandler);
 						parseHandler.writeOutputSansAgenciesStopsRoutes(); // Dump data structure with exception of stops which need later consolidation over all input files
 						parseHandler.clearDataSansAgenciesStopsRoutes(); // No need to keep the data structures
-					}				
+					}
 				} else {
-					parser.parse(new File(filename), parseHandler);	
+					parser.parse(new File(filename), parseHandler);
 					parseHandler.writeOutputSansAgenciesStopsRoutes(); // Dump data structure with exception of stops which need later consolidation over all input files
 					processing = false;
 				}
@@ -178,7 +178,7 @@ public class TransxchangeHandler {
         	System.out.println("TransxchangeHandler Parse Exception: " + e.getMessage());
 		}
 	}
-	
+
 	/*
 	 * Create GTFS file set from GTFS data structures
 	 */
@@ -186,7 +186,7 @@ public class TransxchangeHandler {
 		throws IOException
 	{
 		parseHandler.closeStopTimes();
-		
+
         // if empty service skipping requested: Filter out trips that do not refer to an active service
 		if (parseHandler.isSkipEmptyService()) {
     		String outdir = parseHandler.getRootDirectory() + parseHandler.getWorkDirectory();
@@ -195,7 +195,7 @@ public class TransxchangeHandler {
         	String outfileName = TransxchangeHandlerEngine.stop_timesFilename + /* "_" + serviceStartDate + */ TransxchangeHandlerEngine.extension;
         	File outfile = new File(outdir + /* "/" + serviceStartDate + */ "/" + outfileName);
         	BufferedReader stop_timesIn = new BufferedReader(new FileReader(infile));
-        	
+
             PrintWriter stop_timesOut = new PrintWriter(new FileWriter(outfile));
     		stop_timesOut.println("trip_id,arrival_time,departure_time,stop_id,stop_sequence,stop_headsign,pickup_type,drop_off_type,shape_dist_traveled");
     		String line = null;
@@ -229,19 +229,19 @@ public class TransxchangeHandler {
 			Iterator<TransxchangeHandlerEngine> parsers = parseHandlers.iterator();
 			while (parsers.hasNext()) {
 				TransxchangeHandlerEngine parser = (TransxchangeHandlerEngine)parsers.next();
-				if (parser != null) 
+				if (parser != null)
 					parser.getStops().flagAllStops("1");
 			}
         }
 		consolidateAgencies(); // Eliminiate possible duplicates from multiple input files in zip archive
 		consolidateStops(); // Eliminiate possible duplicates from multiple input files in zip archive
 		consolidateRoutes(); // Eliminiate possible duplicates from multiple input files in zip archive
-		Iterator<TransxchangeHandlerEngine> parsers = parseHandlers.iterator(); 
+		Iterator<TransxchangeHandlerEngine> parsers = parseHandlers.iterator();
 		while (parsers.hasNext())
 			((TransxchangeHandlerEngine)parsers.next()).writeOutputAgenciesStopsRoutes(); // Now write agencies, stops
 		return parseHandler.closeOutput(rootDirectory, workDirectory);
 	}
-	
+
 	/*
 	 * Eliminate possible duplicates from multiple input files in zip archive
 	 */
@@ -253,7 +253,7 @@ public class TransxchangeHandler {
 		List<ValueList> followStopIds;
 		TransxchangeStops followStops;
 		Iterator<TransxchangeHandlerEngine> followParser;
-		
+
 		while (parsers.hasNext()) {
 			TransxchangeStops stops = ((TransxchangeHandlerEngine)parsers.next()).getStops();
 			parseHandlersCount += 1;
@@ -273,8 +273,8 @@ public class TransxchangeHandler {
 						if (curStopId.equals((followStopIds.get(j)).getValue(0))) {
 							(followStopIds.get(j)).setValue(0, "");
 						}
-					}		
-				}		
+					}
+				}
 			}
 		}
 	}
@@ -290,7 +290,7 @@ public class TransxchangeHandler {
 		List<ValueList> followAgencyIds;
 		TransxchangeAgency followAgencies;
 		Iterator<TransxchangeHandlerEngine> followParser;
-		
+
 		while (parsers.hasNext()) {
 			TransxchangeAgency agencies = ((TransxchangeHandlerEngine)parsers.next()).getAgencies();
 			parseHandlersCount += 1;
@@ -310,8 +310,8 @@ public class TransxchangeHandler {
 						if (curAgencyId.equals(followAgencyIds.get(j).getValue(0))) {
 							followAgencyIds.get(j).setValue(0, "");
 						}
-					}		
-				}		
+					}
+				}
 			}
 		}
 	}
@@ -327,7 +327,7 @@ public class TransxchangeHandler {
 		List<ValueList> followRouteIds;
 		TransxchangeRoutes followRoutes;
 		Iterator<TransxchangeHandlerEngine> followParser;
-		
+
 		while (parsers.hasNext()) {
 			TransxchangeRoutes routes = ((TransxchangeHandlerEngine)parsers.next()).getRoutes();
 			parseHandlersCount += 1;
@@ -347,8 +347,8 @@ public class TransxchangeHandler {
 						if (curRouteId.equals(followRouteIds.get(j).getValue(0))) {
 							(followRouteIds.get(j)).setValue(0, "");
 						}
-					}		
-				}		
+					}
+				}
 			}
 		}
 	}

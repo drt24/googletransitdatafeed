@@ -12,13 +12,13 @@ public class NaPTANHelper {
 	public static Map<String, String> readStopfile(String stopsFileName)
 		throws UnsupportedEncodingException, IOException {
 
-		if (!(stopsFileName != null && stopsFileName.length() > 0)) 
+		if (!(stopsFileName != null && stopsFileName.length() > 0))
 			return null;
-		   
+
 		Map<String, String> result = new HashMap<String, String>();
-		
+
 	    BufferedReader bufFileIn = new BufferedReader(new FileReader(stopsFileName));
-		
+
 	    String line;
 	    int smscodeIx;
 	    int stopcodeAltIx;
@@ -78,7 +78,7 @@ public class NaPTANHelper {
 	    initializeIndicatorMap();
 	    boolean indicatorSet;
 	    while((line = bufFileIn.readLine()) != null) {
-	    	
+
 	    	try { // v1.7.4
 	            StringTokenizer st = new StringTokenizer(line, ",");
 	            i = 0;
@@ -86,15 +86,15 @@ public class NaPTANHelper {
 	                tokens[i] = st.nextToken();
 	                i++;
 	            }
-	            
+
 	            // Stop code (for queries to server and display as "stop number"
 	            atcoCode = tokens[stopcodeAltIx].substring(1, tokens[stopcodeAltIx].length() - 1);
 	            smscode = tokens[smscodeIx].substring(1, tokens[smscodeIx].length() - 1); // Use SMS code as stop code - Remove quotation marks
 	            if (smscode == null || smscode.length() == 0)
-		            stopcode = atcoCode; // In the absence of SMS code: Go for alternative stop code		            	
+		            stopcode = atcoCode; // In the absence of SMS code: Go for alternative stop code
 	            else
 	            	stopcode = smscode;
-			            
+
 	            // Read CommonName, locality and the other relevant columns; remove quotation marks as necessary
 	            commonName = tokens[commonNameIx].substring(1, tokens[commonNameIx].length() - 1);
 	            rawIndicator = tokens[indicatorIx].substring(1, tokens[indicatorIx].length() - 1);
@@ -107,10 +107,10 @@ public class NaPTANHelper {
 	            } else {
 	              busStopType = "";
 	            }
-	            
+
 	            // Create NaPTAN stop name following rules
 	            stopname = "";
-			            
+
 	            // Locality and parent locality
 	            if (locality != null && locality.length() > 0 || parentLocality != null && parentLocality.length() > 0) {
 		            if (locality != null && locality.length() > 0)
@@ -118,7 +118,7 @@ public class NaPTANHelper {
 		            if (parentLocality != null && parentLocality.length() > 0 && (locality == null || !locality.contains(parentLocality)))
 		            	stopname += " " + parentLocality;
 	            }
-			            
+
 	            // Indicator
 	            indicatorSet = false;
 	            switch (analyzeIndicator(rawIndicator)) {
@@ -137,10 +137,10 @@ public class NaPTANHelper {
 		            			stopname += ", (" + direction + "-bound)"; // No preferred indicator, use direction instead, unless NA"
 	            		break;
 	            }
-		            
+
 	            // CommonName
 	            stopname += " " + commonName;
-	
+
 	            // After-indicator
 	            switch (analyzeIndicator(rawIndicator)) {
 	            	case INDICATOR_AFTER:
@@ -150,40 +150,40 @@ public class NaPTANHelper {
 	            	default:
 		            break;
 	            }
-		            
+
 	            // on-Street
 	            if (street != null && street.length() > 0 && !street.toUpperCase().equals("N/A") && !street.equals("---"))
 	            	stopname += " (on " + street + ")";
-		            
+
 	            // SMS code
 	            if (smscode != null && smscode.length() > 0)
 	            	stopname += " [SMS: " + smscode + "]";
-		            
+
 	            stopname = stopname.trim();
-	            
+
 	            if (busStopType.equals("CUS"))
 	            	stopname += " (unmarked)";
 	            if (busStopType.equals("HAR"))
 	            	stopname += " (Hail-and-Ride)";
-	
+
 	            if (!busStopType.equals("FLX")) // Do not include flex service stops
 	            	result.put(atcoCode, stopname);
-            
+
 	    	} catch (Exception e) { // v1.7.4
 	    		System.err.println("At line: " + line + " Exception: " + e.getMessage());
 	    		throw new IOException(e);
 		    }
 	    }
 	    bufFileIn.close();
-	    
+
         return result;
 
-	}	
-	
+	}
+
 	public static int findColumn(String headline, String code) {
 		if (headline == null || code == null)
 	        return -1;
-	       
+
 	    StringTokenizer st = new StringTokenizer(headline, ",");
 	    String token;
 	    int counter = 0;
@@ -198,8 +198,8 @@ public class NaPTANHelper {
 	    if (!found)
 	    	return -1;
 	    return counter;
-	}	
-	
+	}
+
 	private static String removeBrackets(String inString, String brackIn, String brackOut) {
 		if (inString == null || brackIn == null || brackOut == null || inString.length() == 0 || brackIn.length() == 0 || brackOut.length() == 0)
 			return null;
@@ -213,12 +213,12 @@ public class NaPTANHelper {
 			if (outIx > inIx) {
 				inString = inString.substring(carryOverIx, inIx);
 				carryOverIx = outIx + brackOut.length();
-			} else 
+			} else
 				broken = true;
 		}
 		return inString;
 	}
-	
+
 	// Preferred indicator values. Key = preferred, value = preferred normalised
 	private static String[] indicatorkeysbefore = {"opposite", "outside", "adjacent", "near", "behind", "inside", "by", "in", "at", "on", "just before", "just after", "corner of"};
 	private static String[] indicatorvaluesbefore = {"opp", "o/s", "adj", "nr", "behind", "inside", "by", "in", "at", "on", "just before", "just after", "corner of"};

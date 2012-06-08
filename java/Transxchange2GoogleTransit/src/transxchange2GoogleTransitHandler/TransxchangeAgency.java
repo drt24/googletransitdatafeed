@@ -1,12 +1,12 @@
 /*
   * Copyright 2007, 2008, 2009, 2010, 2011, 2012 GoogleTransitDataFeed
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -23,8 +23,8 @@ import java.util.Map;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXParseException;
 
-/* 
- * This class handles the TransXChange xml input file under the aspect of 
+/*
+ * This class handles the TransXChange xml input file under the aspect of
  * 	agencies
  */
 public class TransxchangeAgency extends TransxchangeDataAspect {
@@ -51,10 +51,10 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 	ValueList newAgency__agency_lang;
 	List<ValueList> listAgency__agency_phone;
 	ValueList newAgency__agency_phone;
-	
+
     String agencyId;
 
-	
+
 	public List<ValueList> getListAgency__agency_id() {
 		return listAgency__agency_id;
 	}
@@ -73,15 +73,15 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 	public List<ValueList> getListAgency__agency_phone() {
 		return listAgency__agency_phone;
 	}
-	
+
    	@Override
 	public void startElement(String uri, String name, String qName, Attributes atts)
 		throws SAXParseException {
 
 		int qualifierIx;
-	
+
 		super.startElement(uri, name, qName, atts);
-		
+
 		// v1.6.4: Switched to use short name in place of name on license
 		if (handler.isAgencyShortName()) {
 			key_agency__agency_name = new String[] {"OperatorShortName", "", "OpenRequired"};
@@ -94,7 +94,7 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
         	listAgency__agency_id.add(newAgency__agency_id);
         	newAgency__agency_id.addValue(agencyId);
 		}
-		if (qName.equals(key_agency__agency_name[0])) 
+		if (qName.equals(key_agency__agency_name[0]))
 			key = key_agency__agency_name[0];
 		if (qName.equals(key_agency__agency_url[0]))
 			key = key_agency__agency_url[0];
@@ -102,7 +102,7 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 
    	@Override
 	public void endElement (String uri, String name, String qName) {
-		if (niceString == null || niceString.length() == 0) 
+		if (niceString == null || niceString.length() == 0)
 			return;
 	    if (key.equals(key_agency__agency_name[0])) {
 	   		newAgency__agency_name = new ValueList(key_agency__agency_name[0]);
@@ -124,17 +124,17 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 	public void clearKeys (String qName) {
 		if (qName.equals(key_agency__agency_id[0]))
 			key = "";
-		if (qName.equals(key_agency__agency_name[0])) 
+		if (qName.equals(key_agency__agency_name[0]))
 			key = "";
-		if (qName.equals(key_agency__agency_url[0])) 
-			key = "";		 
+		if (qName.equals(key_agency__agency_url[0]))
+			key = "";
 	}
 
    	@Override
 	public void completeData() {
 		int i, j;
 	    boolean hot;
-		
+
    		newAgency__agency_url = new ValueList(handler.getUrl());
    		listAgency__agency_url.add(newAgency__agency_url);
    		newAgency__agency_url.addValue(handler.getUrl());
@@ -152,18 +152,18 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 	    	j = 0;
 	    	hot = true;
 	    	while (hot && j < listAgency__agency_url.size()) {
-	    		if (((listAgency__agency_name.get(i)).getValue(0)).equals(((listAgency__agency_url.get(j)).getKeyName()))) 
+	    		if (((listAgency__agency_name.get(i)).getValue(0)).equals(((listAgency__agency_url.get(j)).getKeyName())))
 	    			hot = false;
 	    		else
-	    			j++;    	 
+	    			j++;
 	    	}
 	    	if (!hot || listAgency__agency_url.size() == 0) {
 	        	newAgency__agency_url = new ValueList(key_agency__agency_url[0]);
 	        	listAgency__agency_url.add(j, newAgency__agency_url);
-	        	newAgency__agency_url.addValue(key_agency__agency_url[2]);    		
+	        	newAgency__agency_url.addValue(key_agency__agency_url[2]);
 	    	}
   	    }
-  	    
+
   	    // Add quotes if needed
   	    csvProofList(listAgency__agency_id);
   	    csvProofList(listAgency__agency_name);
@@ -177,7 +177,7 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 	public void dumpValues() {
 		int i;
 		ValueList iterator = null;
-		 
+
 		System.out.println("*** Agency");
 		for (i = 0; i < listAgency__agency_id.size(); i++) {
 		    iterator = listAgency__agency_id.get(i);
@@ -204,7 +204,7 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 		    iterator.dumpValues();
 		}
 	}
-	 
+
 	public TransxchangeAgency(TransxchangeHandlerEngine owner) {
 		super(owner);
 		listAgency__agency_id = new ArrayList<ValueList>();

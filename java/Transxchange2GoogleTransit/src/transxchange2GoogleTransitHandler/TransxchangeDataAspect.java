@@ -1,12 +1,12 @@
 /*
  * Copyright 2007, 2008, 2009, 2010, 2011, 2012 GoogleTransitDataFeed
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -24,7 +24,7 @@ import org.xml.sax.SAXParseException;
 
 /*
  * Abstract superclass to cover transxchange data aspects (subclasses: TransxchangeAgency, TransxchangeStops etc.
- */ 
+ */
 public abstract class TransxchangeDataAspect {
 
 	String key = ""; // general key
@@ -33,38 +33,38 @@ public abstract class TransxchangeDataAspect {
 	boolean activeStartElement = false; // control flag to skip characters outside start/endElement()
 
 	TransxchangeHandlerEngine handler;
-	
+
 	public void startElement(String uri, String name, String qName, Attributes atts)
 		throws SAXParseException
-	{    
+	{
 		if (handler.getParseError().length() > 0)
 			throw new SAXParseException(handler.getParseError(), null);
 		niceString = "";
 	}
-	
+
 	public void endElement (String uri, String name, String qName) {
 	}
 
 	public void clearKeys (String qName) {
-	}	
+	}
 
 	public void characters (char ch[], int start, int length) {
 		if (key.length() > 0) {
 			for (int i = start; i < start + length; i++)
 				niceString = niceString + ch[i];
-		}		
+		}
 	}
-	
-	public void endDocument() 
+
+	public void endDocument()
 		throws IOException {
 	}
 
 	public void completeData() {
-	}	
+	}
 
 	public void dumpValues() {
 	}
-	
+
 	/*
 	 * Read time in transxchange specific format
 	 */
@@ -125,7 +125,7 @@ public abstract class TransxchangeDataAspect {
 		}
 		return ret;
 	}
-	
+
 	/*
 	 * CSV-"proof" field
 	 */
@@ -133,7 +133,7 @@ public abstract class TransxchangeDataAspect {
 		int i, j;
 		String s;
 		ValueList iterator;
-		
+
 		for (i = 0; i < values.size(); i++) {
 		    iterator = values.get(i);
 		    for (j = 0; j < iterator.size(); j++) {
@@ -157,7 +157,7 @@ public abstract class TransxchangeDataAspect {
 	static String formatDate(int year, int month, int day_of_month) {
 		result = "";
 		digis = "";
-		
+
 		iYear = new Integer(year);
 		result = iYear.toString();
 
@@ -176,7 +176,7 @@ public abstract class TransxchangeDataAspect {
 		iYear = null;
 		iMonth = null;
 		iDay_of_month = null;
-		
+
 		return result;
 	}
 
@@ -197,20 +197,20 @@ public abstract class TransxchangeDataAspect {
 		if (digis.length() == 1)
 			digis = "0" + digis;
 		result = result + digis;
-		
+
 		result = result + ":";
-		
+
 		iMins = new Integer(mins);
 		digis = iMins.toString();
 		if (digis.length() == 1)
 			digis = "0" + digis;
 		result = result + digis;
-		
+
 		result = result + ":00";
-		
+
 		iHour = null;
 		iMins = null;
-		
+
 		return result;
 	}
 

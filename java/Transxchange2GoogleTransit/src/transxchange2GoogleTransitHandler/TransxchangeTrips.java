@@ -1,12 +1,12 @@
 /*
  * Copyright 2007, 2008, 2009, 2010, 2011, 2012 GoogleTransitDataFeed
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -22,8 +22,8 @@ import java.util.List;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXParseException;
 
-/* 
- * This class handles the TransXChange xml input file under the aspect of 
+/*
+ * This class handles the TransXChange xml input file under the aspect of
  * 	trips
  */
 public class TransxchangeTrips extends TransxchangeDataAspect {
@@ -38,19 +38,19 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	static final String[] key_trips__block_id = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
 
 	// Parsed data
-	List<ValueList> listTrips__route_id;      
+	List<ValueList> listTrips__route_id;
 	ValueList newTrips__route_id;
-	List<ValueList> listTrips__service_id;      
+	List<ValueList> listTrips__service_id;
 	ValueList newTrips__service_id;
-	List<ValueList> listTrips__trip_id;      
+	List<ValueList> listTrips__trip_id;
 	ValueList newTrips__trip_id;
-	List<ValueList> listTrips__trip_headsign;      
+	List<ValueList> listTrips__trip_headsign;
 	ValueList newTrips__trip_headsign;
-	List<ValueList> listTrips__block_id;      
+	List<ValueList> listTrips__block_id;
 	ValueList newTrips__block_id;
-	List<ValueList> listTrips__direction_id; // v1.7.3      
+	List<ValueList> listTrips__direction_id; // v1.7.3
 	ValueList newTrips__direction_id; // v1.7.3
-	List<ValueList> listTrips__routeref; // v1.7.3      
+	List<ValueList> listTrips__routeref; // v1.7.3
 	ValueList newTrips__routeref; // v1.7.3
 
 	static final String[] _key_trips__trip_journeypatternsection = new String [] {"JourneyPattern", "JourneyPatternSectionRefs"};
@@ -66,7 +66,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	ValueList newJourneyPatternRouteRef; // v1.7.3
 
 	String _journeyPattern = "";
-	
+
 	static final String[] _key_trips_departure_time = new String [] {"VehicleJourney", "DepartureTime"};
 	static final String[] _key_trips_endtime = new String [] {"VehicleJourney", "EndTime"};
 	static final String[] _key_trips_frequency = new String [] {"VehicleJourney", "ScheduledFrequency"};
@@ -90,7 +90,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	int[] departureTimehhmmss = {-1, -1, -1};
 	int[] endTimehhmmss = {-1, -1, -1};
 	int departureTimeInSeconds;
-	
+
 	public List<ValueList> getListTrips__route_id() {
 		return listTrips__route_id;
 	}
@@ -132,7 +132,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	void setJourneyPattern(String jp) {
 		_journeyPattern = jp;
 	}
-	
+
 /*	String getService(String trip) {
 		if (trip == null || trip.length() == 0)
 			return "";
@@ -153,9 +153,9 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
    	@Override
 	public void startElement(String uri, String name, String qName, Attributes atts)
 		throws SAXParseException {
-	
+
 	    super.startElement(uri, name, qName, atts);
-	    
+
 		if (qName.equals(key_trips__route_id[0]))
 			key = key_trips__route_id[0]; // this also covers trip_service_id, _trip_id, _departure_time, _endtime, _scheduled_frequency, _journeypatternref, _journetpatternref2
 		if (key.equals(key_trips__route_id[0]) && qName.equals(key_trips__route_id[1]))
@@ -178,7 +178,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 			keyNested = _key_trips_journeypatternref2[1];
 		if (qName.equals(key_trips__trip_headsign[0])) {
 	        qualifierIx = atts.getIndex("id");
-	        _journeyPattern = atts.getValue(qualifierIx);      
+	        _journeyPattern = atts.getValue(qualifierIx);
 			key = key_trips__trip_headsign[0];
 		}
 		if (key.equals(key_trips__trip_headsign[0]) && qName.equals(key_trips__trip_headsign[1]))
@@ -213,7 +213,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	    			 calendarServices = handler.getCalendar().getListCalendar__service_id();
 	    			 i = 0;
 	    			 found = false;
-	    			 
+
 	    			 // find matching service in calendar data structure. This assumes the service has already been defined in XML file. This is normally the case
 	    			 while (i < calendarServices.size() && !found) {
 	    				 if ((calendarServices.get(i)).getValue(0).equals(_serviceCode))
@@ -230,7 +230,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	    			 }
 	    			 handler.getCalendarDates().resetOOLDates_start();
 	    			 handler.getCalendarDates().resetOOLDates_end();
-	    		 }	    		 
+	    		 }
 	    		 newTrips__trip_id = new ValueList(_vehicleJourneyCode + "@" + _departureTime);
 	    		 listTrips__trip_id.add(newTrips__trip_id);
 	    		 newTrips__trip_id.addValue(_departureTime);
@@ -250,29 +250,29 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	    		 newTrips__block_id.addValue(key_trips__block_id[2]);
 	    	 }
 	    }
-	    
-		if (niceString == null || niceString.length() == 0) 
+
+		if (niceString == null || niceString.length() == 0)
 	    	return;
-	    
+
         if (key.equals(key_trips__trip_id[0]) && keyNested.equals(key_trips__trip_id[1])) {
         	_vehicleJourneyCode = niceString;
         	keyNested = "";
-        } 
+        }
         if (key.equals(key_trips__route_id[0]) && keyNested.equals(key_trips__route_id[1])) {
         	_lineName = niceString;
-        	keyNested = "";     	
+        	keyNested = "";
         }
         if (key.equals(key_trips__service_id[0]) && keyNested.equals(key_trips__service_id[1])) {
         	_serviceCode = niceString;
-        	keyNested = "";     	
+        	keyNested = "";
         }
         if (key.equals(_key_trips_journeypatternref[0]) && keyNested.equals(_key_trips_journeypatternref[1])) {
         	_journeyPatternRef = niceString;
-        	keyNested = "";     	
+        	keyNested = "";
         }
         if (key.equals(_key_trips_journeypatternref2[0]) && keyNested.equals(_key_trips_journeypatternref2[1])) {
         	_vehicleJourneyRef = niceString;
-        	keyNested = "";     	
+        	keyNested = "";
         }
         if (key.equals(_key_trips_departure_time[0]) && keyNested.equals(_key_trips_departure_time[1])) {
 			_departureTime = niceString;
@@ -298,7 +298,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
         	readTransxchangeTime(endTimehhmmss, _endTime);
         	frequency = readTransxchangeFrequency(_scheduledFrequency);
         	hot = (frequency > 0);
-        	while (hot) { 
+        	while (hot) {
         		departureTimeInSeconds = departureTimehhmmss[2] + departureTimehhmmss[1] * 60 + departureTimehhmmss[0] * 3600;
         		departureTimeInSeconds += frequency;
         		departureTimehhmmss[0] = departureTimeInSeconds / 3600;
@@ -330,34 +330,34 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
         	if (niceString.equals("outbound")) {
         		newJourneyPatternDirection.addValue("0");
         		directionDetermined = true;
-        	}	
+        	}
         	if (niceString.equals("inbound")) {
         		newJourneyPatternDirection.addValue("1");
         		directionDetermined = true;
         	}
         	if (!directionDetermined)
         		newJourneyPatternDirection.addValue("");
-		} 
+		}
         if (key.equals(key_trips__trip_routeref[0]) && keyNested.equals(key_trips__trip_routeref[1])) {
         	newJourneyPatternRouteRef = new ValueList(_journeyPattern);
         	_listJourneyPatternRouteRef.add(newJourneyPatternRouteRef);
     		newJourneyPatternRouteRef.addValue(niceString);
-		} 
+		}
         if (key.equals(_key_trips__trip_journeypatternsection[0]) && keyNested.equals(_key_trips__trip_journeypatternsection[1])) {
         	newJourneyPatternSectionRefs = new ValueList(_journeyPattern);
         	_listJourneyPatternSectionRefs.add(newJourneyPatternSectionRefs);
         	newJourneyPatternSectionRefs.addValue(niceString);
 		}
 	}
-	
+
    	@Override
 	public void clearKeys(String qName) {
-		if (qName.equals(key_trips__trip_headsign[1])) 
+		if (qName.equals(key_trips__trip_headsign[1]))
 			keyNested = "";
 		// v1.7.3
-		if (qName.equals(key_trips__trip_direction[1])) 
+		if (qName.equals(key_trips__trip_direction[1]))
 			keyNested = "";
-		if (qName.equals(key_trips__trip_routeref[1])) 
+		if (qName.equals(key_trips__trip_routeref[1]))
 			keyNested = "";
 		if (qName.equals(_key_trips__trip_journeypatternsection[0]))
 			key = "";
@@ -366,7 +366,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
         }
 		if (qName.equals(key_trips__route_id[0])) { // covers all _trip nested keys
 			key = "";
-			_journeyPattern = ""; 
+			_journeyPattern = "";
 			_vehicleJourneyCode = "";
 			_departureTime = "";
 			_endTime = "";
@@ -375,7 +375,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 			_lineName = "";
 	    	_vehicleJourneyCode = "";
 	    	_vehicleJourneyRef = "";
-		}		
+		}
 	}
 
    	@Override
@@ -403,7 +403,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	       	}
 	       	newTrips__trip_headsign = new ValueList(iterator.getKeyName());
 	    	listTrips__trip_headsign.add(newTrips__trip_headsign);
-	    	newTrips__trip_headsign.addValue(tripHeadsign);	
+	    	newTrips__trip_headsign.addValue(tripHeadsign);
 	    }
 
 	    // v1.7.3: Roll out trip directions
@@ -423,9 +423,9 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	       	}
 	       	newTrips__direction_id = new ValueList(iterator.getKeyName());
 	    	listTrips__direction_id.add(newTrips__direction_id);
-	    	newTrips__direction_id.addValue(tripDirection);	
+	    	newTrips__direction_id.addValue(tripDirection);
 	    }
-   	
+
 	    // v1.7.3: Roll out trip route references
 	    for (i = 0; i < _listJourneyPatternRef.size(); i++) {
 	    	iterator = _listJourneyPatternRef.get(i);
@@ -443,7 +443,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	       	}
 	       	newTrips__routeref = new ValueList(iterator.getKeyName());
 	    	listTrips__routeref.add(newTrips__routeref);
-	    	newTrips__routeref.addValue(tripRouteRef);	
+	    	newTrips__routeref.addValue(tripRouteRef);
 	    }
    	}
 
@@ -458,7 +458,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
  	    csvProofList(listTrips__routeref); // v1.7.3
   	    csvProofList(listTrips__block_id);
 	}
-	
+
    	@Override
 	public void dumpValues() {
 		ValueList iterator;
@@ -496,9 +496,9 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 		for (i = 0; i < _listJourneyPatternRef.size(); i++) {
 		    iterator = _listJourneyPatternRef.get(i);
 		    iterator.dumpValues();
-		} 
+		}
 	}
-	
+
 	public TransxchangeTrips(TransxchangeHandlerEngine owner) {
 		super(owner);
 		listTrips__route_id = new ArrayList<ValueList>();
@@ -508,7 +508,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 		listTrips__direction_id = new ArrayList<ValueList>(); // v1.7.3
 		listTrips__routeref = new ArrayList<ValueList>(); // v1.7.3
 		listTrips__block_id = new ArrayList<ValueList>();
-		
+
 		_listJourneyPatternRef = new ArrayList<ValueList>();
 		_listJourneyPatternDestinationDisplays = new ArrayList<ValueList>();
 		_listJourneyPatternDirections = new ArrayList<ValueList>(); // v1.7.3
