@@ -26,6 +26,8 @@ import org.xml.sax.SAXException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import transxchange2GoogleTransitHandler.*;
@@ -42,12 +44,12 @@ public class Transxchange2GoogleTransit {
 	static boolean 										skipEmptyService = false;
 	static boolean 										skipOrphanStops = false;
 	static boolean 										geocodeMissingStops = false;
-	static HashMap										modeList = null;
-	static ArrayList									stopColumns = null;
+	static Map<String, String>										modeList = null;
+	static List<String>									stopColumns = null;
 	static String										stopfilecolumnseparator;
 	static int											naptanHelperStopColumn = -1;
-	static HashMap										naptanStopnames = null;
-	static HashMap										agencyMap = null;
+	static Map<String, String>										naptanStopnames = null;
+	static Map<String, String>										agencyMap = null;
 
 	public static void main(String[] args) {
 
@@ -181,7 +183,7 @@ public class Transxchange2GoogleTransit {
 					}
 					if (configValues[0].equals("naptanstopcolumn")) {
 						if (stopColumns == null)
-							stopColumns = new ArrayList();
+							stopColumns = new ArrayList<String>();
 						stopColumns.add(configValues[1]);
 					}
 					if (configValues[0].equals("naptanstophelper"))
@@ -204,7 +206,7 @@ public class Transxchange2GoogleTransit {
 					if (txcMode != null)
 						if (txcMode.length() > 0 && configValues[1].length() > 0) {
 							if (modeList == null)
-								modeList = new HashMap();
+								modeList = new HashMap<String, String>();
 							modeList.put(txcMode, configValues[1]);
 						}
 						txcMode = null;
@@ -217,7 +219,7 @@ public class Transxchange2GoogleTransit {
 				if (tokenCount == 2) {
 					if (configValues[0].equals("agency")) {
 						if (agencyMap == null)
-							agencyMap = new HashMap();
+							agencyMap = new HashMap<String, String>();
 						agencyMap.put(configValues[1], configValues[2]);
 					}
 				}

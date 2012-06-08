@@ -42,26 +42,16 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 	static final String[] key_calendar__end_date = new String[] {"Service", "EndDate", "20091231"}; // GTFS required
 
 	// Parsed data
-	List listCalendar__service_id;
-	ValueList newCalendar__service_id;
-	List listCalendar__monday;
-	ValueList newCalendar__monday;
-	List listCalendar__tuesday;
-	ValueList newCalendar__tuesday;
-	List listCalendar__wednesday;
-	ValueList newCalendar__wednesday;
-	List listCalendar__thursday;
-	ValueList newCalendar__thursday;
-	List listCalendar__friday;
-	ValueList newCalendar__friday;
-	List listCalendar__saturday;
-	ValueList newCalendar__saturday;
-	List listCalendar__sunday;
-	ValueList newCalendar__sunday;
-	List listCalendar__start_date;
-	ValueList newCalendar__start_date;
-	List listCalendar__end_date;
-	ValueList newCalendar__end_date;
+	List<ValueList> listCalendar__service_id;
+	List<ValueList> listCalendar__monday;
+	List<ValueList> listCalendar__tuesday;
+	List<ValueList> listCalendar__wednesday;
+	List<ValueList> listCalendar__thursday;
+	List<ValueList> listCalendar__friday;
+	List<ValueList> listCalendar__saturday;
+	List<ValueList> listCalendar__sunday;
+	List<ValueList> listCalendar__start_date;
+	List<ValueList> listCalendar__end_date;
 
 	String service = "";
 	static final String[] _key_daytype_mofr = {"Service", "RegularDayType", "DaysOfWeek", "MondayToFriday"};
@@ -96,34 +86,34 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 	String sunday = "";
 	boolean watchForNotDays = false; 
 
-	public List getListCalendar__service_id() {
+	public List<ValueList> getListCalendar__service_id() {
 		return listCalendar__service_id;
 	}
-	public List getListCalendar__monday() {
+	public List<ValueList> getListCalendar__monday() {
 		return listCalendar__monday;
 	}
-	public List getListCalendar__tuesday() {
+	public List<ValueList> getListCalendar__tuesday() {
 		return listCalendar__tuesday;
 	}
-	public List getListCalendar__wednesday() {
+	public List<ValueList> getListCalendar__wednesday() {
 		return listCalendar__wednesday;
 	}
-	public List getListCalendar__thursday() {
+	public List<ValueList> getListCalendar__thursday() {
 		return listCalendar__thursday;
 	}
-	public List getListCalendar__friday() {
+	public List<ValueList> getListCalendar__friday() {
 		return listCalendar__friday;
 	}
-	public List getListCalendar__saturday() {
+	public List<ValueList> getListCalendar__saturday() {
 		return listCalendar__saturday;
 	}
-	public List getListCalendar__sunday() {
+	public List<ValueList> getListCalendar__sunday() {
 		return listCalendar__sunday;
 	}
-	public List getListCalendar__start_date() {
+	public List<ValueList> getListCalendar__start_date() {
 		return listCalendar__start_date;
 	}
-	public List getListCalendar__end_date() {
+	public List<ValueList> getListCalendar__end_date() {
 		return listCalendar__end_date;
 	}
 
@@ -133,9 +123,9 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 		int						lowestYear = 999999999;
 		int						testYear;
 
-		Iterator i = listCalendar__start_date.iterator();
+		Iterator<ValueList> i = listCalendar__start_date.iterator();
 		while (i.hasNext()) {
-			date = (String)((ValueList)(i.next())).getValue(0);
+			date = ((i.next())).getValue(0);
 			testYear = Integer.parseInt(date.substring(0, 4));
 			if (testYear < lowestYear)
 				lowestYear = testYear;
@@ -151,9 +141,9 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 		int						highestYear = -1;
 		int						testYear;
 
-		Iterator i = listCalendar__end_date.iterator();
+		Iterator<ValueList> i = listCalendar__end_date.iterator();
 		while (i.hasNext()) {
-			date = (String)((ValueList)(i.next())).getValue(0);
+			date = ((i.next())).getValue(0);
 			testYear = Integer.parseInt(date.substring(0, 4));
 			if (testYear > highestYear)
 				highestYear = testYear;
@@ -209,19 +199,19 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 		if (niceString == null || niceString.length() > 0) {
 			if (key.equals(key_calendar__service_id[0]) && keyNested.equals(key_calendar__service_id[1])) {
 				service = niceString;
-				newCalendar__service_id = new ValueList(key_calendar__service_id[0]);
+				ValueList newCalendar__service_id = new ValueList(key_calendar__service_id[0]);
 				listCalendar__service_id.add(newCalendar__service_id);
 				newCalendar__service_id.addValue(service);
 			}
 			if (key.equals(key_calendar__start_date[0]) && keyNested.equals(key_calendar__start_date[1])) {
-				newCalendar__start_date = new ValueList(key_calendar__start_date[1]);
+				ValueList newCalendar__start_date = new ValueList(key_calendar__start_date[1]);
 				if (inOperatingPeriod)
 					serviceStartDate = niceString;
 				listCalendar__start_date.add(newCalendar__start_date);
 				newCalendar__start_date.addValue(readTransxchangeDate(serviceStartDate));
 			}
 			if (key.equals(key_calendar__end_date[0]) && keyNested.equals(key_calendar__end_date[1])) {
-				newCalendar__end_date = new ValueList(key_calendar__end_date[1]);
+			  ValueList newCalendar__end_date = new ValueList(key_calendar__end_date[1]);
 				if (inOperatingPeriod)
 					serviceEndDate = niceString;
 				listCalendar__end_date.add(newCalendar__end_date);
@@ -365,37 +355,37 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 		}
 		if (qName.equals(keyDaysOfWeek)) {
 			watchForNotDays = false;
-	   		newCalendar__monday = new ValueList(key_calendar__monday[0]);
+			ValueList newCalendar__monday = new ValueList(key_calendar__monday[0]);
 	   		listCalendar__monday.add(newCalendar__monday);
 	   		newCalendar__monday.addValue(monday);
 	   		newCalendar__monday.addValue(handler.getTrips().getJourneyPattern());
 	   		newCalendar__monday.addValue(service); // and service
-	   		newCalendar__tuesday = new ValueList(key_calendar__tuesday[0]);
+	   		ValueList newCalendar__tuesday = new ValueList(key_calendar__tuesday[0]);
 	   		listCalendar__tuesday.add(newCalendar__tuesday);
 	   		newCalendar__tuesday.addValue(tuesday);
 	   		newCalendar__tuesday.addValue(handler.getTrips().getJourneyPattern());
 	   		newCalendar__tuesday.addValue(service); // and service
-	   		newCalendar__wednesday = new ValueList(key_calendar__wednesday[0]);
+	   		ValueList newCalendar__wednesday = new ValueList(key_calendar__wednesday[0]);
 	   		listCalendar__wednesday.add(newCalendar__wednesday);
 	   		newCalendar__wednesday.addValue(wednesday);
 	   		newCalendar__wednesday.addValue(handler.getTrips().getJourneyPattern());
 	   		newCalendar__wednesday.addValue(service); // and service
-	   		newCalendar__thursday = new ValueList(key_calendar__thursday[0]);
+	   		ValueList newCalendar__thursday = new ValueList(key_calendar__thursday[0]);
 	   		listCalendar__thursday.add(newCalendar__thursday);
 	   		newCalendar__thursday.addValue(thursday);
 	   		newCalendar__thursday.addValue(handler.getTrips().getJourneyPattern());
 	   		newCalendar__thursday.addValue(service); // and service
-	   		newCalendar__friday = new ValueList(key_calendar__friday[0]);
+	   		ValueList newCalendar__friday = new ValueList(key_calendar__friday[0]);
 	   		listCalendar__friday.add(newCalendar__friday);
 	   		newCalendar__friday.addValue(friday);
 	   		newCalendar__friday.addValue(handler.getTrips().getJourneyPattern());
 	   		newCalendar__friday.addValue(service); // and service
-	   		newCalendar__saturday = new ValueList(key_calendar__saturday[0]);
+	   		ValueList newCalendar__saturday = new ValueList(key_calendar__saturday[0]);
 	   		listCalendar__saturday.add(newCalendar__saturday);
 	   		newCalendar__saturday.addValue(saturday);
 	   		newCalendar__saturday.addValue(handler.getTrips().getJourneyPattern());
 	   		newCalendar__saturday.addValue(service); // and service
-	   		newCalendar__sunday = new ValueList(key_calendar__sunday[0]);
+	   		ValueList newCalendar__sunday = new ValueList(key_calendar__sunday[0]);
 	   		listCalendar__sunday.add(newCalendar__sunday);
 	   		newCalendar__sunday.addValue(sunday);
 	   		newCalendar__sunday.addValue(handler.getTrips().getJourneyPattern());
@@ -428,42 +418,42 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 		
 		for (i = 0; i < listCalendar__service_id.size(); i++) {
 			if (i >= listCalendar__end_date.size()) {
-				newCalendar__end_date = new ValueList(key_calendar__end_date[1]); 
+			  ValueList newCalendar__end_date = new ValueList(key_calendar__end_date[1]); 
 				listCalendar__end_date.add(newCalendar__end_date);
 				newCalendar__end_date.addValue(key_calendar__end_date[2]);
 			}
 			if (i >= listCalendar__monday.size()) {
-				newCalendar__monday = new ValueList(key_calendar__monday[1]); 
+			  ValueList newCalendar__monday = new ValueList(key_calendar__monday[1]); 
 				listCalendar__monday.add(newCalendar__monday);
 				newCalendar__monday.addValue(key_calendar__monday[2]);
 			}
 			if (i >= listCalendar__tuesday.size()) {
-				newCalendar__tuesday = new ValueList(key_calendar__tuesday[1]); 
+			  ValueList newCalendar__tuesday = new ValueList(key_calendar__tuesday[1]); 
 				listCalendar__tuesday.add(newCalendar__tuesday);
 				newCalendar__tuesday.addValue(key_calendar__tuesday[2]);
 			}
 			if (i >= listCalendar__wednesday.size()) {
-				newCalendar__wednesday = new ValueList(key_calendar__wednesday[1]); 
+			  ValueList newCalendar__wednesday = new ValueList(key_calendar__wednesday[1]); 
 				listCalendar__wednesday.add(newCalendar__wednesday);
 				newCalendar__wednesday.addValue(key_calendar__wednesday[2]);
 			}
 			if (i >= listCalendar__thursday.size()) {
-				newCalendar__thursday = new ValueList(key_calendar__thursday[1]); 
+			  ValueList newCalendar__thursday = new ValueList(key_calendar__thursday[1]); 
 				listCalendar__thursday.add(newCalendar__thursday);
 				newCalendar__thursday.addValue(key_calendar__thursday[2]);
 			}
 			if (i >= listCalendar__friday.size()) {
-				newCalendar__friday = new ValueList(key_calendar__friday[1]); 
+			  ValueList newCalendar__friday = new ValueList(key_calendar__friday[1]); 
 				listCalendar__friday.add(newCalendar__friday);
 				newCalendar__friday.addValue(key_calendar__friday[2]);
 			}
 			if (i >= listCalendar__saturday.size()) {
-				newCalendar__saturday = new ValueList(key_calendar__saturday[1]); 
+			  ValueList newCalendar__saturday = new ValueList(key_calendar__saturday[1]); 
 				listCalendar__saturday.add(newCalendar__saturday);
 				newCalendar__saturday.addValue(key_calendar__saturday[2]);
 			}
 			if (i >= listCalendar__sunday.size()) {
-				newCalendar__sunday = new ValueList(key_calendar__sunday[1]); 
+			  ValueList newCalendar__sunday = new ValueList(key_calendar__sunday[1]); 
 				listCalendar__sunday.add(newCalendar__sunday);
 				newCalendar__sunday.addValue(key_calendar__sunday[2]);
 			}
@@ -490,52 +480,52 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 	    System.out.println("*** Calendar");
 	    System.out.println("***** Service ID");
 	    for (i = 0; i < listCalendar__service_id.size(); i++) {
-	    	iterator = (ValueList)listCalendar__service_id.get(i);
+	    	iterator = listCalendar__service_id.get(i);
 	    	iterator.dumpValues();
 	    }
 	    System.out.println("***** Start date");
 	    for (i = 0; i < listCalendar__start_date.size(); i++) {
-	    	iterator = (ValueList)listCalendar__start_date.get(i);
+	    	iterator = listCalendar__start_date.get(i);
 	    	iterator.dumpValues();
 	    }
 	    System.out.println("***** End date");
 	    for (i = 0; i < listCalendar__end_date.size(); i++) {
-	    	iterator = (ValueList)listCalendar__end_date.get(i);
+	    	iterator = listCalendar__end_date.get(i);
 	    	iterator.dumpValues();
 	    }
 	    System.out.println("***** Mondays");
 	    for (i = 0; i < listCalendar__monday.size(); i++) {
-	    	iterator = (ValueList)listCalendar__monday.get(i);
+	    	iterator = listCalendar__monday.get(i);
 	    	iterator.dumpValues();
 	    }
 	    System.out.println("***** Tuesdays");
 	    for (i = 0; i < listCalendar__tuesday.size(); i++) {
-	    	iterator = (ValueList)listCalendar__tuesday.get(i);
+	    	iterator = listCalendar__tuesday.get(i);
 	    	iterator.dumpValues();
 	    }
 	    System.out.println("***** Wednesdays");
 	    for (i = 0; i < listCalendar__wednesday.size(); i++) {
-	    	iterator = (ValueList)listCalendar__wednesday.get(i);
+	    	iterator = listCalendar__wednesday.get(i);
 	    	iterator.dumpValues();
 	    }
 	    System.out.println("***** Thursdays");
 	    for (i = 0; i < listCalendar__thursday.size(); i++) {
-	    	iterator = (ValueList)listCalendar__thursday.get(i);
+	    	iterator = listCalendar__thursday.get(i);
 	    	iterator.dumpValues();
 	    }
 	    System.out.println("***** Fridays");  
 	    for (i = 0; i < listCalendar__friday.size(); i++) {
-	    	iterator = (ValueList)listCalendar__friday.get(i);
+	    	iterator = listCalendar__friday.get(i);
 	    	iterator.dumpValues();
 	    }
 	    System.out.println("***** Saturdays");
 	    for (i = 0; i < listCalendar__saturday.size(); i++) {
-	    	iterator = (ValueList)listCalendar__saturday.get(i);
+	    	iterator = listCalendar__saturday.get(i);
 	    	iterator.dumpValues();
 	    }
 	    System.out.println("***** Sundays");
 	    for (i = 0; i < listCalendar__sunday.size(); i++) {
-	    	iterator = (ValueList)listCalendar__sunday.get(i);
+	    	iterator = listCalendar__sunday.get(i);
 	    	iterator.dumpValues();
 	    }
 	}
@@ -546,8 +536,8 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 		ValueList iterator;
 
 		while (i < listCalendar__service_id.size() && !found) {
-	    	iterator = (ValueList)listCalendar__service_id.get(i);
-			if (((String)iterator.getValue(0)).equals(existingServiceId))
+	    	iterator = listCalendar__service_id.get(i);
+			if ((iterator.getValue(0)).equals(existingServiceId))
 				found = true;
 			else
 				i++;
@@ -556,7 +546,7 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 			return;
 
 		// Create duplicate with new service ID
-		newCalendar__service_id = new ValueList(key_calendar__service_id[0]);
+		ValueList newCalendar__service_id = new ValueList(key_calendar__service_id[0]);
 		listCalendar__service_id.add(newCalendar__service_id);
 		newCalendar__service_id.addValue(newServiceId);
 		
@@ -572,28 +562,28 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
   		newCalendar__tuesday.addValue(newServiceId);
   		newCalendar__wednesday = new ValueList(key_calendar__wednesday[0]);
    		listCalendar__wednesday.add(newCalendar__wednesday);
-   		newCalendar__wednesday.addValue((String)((ValueList)listCalendar__wednesday.get(i)).getValue(0));
-   		newCalendar__wednesday.addValue((String)((ValueList)listCalendar__wednesday.get(i)).getValue(1));
+   		newCalendar__wednesday.addValue((listCalendar__wednesday.get(i)).getValue(0));
+   		newCalendar__wednesday.addValue((listCalendar__wednesday.get(i)).getValue(1));
   		newCalendar__wednesday.addValue(newServiceId);
    		newCalendar__thursday = new ValueList(key_calendar__thursday[0]);
    		listCalendar__thursday.add(newCalendar__thursday);
-   		newCalendar__thursday.addValue((String)((ValueList)listCalendar__thursday.get(i)).getValue(0));
-   		newCalendar__thursday.addValue((String)((ValueList)listCalendar__thursday.get(i)).getValue(1));
+   		newCalendar__thursday.addValue((listCalendar__thursday.get(i)).getValue(0));
+   		newCalendar__thursday.addValue((listCalendar__thursday.get(i)).getValue(1));
   		newCalendar__thursday.addValue(newServiceId);
    		newCalendar__friday = new ValueList(key_calendar__friday[0]);
    		listCalendar__friday.add(newCalendar__friday);
-   		newCalendar__friday.addValue((String)((ValueList)listCalendar__friday.get(i)).getValue(0));
-   		newCalendar__friday.addValue((String)((ValueList)listCalendar__friday.get(i)).getValue(1));
+   		newCalendar__friday.addValue((listCalendar__friday.get(i)).getValue(0));
+   		newCalendar__friday.addValue((listCalendar__friday.get(i)).getValue(1));
   		newCalendar__friday.addValue(newServiceId);
    		newCalendar__saturday = new ValueList(key_calendar__saturday[0]);
    		listCalendar__saturday.add(newCalendar__saturday);
-   		newCalendar__saturday.addValue((String)((ValueList)listCalendar__saturday.get(i)).getValue(0));
-   		newCalendar__saturday.addValue((String)((ValueList)listCalendar__saturday.get(i)).getValue(1));
+   		newCalendar__saturday.addValue((listCalendar__saturday.get(i)).getValue(0));
+   		newCalendar__saturday.addValue((listCalendar__saturday.get(i)).getValue(1));
   		newCalendar__saturday.addValue(newServiceId);
    		newCalendar__sunday = new ValueList(key_calendar__sunday[0]);
    		listCalendar__sunday.add(newCalendar__sunday);
-   		newCalendar__sunday.addValue((String)((ValueList)listCalendar__sunday.get(i)).getValue(0));
-   		newCalendar__sunday.addValue((String)((ValueList)listCalendar__sunday.get(i)).getValue(1));
+   		newCalendar__sunday.addValue((listCalendar__sunday.get(i)).getValue(0));
+   		newCalendar__sunday.addValue((listCalendar__sunday.get(i)).getValue(1));
   		newCalendar__sunday.addValue(newServiceId);
    		newCalendar__start_date = new ValueList(key_calendar__start_date[1]);
    		listCalendar__start_date.add(newCalendar__start_date);
@@ -606,15 +596,15 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 
 	public TransxchangeCalendar(TransxchangeHandlerEngine owner) {
 		super(owner);
-		listCalendar__service_id = new ArrayList();
-		listCalendar__monday = new ArrayList();
-		listCalendar__tuesday = new ArrayList();
-		listCalendar__wednesday = new ArrayList();	
-		listCalendar__thursday = new ArrayList();
-		listCalendar__friday = new ArrayList();
-		listCalendar__saturday = new ArrayList();
-		listCalendar__sunday = new ArrayList();
-		listCalendar__start_date = new ArrayList();
-		listCalendar__end_date = new ArrayList();
+		listCalendar__service_id = new ArrayList<ValueList>();
+		listCalendar__monday = new ArrayList<ValueList>();
+		listCalendar__tuesday = new ArrayList<ValueList>();
+		listCalendar__wednesday = new ArrayList<ValueList>();	
+		listCalendar__thursday = new ArrayList<ValueList>();
+		listCalendar__friday = new ArrayList<ValueList>();
+		listCalendar__saturday = new ArrayList<ValueList>();
+		listCalendar__sunday = new ArrayList<ValueList>();
+		listCalendar__start_date = new ArrayList<ValueList>();
+		listCalendar__end_date = new ArrayList<ValueList>();
 	}
 }

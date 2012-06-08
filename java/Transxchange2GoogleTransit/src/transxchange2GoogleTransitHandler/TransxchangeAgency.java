@@ -18,7 +18,7 @@ package transxchange2GoogleTransitHandler;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.HashMap;
+import java.util.Map;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXParseException;
@@ -39,38 +39,38 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 	static final String[] key_agency__agency_phone = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
 
 	// Parsed data
-	List listAgency__agency_id;
+	List<ValueList> listAgency__agency_id;
 	ValueList newAgency__agency_id;
-	List listAgency__agency_name;
+	List<ValueList> listAgency__agency_name;
 	ValueList newAgency__agency_name;
-	List listAgency__agency_url;
+	List<ValueList> listAgency__agency_url;
 	ValueList newAgency__agency_url;
-	List listAgency__agency_timezone;
+	List<ValueList> listAgency__agency_timezone;
 	ValueList newAgency__agency_timezone;
-	List listAgency__agency_lang;
+	List<ValueList> listAgency__agency_lang;
 	ValueList newAgency__agency_lang;
-	List listAgency__agency_phone;
+	List<ValueList> listAgency__agency_phone;
 	ValueList newAgency__agency_phone;
 	
     String agencyId;
 
 	
-	public List getListAgency__agency_id() {
+	public List<ValueList> getListAgency__agency_id() {
 		return listAgency__agency_id;
 	}
-	public List getListAgency__agency_name() {
+	public List<ValueList> getListAgency__agency_name() {
 		return listAgency__agency_name;
 	}
-	public List getListAgency__agency_url() {
+	public List<ValueList> getListAgency__agency_url() {
 		return listAgency__agency_url;
 	}
-	public List getListAgency__agency_timezone() {
+	public List<ValueList> getListAgency__agency_timezone() {
 		return listAgency__agency_timezone;
 	}
-	public List getListAgency__agency_lang() {
+	public List<ValueList> getListAgency__agency_lang() {
 		return listAgency__agency_lang;
 	}
-	public List getListAgency__agency_phone() {
+	public List<ValueList> getListAgency__agency_phone() {
 		return listAgency__agency_phone;
 	}
 	
@@ -111,11 +111,11 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 	   		if (agencyOverride != null && agencyOverride.length() > 0)
 	   			newAgency__agency_name.addValue(agencyOverride);
 	   		else {
-	   			HashMap agencyMap = handler.getAgencyMap();
+	   			Map<String, String> agencyMap = handler.getAgencyMap();
 	   			if (agencyMap == null || !agencyMap.containsKey(agencyId))
 	   				newAgency__agency_name.addValue(niceString);
 	   			else
-	   				newAgency__agency_name.addValue((String)agencyMap.get(agencyId));
+	   				newAgency__agency_name.addValue(agencyMap.get(agencyId));
 	   		}
 	    }
 	}
@@ -152,7 +152,7 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 	    	j = 0;
 	    	hot = true;
 	    	while (hot && j < listAgency__agency_url.size()) {
-	    		if (((String)((ValueList)listAgency__agency_name.get(i)).getValue(0)).equals(((String)((ValueList)listAgency__agency_url.get(j)).getKeyName()))) 
+	    		if (((listAgency__agency_name.get(i)).getValue(0)).equals(((listAgency__agency_url.get(j)).getKeyName()))) 
 	    			hot = false;
 	    		else
 	    			j++;    	 
@@ -180,38 +180,38 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 		 
 		System.out.println("*** Agency");
 		for (i = 0; i < listAgency__agency_id.size(); i++) {
-		    iterator = (ValueList)listAgency__agency_id.get(i);
+		    iterator = listAgency__agency_id.get(i);
 		    iterator.dumpValues();
 		}
 		for (i = 0; i < listAgency__agency_name.size(); i++) {
-		    iterator = (ValueList)listAgency__agency_name.get(i);
+		    iterator = listAgency__agency_name.get(i);
 		    iterator.dumpValues();
 		}
 		for (i = 0; i < listAgency__agency_url.size(); i++) {
-		    iterator = (ValueList)listAgency__agency_url.get(i);
+		    iterator = listAgency__agency_url.get(i);
 		    iterator.dumpValues();
 		}
 		for (i = 0; i < listAgency__agency_timezone.size(); i++) {
-		    iterator = (ValueList)listAgency__agency_timezone.get(i);
+		    iterator = listAgency__agency_timezone.get(i);
 		    iterator.dumpValues();
 		}
 		for (i = 0; i < listAgency__agency_lang.size(); i++) {
-		    iterator = (ValueList)listAgency__agency_lang.get(i);
+		    iterator = listAgency__agency_lang.get(i);
 		    iterator.dumpValues();
 		}
 		for (i = 0; i < listAgency__agency_phone.size(); i++) {
-		    iterator = (ValueList)listAgency__agency_phone.get(i);
+		    iterator = listAgency__agency_phone.get(i);
 		    iterator.dumpValues();
 		}
 	}
 	 
 	public TransxchangeAgency(TransxchangeHandlerEngine owner) {
 		super(owner);
-		listAgency__agency_id = new ArrayList();
-		listAgency__agency_name = new ArrayList();
-		listAgency__agency_url = new ArrayList();
-		listAgency__agency_timezone = new ArrayList();
-		listAgency__agency_lang = new ArrayList();
-		listAgency__agency_phone = new ArrayList();
+		listAgency__agency_id = new ArrayList<ValueList>();
+		listAgency__agency_name = new ArrayList<ValueList>();
+		listAgency__agency_url = new ArrayList<ValueList>();
+		listAgency__agency_timezone = new ArrayList<ValueList>();
+		listAgency__agency_lang = new ArrayList<ValueList>();
+		listAgency__agency_phone = new ArrayList<ValueList>();
 	}
 }

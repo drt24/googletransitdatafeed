@@ -17,7 +17,6 @@
 package transxchange2GoogleTransitHandler;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.xml.sax.Attributes;
@@ -39,31 +38,31 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	static final String[] key_trips__block_id = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
 
 	// Parsed data
-	List listTrips__route_id;      
+	List<ValueList> listTrips__route_id;      
 	ValueList newTrips__route_id;
-	List listTrips__service_id;      
+	List<ValueList> listTrips__service_id;      
 	ValueList newTrips__service_id;
-	List listTrips__trip_id;      
+	List<ValueList> listTrips__trip_id;      
 	ValueList newTrips__trip_id;
-	List listTrips__trip_headsign;      
+	List<ValueList> listTrips__trip_headsign;      
 	ValueList newTrips__trip_headsign;
-	List listTrips__block_id;      
+	List<ValueList> listTrips__block_id;      
 	ValueList newTrips__block_id;
-	List listTrips__direction_id; // v1.7.3      
+	List<ValueList> listTrips__direction_id; // v1.7.3      
 	ValueList newTrips__direction_id; // v1.7.3
-	List listTrips__routeref; // v1.7.3      
+	List<ValueList> listTrips__routeref; // v1.7.3      
 	ValueList newTrips__routeref; // v1.7.3
 
 	static final String[] _key_trips__trip_journeypatternsection = new String [] {"JourneyPattern", "JourneyPatternSectionRefs"};
-	List _listJourneyPatternDestinationDisplays;
+	List<ValueList> _listJourneyPatternDestinationDisplays;
 	ValueList newJourneyPatternDestinationDisplay;
-	List _listJourneyPatternRef;
+	List<ValueList> _listJourneyPatternRef;
 	ValueList newJourneyPatternRef;
-	List _listJourneyPatternSectionRefs;
+	List<ValueList> _listJourneyPatternSectionRefs;
 	ValueList newJourneyPatternSectionRefs;
-	List _listJourneyPatternDirections; // v1.7.3
+	List<ValueList> _listJourneyPatternDirections; // v1.7.3
 	ValueList newJourneyPatternDirection; // v1.7.3
-	List _listJourneyPatternRouteRef; // v1.7.3
+	List<ValueList> _listJourneyPatternRouteRef; // v1.7.3
 	ValueList newJourneyPatternRouteRef; // v1.7.3
 
 	String _journeyPattern = "";
@@ -85,39 +84,39 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
     int qualifierIx;
 	int i;
 	boolean found;
-	List oolStart;
-	List calendarServices;
+	List<ValueList> oolStart;
+	List<ValueList> calendarServices;
 	int frequency;
 	int[] departureTimehhmmss = {-1, -1, -1};
 	int[] endTimehhmmss = {-1, -1, -1};
 	int departureTimeInSeconds;
 	
-	public List getListTrips__route_id() {
+	public List<ValueList> getListTrips__route_id() {
 		return listTrips__route_id;
 	}
-	public List getListTrips__service_id() {
+	public List<ValueList> getListTrips__service_id() {
 		return listTrips__service_id;
 	}
-	public List getListTrips__trip_id() {
+	public List<ValueList> getListTrips__trip_id() {
 		return listTrips__trip_id;
 	}
-	public List getListTrips__trip_headsign() {
+	public List<ValueList> getListTrips__trip_headsign() {
 		return listTrips__trip_headsign;
 	}
 	// v1.7.3
-	public List getListTrips__direction_id() {
+	public List<ValueList> getListTrips__direction_id() {
 		return listTrips__direction_id;
 	}
-	public List getListTrips__block_id() {
+	public List<ValueList> getListTrips__block_id() {
 		return listTrips__block_id;
 	}
-	public List getListTrips__routeref() {
+	public List<ValueList> getListTrips__routeref() {
 		return listTrips__routeref;
 	}
-	public List getListJourneyPatternRef() {
+	public List<ValueList> getListJourneyPatternRef() {
 		return _listJourneyPatternRef;
 	}
-	public List getListJourneyPatternSectionRefs() {
+	public List<ValueList> getListJourneyPatternSectionRefs() {
 		return _listJourneyPatternSectionRefs;
 	}
 	String getVehicleJourneyCode() {
@@ -141,13 +140,13 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 		int i = 0;
 		String result = "";
 		while (!found && i < listTrips__service_id.size()) {
-			if (((ValueList)listTrips__service_id.get(i)).getKeyName().equals(trip))
+			if ((listTrips__service_id.get(i)).getKeyName().equals(trip))
 				found = true;
 			else
 				i++;
 		}
 		if (found)
-			result = ((ValueList)listTrips__service_id.get(i)).getValue(0);
+			result = (listTrips__service_id.get(i)).getValue(0);
 		return result;
 	}
 */
@@ -217,7 +216,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	    			 
 	    			 // find matching service in calendar data structure. This assumes the service has already been defined in XML file. This is normally the case
 	    			 while (i < calendarServices.size() && !found) {
-	    				 if (((ValueList)calendarServices.get(i)).getValue(0).equals(_serviceCode))
+	    				 if ((calendarServices.get(i)).getValue(0).equals(_serviceCode))
 	    					 found = true;
 	    				 else
 	    					 i++;
@@ -389,15 +388,15 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 
 	    // Roll out trip headsigns
 	    for (i = 0; i < _listJourneyPatternRef.size(); i++) {
-	    	iterator = (ValueList)_listJourneyPatternRef.get(i);
-	    	journeyPatternRef = (String)iterator.getValue(0);
+	    	iterator = _listJourneyPatternRef.get(i);
+	    	journeyPatternRef = iterator.getValue(0);
 	    	j = 0;
 	    	hot = true;
 	    	tripHeadsign = "";
 	       	while (hot && j < _listJourneyPatternDestinationDisplays.size()) { // find associated destination
-	        	jterator = (ValueList)_listJourneyPatternDestinationDisplays.get(j);
+	        	jterator = _listJourneyPatternDestinationDisplays.get(j);
 	       		if (jterator.getKeyName().equals(journeyPatternRef)) {
-	       			tripHeadsign = (String)jterator.getValue(0);
+	       			tripHeadsign = jterator.getValue(0);
 	       			hot = false;
 	       		} else
 	       			j++;
@@ -409,15 +408,15 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 
 	    // v1.7.3: Roll out trip directions
 	    for (i = 0; i < _listJourneyPatternRef.size(); i++) {
-	    	iterator = (ValueList)_listJourneyPatternRef.get(i);
-	    	journeyPatternRef = (String)iterator.getValue(0);
+	    	iterator = _listJourneyPatternRef.get(i);
+	    	journeyPatternRef = iterator.getValue(0);
 	    	j = 0;
 	    	hot = true;
 	    	tripDirection = "";
 	       	while (hot && j < _listJourneyPatternDirections.size()) { // find associated destination
-	        	jterator = (ValueList)_listJourneyPatternDirections.get(j);
+	        	jterator = _listJourneyPatternDirections.get(j);
 	       		if (jterator.getKeyName().equals(journeyPatternRef)) {
-	       			tripDirection = (String)jterator.getValue(0);
+	       			tripDirection = jterator.getValue(0);
 	       			hot = false;
 	       		} else
 	       			j++;
@@ -429,15 +428,15 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
    	
 	    // v1.7.3: Roll out trip route references
 	    for (i = 0; i < _listJourneyPatternRef.size(); i++) {
-	    	iterator = (ValueList)_listJourneyPatternRef.get(i);
-	    	journeyPatternRef = (String)iterator.getValue(0);
+	    	iterator = _listJourneyPatternRef.get(i);
+	    	journeyPatternRef = iterator.getValue(0);
 	    	j = 0;
 	    	hot = true;
 	    	tripRouteRef = "";
 	       	while (hot && j < _listJourneyPatternRouteRef.size()) { // find associated destination
-	        	jterator = (ValueList)_listJourneyPatternRouteRef.get(j);
+	        	jterator = _listJourneyPatternRouteRef.get(j);
 	       		if (jterator.getKeyName().equals(journeyPatternRef)) {
-	       			tripRouteRef = (String)jterator.getValue(0);
+	       			tripRouteRef = jterator.getValue(0);
 	       			hot = false;
 	       		} else
 	       			j++;
@@ -466,54 +465,54 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 
 		System.out.println("*** Trips");
 		for (i = 0; i < listTrips__trip_id.size(); i++) {
-		    iterator = (ValueList)listTrips__trip_id.get(i);
+		    iterator = listTrips__trip_id.get(i);
 		    iterator.dumpValues();
 		}
 		for (i = 0; i < _listJourneyPatternDestinationDisplays.size(); i++) {
-		    iterator = (ValueList)_listJourneyPatternDestinationDisplays.get(i);
+		    iterator = _listJourneyPatternDestinationDisplays.get(i);
 		    iterator.dumpValues();
 		}
 		// v1.7.3
 		for (i = 0; i < _listJourneyPatternDirections.size(); i++) {
-		    iterator = (ValueList)_listJourneyPatternDirections.get(i);
+		    iterator = _listJourneyPatternDirections.get(i);
 		    iterator.dumpValues();
 		}
 		for (i = 0; i < _listJourneyPatternRouteRef.size(); i++) {
-		    iterator = (ValueList)_listJourneyPatternRouteRef.get(i);
+		    iterator = _listJourneyPatternRouteRef.get(i);
 		    iterator.dumpValues();
 		}
 	  	for (i = 0; i < _listJourneyPatternSectionRefs.size(); i++) {
-		    iterator = (ValueList)_listJourneyPatternSectionRefs.get(i);
+		    iterator = _listJourneyPatternSectionRefs.get(i);
 		    iterator.dumpValues();
 		}
 		for (i = 0; i < listTrips__route_id.size(); i++) {
-		    iterator = (ValueList)listTrips__route_id.get(i);
+		    iterator = listTrips__route_id.get(i);
 		    iterator.dumpValues();
 		}
 		for (i = 0; i < listTrips__service_id.size(); i++) {
-		    iterator = (ValueList)listTrips__service_id.get(i);
+		    iterator = listTrips__service_id.get(i);
 		    iterator.dumpValues();
 		}
 		for (i = 0; i < _listJourneyPatternRef.size(); i++) {
-		    iterator = (ValueList)_listJourneyPatternRef.get(i);
+		    iterator = _listJourneyPatternRef.get(i);
 		    iterator.dumpValues();
 		} 
 	}
 	
 	public TransxchangeTrips(TransxchangeHandlerEngine owner) {
 		super(owner);
-		listTrips__route_id = new ArrayList();
-		listTrips__service_id = new ArrayList();
-		listTrips__trip_id = new ArrayList();
-		listTrips__trip_headsign = new ArrayList();
-		listTrips__direction_id = new ArrayList(); // v1.7.3
-		listTrips__routeref = new ArrayList(); // v1.7.3
-		listTrips__block_id = new ArrayList();
+		listTrips__route_id = new ArrayList<ValueList>();
+		listTrips__service_id = new ArrayList<ValueList>();
+		listTrips__trip_id = new ArrayList<ValueList>();
+		listTrips__trip_headsign = new ArrayList<ValueList>();
+		listTrips__direction_id = new ArrayList<ValueList>(); // v1.7.3
+		listTrips__routeref = new ArrayList<ValueList>(); // v1.7.3
+		listTrips__block_id = new ArrayList<ValueList>();
 		
-		_listJourneyPatternRef = new ArrayList();
-		_listJourneyPatternDestinationDisplays = new ArrayList();
-		_listJourneyPatternDirections = new ArrayList(); // v1.7.3
-		_listJourneyPatternRouteRef = new ArrayList(); // v1.7.3
-		_listJourneyPatternSectionRefs = new ArrayList();
+		_listJourneyPatternRef = new ArrayList<ValueList>();
+		_listJourneyPatternDestinationDisplays = new ArrayList<ValueList>();
+		_listJourneyPatternDirections = new ArrayList<ValueList>(); // v1.7.3
+		_listJourneyPatternRouteRef = new ArrayList<ValueList>(); // v1.7.3
+		_listJourneyPatternSectionRefs = new ArrayList<ValueList>();
 	}
 }

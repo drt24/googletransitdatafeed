@@ -16,20 +16,27 @@
 
 package transxchange2GoogleTransitHandler;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.xml.sax.*;
-
-import java.util.zip.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Iterator;
-import java.util.StringTokenizer;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /*
  * This class extends DefaultHandler to parse a TransXChange v2.1 xml file,	
@@ -47,7 +54,7 @@ public class TransxchangeHandler {
 	static String gtfsPhone = "";
 	
 	static TransxchangeHandlerEngine parseHandler = null;
-	static List parseHandlers = null;
+	static List<TransxchangeHandlerEngine> parseHandlers = null;
 	
 	String agencyOverride = null;
 	
@@ -96,15 +103,15 @@ public class TransxchangeHandler {
 			String rootDirectory, String workDirectory, String stopFile,
 			String lang, String phone,
 			boolean useAgencyShortName, boolean skipEmptyService, boolean skipOrphanStops, boolean geocodeMissingStops, 
-			HashMap modeList, ArrayList stopColumns, String stopfilecolumnseparator, 
-			int naptanHelperStopColumn, HashMap naptanStopnames,
-			HashMap agencyMap)
+			Map<String, String> modeList, List<String> stopColumns, String stopfilecolumnseparator, 
+			int naptanHelperStopColumn, Map<String, String> naptanStopnames,
+			Map<String, String> agencyMap)
 	    throws SAXException, SAXParseException, IOException, ParserConfigurationException
 	{
 		ZipFile zipfile = null;
 		boolean zipinput = true; // Handle zip files
 		boolean processing = true;
-		java.util.Enumeration enumer = null;
+		java.util.Enumeration<? extends ZipEntry> enumer = null;
 		
 		// Open infile, zip or single xml
 		try { // Try to open filename as zip file
@@ -123,10 +130,10 @@ public class TransxchangeHandler {
 				TransxchangeStops.readStopfile(stopFile, stopColumns);
 	
 			// Roll single as well as zipped infiles into a unified data structure for later transparent processing (stops only, rest goes straight to output files)
-			parseHandlers = new ArrayList();
+			parseHandlers = new ArrayList<TransxchangeHandlerEngine>();
 			if (zipinput)
 				enumer = zipfile.entries(); 
-			do { 
+			do {
 				parseHandler = new TransxchangeHandlerEngine();
 				parseHandler.setUrl(url);
 				parseHandler.setTimezone(timezone);
@@ -193,7 +200,7 @@ public class TransxchangeHandler {
     		stop_timesOut.println("trip_id,arrival_time,departure_time,stop_id,stop_sequence,stop_headsign,pickup_type,drop_off_type,shape_dist_traveled");
     		String line = null;
     		String inTrip, inService, inStop;
-    		Iterator parsers;
+    		Iterator<TransxchangeHandlerEngine> parsers;
     		TransxchangeHandlerEngine parser;
     		StringTokenizer st;
     		while ((line = stop_timesIn.readLine()) != null) {
@@ -219,7 +226,7 @@ public class TransxchangeHandler {
     		stop_timesIn.close();
     		infile.delete();
         } else {
-			Iterator parsers = parseHandlers.iterator();
+			Iterator<TransxchangeHandlerEngine> parsers = parseHandlers.iterator();
 			while (parsers.hasNext()) {
 				TransxchangeHandlerEngine parser = (TransxchangeHandlerEngine)parsers.next();
 				if (parser != null) 
@@ -229,7 +236,7 @@ public class TransxchangeHandler {
 		consolidateAgencies(); // Eliminiate possible duplicates from multiple input files in zip archive
 		consolidateStops(); // Eliminiate possible duplicates from multiple input files in zip archive
 		consolidateRoutes(); // Eliminiate possible duplicates from multiple input files in zip archive
-		Iterator parsers = parseHandlers.iterator(); 
+		Iterator<TransxchangeHandlerEngine> parsers = parseHandlers.iterator(); 
 		while (parsers.hasNext())
 			((TransxchangeHandlerEngine)parsers.next()).writeOutputAgenciesStopsRoutes(); // Now write agencies, stops
 		return parseHandler.closeOutput(rootDirectory, workDirectory);
@@ -239,18 +246,18 @@ public class TransxchangeHandler {
 	 * Eliminate possible duplicates from multiple input files in zip archive
 	 */
 	public void consolidateStops() {
-		Iterator parsers = parseHandlers.iterator();
+		Iterator<TransxchangeHandlerEngine> parsers = parseHandlers.iterator();
 		int parseHandlersCount = 0;
 		int j;
 		String curStopId;
-		ArrayList followStopIds;
+		List<ValueList> followStopIds;
 		TransxchangeStops followStops;
-		Iterator followParser;
+		Iterator<TransxchangeHandlerEngine> followParser;
 		
 		while (parsers.hasNext()) {
 			TransxchangeStops stops = ((TransxchangeHandlerEngine)parsers.next()).getStops();
 			parseHandlersCount += 1;
-			ArrayList stopIds = (ArrayList)stops.getListStops__stop_id();
+			List<ValueList> stopIds = stops.getListStops__stop_id();
 			for (int i = 0; i < stopIds.size(); i++) {
 				followParser = parseHandlers.iterator(); // Set follow parser to parsed input files following current; Iterator is not Cloneable; need to create a new Iterator and step forward to get to the right position (anybody know a more elegant solution?)
 				j = 0;
@@ -258,13 +265,13 @@ public class TransxchangeHandler {
 					j++;
 					followParser.next();
 				}
-				curStopId = (String)((ValueList)stopIds.get(i)).getValue(0);
+				curStopId = (stopIds.get(i)).getValue(0);
 				while (followParser.hasNext()) { // Run through stops of following parsed input files and eliminate duplicates there
 					followStops = ((TransxchangeHandlerEngine)followParser.next()).getStops();
-					followStopIds = (ArrayList)followStops.getListStops__stop_id();
+					followStopIds = followStops.getListStops__stop_id();
 					for (j = 0; j < followStopIds.size(); j++) {
-						if (curStopId.equals((String)((ValueList)followStopIds.get(j)).getValue(0))) {
-							((ValueList)followStopIds.get(j)).setValue(0, "");
+						if (curStopId.equals((followStopIds.get(j)).getValue(0))) {
+							(followStopIds.get(j)).setValue(0, "");
 						}
 					}		
 				}		
@@ -276,18 +283,18 @@ public class TransxchangeHandler {
 	 * Eliminate possible duplicates from multiple input files in zip archive
 	 */
 	public void consolidateAgencies() {
-		Iterator parsers = parseHandlers.iterator();
+		Iterator<TransxchangeHandlerEngine> parsers = parseHandlers.iterator();
 		int parseHandlersCount = 0;
 		int j;
 		String curAgencyId;
-		ArrayList followAgencyIds;
+		List<ValueList> followAgencyIds;
 		TransxchangeAgency followAgencies;
-		Iterator followParser;
+		Iterator<TransxchangeHandlerEngine> followParser;
 		
 		while (parsers.hasNext()) {
 			TransxchangeAgency agencies = ((TransxchangeHandlerEngine)parsers.next()).getAgencies();
 			parseHandlersCount += 1;
-			ArrayList agencyIds = (ArrayList)agencies.getListAgency__agency_id();
+			List<ValueList> agencyIds = agencies.getListAgency__agency_id();
 			for (int i = 0; i < agencyIds.size(); i++) {
 				followParser = parseHandlers.iterator(); // Set follow parser to parsed input files following current; Iterator is not Cloneable; need to create a new Iterator and step forward to get to the right position (anybody know a more elegant solution?)
 				j = 0;
@@ -295,13 +302,13 @@ public class TransxchangeHandler {
 					j++;
 					followParser.next();
 				}
-				curAgencyId = (String)((ValueList)agencyIds.get(i)).getValue(0);
+				curAgencyId = (agencyIds.get(i)).getValue(0);
 				while (followParser.hasNext()) { // Run through stops of following parsed input files and eliminate duplicates there
 					followAgencies = ((TransxchangeHandlerEngine)followParser.next()).getAgencies();
-					followAgencyIds = (ArrayList)followAgencies.getListAgency__agency_id();
+					followAgencyIds = followAgencies.getListAgency__agency_id();
 					for (j = 0; j < followAgencyIds.size(); j++) {
-						if (curAgencyId.equals((String)((ValueList)followAgencyIds.get(j)).getValue(0))) {
-							((ValueList)followAgencyIds.get(j)).setValue(0, "");
+						if (curAgencyId.equals(followAgencyIds.get(j).getValue(0))) {
+							followAgencyIds.get(j).setValue(0, "");
 						}
 					}		
 				}		
@@ -313,18 +320,18 @@ public class TransxchangeHandler {
 	 * Eliminate possible duplicates from multiple input files in zip archive
 	 */
 	public void consolidateRoutes() {
-		Iterator parsers = parseHandlers.iterator();
+		Iterator<TransxchangeHandlerEngine> parsers = parseHandlers.iterator();
 		int parseHandlersCount = 0;
 		int j;
 		String curRouteId;
-		ArrayList followRouteIds;
+		List<ValueList> followRouteIds;
 		TransxchangeRoutes followRoutes;
-		Iterator followParser;
+		Iterator<TransxchangeHandlerEngine> followParser;
 		
 		while (parsers.hasNext()) {
 			TransxchangeRoutes routes = ((TransxchangeHandlerEngine)parsers.next()).getRoutes();
 			parseHandlersCount += 1;
-			ArrayList routeIds = (ArrayList)routes.getListRoutes__route_id();
+			List<ValueList> routeIds = routes.getListRoutes__route_id();
 			for (int i = 0; i < routeIds.size(); i++) {
 				followParser = parseHandlers.iterator(); // Set follow parser to parsed input files following current; Iterator is not Cloneable; need to create a new Iterator and step forward to get to the right position (anybody know a more elegant solution?)
 				j = 0;
@@ -332,13 +339,13 @@ public class TransxchangeHandler {
 					j++;
 					followParser.next();
 				}
-				curRouteId = (String)((ValueList)routeIds.get(i)).getValue(0);
+				curRouteId = (routeIds.get(i)).getValue(0);
 				while (followParser.hasNext()) { // Run through stops of following parsed input files and eliminate duplicates there
 					followRoutes = ((TransxchangeHandlerEngine)followParser.next()).getRoutes();
-					followRouteIds = (ArrayList)followRoutes.getListRoutes__route_id();
+					followRouteIds = followRoutes.getListRoutes__route_id();
 					for (j = 0; j < followRouteIds.size(); j++) {
-						if (curRouteId.equals((String)((ValueList)followRouteIds.get(j)).getValue(0))) {
-							((ValueList)followRouteIds.get(j)).setValue(0, "");
+						if (curRouteId.equals(followRouteIds.get(j).getValue(0))) {
+							(followRouteIds.get(j)).setValue(0, "");
 						}
 					}		
 				}		

@@ -24,6 +24,8 @@ import org.xml.sax.helpers.*;
 import java.util.zip.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import java.net.URL;
@@ -89,28 +91,28 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	static PrintWriter calendarsOut = null;
 	static PrintWriter calendarDatesOut = null;
 	
-	static ArrayList filenames = null;
+	static List<String> filenames = null;
 	static String outdir = "";
 	
 	static boolean useAgencyShortName = false;
 	static boolean skipEmptyService = false;
 	static boolean skipOrphanStops = false;
 	static boolean geocodeMissingStops = false;
-	static HashMap modeList = null;
-	static ArrayList stopColumns = null;
+	static Map<String, String> modeList = null;
+	static List<String> stopColumns = null;
 	static String stopfilecolumnseparator = ",";
 	static int naptanHelperStopColumn = -1;
-	static HashMap naptanStopnames = null;
+	static Map<String, String> naptanStopnames = null;
 	
-	HashMap calendarServiceIds = null;
-	HashMap calendarDatesServiceIds = null;
-	HashMap tripServiceIds = null;
+	Map<String, String> calendarServiceIds = null;
+	Map<String, String> calendarDatesServiceIds = null;
+	Map<String, String> tripServiceIds = null;
 	
 	static String rootDirectory = "";
 	static String workDirectory = "";
 
 	static String agencyOverride = "";
-	static HashMap agencyMap = null;
+	static Map<String, String> agencyMap = null;
 	
 	/*
 	 * Utility methods to set and get attribute values
@@ -181,10 +183,10 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	public void setGeocodeMissingStops(boolean flag) {
 		geocodeMissingStops = flag;
 	}
-	public void setModeList(HashMap list) {
+	public void setModeList(Map<String, String> list) {
 		modeList = list;
 	}
-	public void setStopColumns(ArrayList list) {
+	public void setStopColumns(List<String> list) {
 		stopColumns = list;
 	}
 	public void setStopfilecolumnseparator(String separator) {
@@ -201,7 +203,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	public int getNaptanHelperStopColumn() {
 		return naptanHelperStopColumn;
 	}
-	public void setNaPTANStopnames(HashMap stopnames) {
+	public void setNaPTANStopnames(Map<String, String> stopnames) {
 		naptanStopnames = stopnames;
 	}
 	public String getNaPTANStopname(String atcoCode) {
@@ -209,13 +211,13 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 			return "";
 		if (!naptanStopnames.containsKey(atcoCode))
 			return "";
-		return (String)naptanStopnames.get(atcoCode);
+		return naptanStopnames.get(atcoCode);
 	}
 	
-	public HashMap getModeList() {
+	public Map<String, String> getModeList() {
 		return modeList;
 	}
-	public ArrayList getStopColumns() {
+	public List<String> getStopColumns() {
 		return stopColumns;
 	}
 	
@@ -225,7 +227,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	public void setWorkDirectory(String eWorkDirectory) {
 		workDirectory = eWorkDirectory;
 	}
-	public void setAgencyMap(HashMap agencies) {
+	public void setAgencyMap(Map<String, String> agencies) {
 		agencyMap = agencies;
 	}
 	public String getRootDirectory() {
@@ -268,7 +270,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	
 	public void addTripServiceId(String tripId, String serviceId) {
 		if (tripServiceIds == null)
-			tripServiceIds = new HashMap();
+			tripServiceIds = new HashMap<String, String>();
 		tripServiceIds.put(tripId, serviceId);
 	}
 	public boolean hasTripServiceId(String testId) {
@@ -279,7 +281,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	public String getTripServiceId(String tripId) {
 		if (tripServiceIds == null || tripId == null || tripId.length() == 0)
 			return "";
-		return (String)tripServiceIds.get(tripId);
+		return tripServiceIds.get(tripId);
 		
 	}
 	
@@ -300,14 +302,15 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	public String getAgencyOverride() {
 		return agencyOverride;
 	}
-	public HashMap getAgencyMap() {
+	public Map<String, String> getAgencyMap() {
 		return agencyMap;
 	}
 	
 	/*
 	 * Start element. Called by parser when start of element found <element>
 	 */   	
-	public void startElement(String uri, String name, String qName, Attributes atts)
+	@Override
+  public void startElement(String uri, String name, String qName, Attributes atts)
 		throws SAXParseException {
 	    agencies.startElement(uri, name, qName, atts);
 	    stops.startElement(uri, name, qName, atts);
@@ -321,7 +324,8 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	/*
 	 * Parse element. Called to extract contents of elements <element>contents</element>
 	 */   	
-	public void characters (char ch[], int start, int length) {
+	@Override
+  public void characters (char ch[], int start, int length) {
 		agencies.characters(ch, start, length);
 		stops.characters(ch, start, length);
 		routes.characters(ch, start, length);
@@ -334,7 +338,8 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	/*
  	 * End element. Called by parser when end of element reached </element>
  	 */   	
-	public void endElement (String uri, String name, String qName) {
+	@Override
+  public void endElement (String uri, String name, String qName) {
 
 		// take care of element
 		agencies.endElement(uri, name, qName);
@@ -358,7 +363,8 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	/*
 	 * Complete (and dump) GTFS data structures. Called when end of TransXChange input file is reached
 	 */   	
-	public void endDocument() {
+	@Override
+  public void endDocument() {
     
 		// wrap up document parsing
 		try {
@@ -403,7 +409,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	throws IOException
 	{
 		outdir = rootDirectory + workDirectory;
-		filenames = new ArrayList();
+		filenames = new ArrayList<String>();
 
 		// Delete existing GTFS files in output directory
 		new File(outdir + "/" + agencyFilename + extension).delete();
@@ -441,89 +447,89 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
             calendarsOut = new PrintWriter(new FileWriter(outfile));
             calendarsOut.println("service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date");
         }
-        calendarServiceIds = new HashMap();
+        calendarServiceIds = new HashMap<String, String>();
         
         String outLine;
         for (int i = 0; i < this.getCalendar().getListCalendar__service_id().size(); i++) {
         	outLine = "";
-        	serviceId = (String)(((ValueList)this.getCalendar().getListCalendar__service_id().get(i))).getValue(0);
+        	serviceId = ((this.getCalendar().getListCalendar__service_id().get(i))).getValue(0);
         	// Service ID added to calendar data structure in class TransxchangeCalendar. 
         	// If match and no journey pattern associated with daytype, 
         	// then daytype applies to service, not journey pattern. Otherwise daytpe is set to 0 as daytype applies to journey pattern, not service
         	
         	// Monday
-        	daytypesJourneyPattern = (String)((ValueList)this.getCalendar().getListCalendar__monday().get(i)).getValue(1); 
-        	daytypesService = (String)((ValueList)this.getCalendar().getListCalendar__monday().get(i)).getValue(2); 
+        	daytypesJourneyPattern = (this.getCalendar().getListCalendar__monday().get(i)).getValue(1); 
+        	daytypesService = (this.getCalendar().getListCalendar__monday().get(i)).getValue(2); 
         	if (daytypesService == null)
         		daytypesService = "";
         	if (daytypesService.equals(serviceId) && daytypesJourneyPattern.length() == 0)
-        		outLine += ((ValueList)this.getCalendar().getListCalendar__monday().get(i)).getValue(0);
+        		outLine += (this.getCalendar().getListCalendar__monday().get(i)).getValue(0);
         	else
         		outLine += "0";
         	outLine += ",";
 
         	// Tuesday
-           	daytypesJourneyPattern = (String)((ValueList)this.getCalendar().getListCalendar__tuesday().get(i)).getValue(1); 
-        	daytypesService = (String)((ValueList)this.getCalendar().getListCalendar__tuesday().get(i)).getValue(2); 
+           	daytypesJourneyPattern = (this.getCalendar().getListCalendar__tuesday().get(i)).getValue(1); 
+        	daytypesService = (this.getCalendar().getListCalendar__tuesday().get(i)).getValue(2); 
         	if (daytypesService == null)
         		daytypesService = "";
         	if (daytypesService.equals(serviceId) && daytypesJourneyPattern.length() == 0)
-        		outLine += ((ValueList)this.getCalendar().getListCalendar__tuesday().get(i)).getValue(0);
+        		outLine += (this.getCalendar().getListCalendar__tuesday().get(i)).getValue(0);
         	else
         		outLine += "0";
         	outLine += ",";
         	
         	// Wednesday
-           	daytypesJourneyPattern = (String)((ValueList)this.getCalendar().getListCalendar__wednesday().get(i)).getValue(1); 
-        	daytypesService = (String)((ValueList)this.getCalendar().getListCalendar__wednesday().get(i)).getValue(2); 
+           	daytypesJourneyPattern = (this.getCalendar().getListCalendar__wednesday().get(i)).getValue(1); 
+        	daytypesService = (this.getCalendar().getListCalendar__wednesday().get(i)).getValue(2); 
         	if (daytypesService == null)
         		daytypesService = "";
         	if (daytypesService.equals(serviceId) && daytypesJourneyPattern.length() == 0)
-        		outLine += ((ValueList)this.getCalendar().getListCalendar__wednesday().get(i)).getValue(0);
+        		outLine += (this.getCalendar().getListCalendar__wednesday().get(i)).getValue(0);
         	else
         		outLine += "0";
         	outLine += ",";
         	
         	// Thursday
-           	daytypesJourneyPattern = (String)((ValueList)this.getCalendar().getListCalendar__thursday().get(i)).getValue(1); 
-        	daytypesService = (String)((ValueList)this.getCalendar().getListCalendar__thursday().get(i)).getValue(2); 
+           	daytypesJourneyPattern = (this.getCalendar().getListCalendar__thursday().get(i)).getValue(1); 
+        	daytypesService = (this.getCalendar().getListCalendar__thursday().get(i)).getValue(2); 
         	if (daytypesService == null)
         		daytypesService = "";
         	if (daytypesService.equals(serviceId) && daytypesJourneyPattern.length() == 0)
-        		outLine += ((ValueList)this.getCalendar().getListCalendar__thursday().get(i)).getValue(0);
+        		outLine += (this.getCalendar().getListCalendar__thursday().get(i)).getValue(0);
         	else
         		outLine += "0";
         	outLine += ",";
 
         	// Friday
-          	daytypesJourneyPattern = (String)((ValueList)this.getCalendar().getListCalendar__friday().get(i)).getValue(1); 
-        	daytypesService = (String)((ValueList)this.getCalendar().getListCalendar__friday().get(i)).getValue(2); 
+          	daytypesJourneyPattern = (this.getCalendar().getListCalendar__friday().get(i)).getValue(1); 
+        	daytypesService = (this.getCalendar().getListCalendar__friday().get(i)).getValue(2); 
         	if (daytypesService == null)
         		daytypesService = "";
         	if (daytypesService.equals(serviceId) && daytypesJourneyPattern.length() == 0)
-        		outLine += ((ValueList)this.getCalendar().getListCalendar__friday().get(i)).getValue(0);
+        		outLine += (this.getCalendar().getListCalendar__friday().get(i)).getValue(0);
         	else
         		outLine += "0";
         	outLine += ",";
 
         	// Saturday
-          	daytypesJourneyPattern = (String)((ValueList)this.getCalendar().getListCalendar__saturday().get(i)).getValue(1); 
-        	daytypesService = (String)((ValueList)this.getCalendar().getListCalendar__saturday().get(i)).getValue(2); 
+          	daytypesJourneyPattern = (this.getCalendar().getListCalendar__saturday().get(i)).getValue(1); 
+        	daytypesService = (this.getCalendar().getListCalendar__saturday().get(i)).getValue(2); 
         	if (daytypesService == null)
         		daytypesService = "";
         	if (daytypesService.equals(serviceId) && daytypesJourneyPattern.length() == 0)
-        		outLine += ((ValueList)this.getCalendar().getListCalendar__saturday().get(i)).getValue(0);
+        		outLine += (this.getCalendar().getListCalendar__saturday().get(i)).getValue(0);
         	else
         		outLine += "0";
         	outLine += ",";
  	
         	// Sunday
-          	daytypesJourneyPattern = (String)((ValueList)this.getCalendar().getListCalendar__sunday().get(i)).getValue(1); 
-        	daytypesService = (String)((ValueList)this.getCalendar().getListCalendar__sunday().get(i)).getValue(2); 
+          	daytypesJourneyPattern = (this.getCalendar().getListCalendar__sunday().get(i)).getValue(1); 
+        	daytypesService = (this.getCalendar().getListCalendar__sunday().get(i)).getValue(2); 
         	if (daytypesService == null)
         		daytypesService = "";
         	if (daytypesService.equals(serviceId) && daytypesJourneyPattern.length() == 0)
-        		outLine += ((ValueList)this.getCalendar().getListCalendar__sunday().get(i)).getValue(0);
+        		outLine += (this.getCalendar().getListCalendar__sunday().get(i)).getValue(0);
         	else
         		outLine += "0";
         	outLine += ",";
@@ -533,9 +539,9 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	        	calendarsOut.print(serviceId);
 	        	calendarsOut.print(",");
 	        	calendarsOut.print(outLine);
-	        	calendarsOut.print(((ValueList)this.getCalendar().getListCalendar__start_date().get(i)).getValue(0));
+	        	calendarsOut.print((this.getCalendar().getListCalendar__start_date().get(i)).getValue(0));
 	        	calendarsOut.print(",");
-	        	calendarsOut.print(((ValueList)this.getCalendar().getListCalendar__end_date().get(i)).getValue(0));
+	        	calendarsOut.print((this.getCalendar().getListCalendar__end_date().get(i)).getValue(0));
 	        	calendarsOut.println();
 	        	if (skipEmptyService)
 	        		calendarServiceIds.put(serviceId, serviceId);
@@ -552,21 +558,21 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
             	filenames.add(outfileName);
             	calendarDatesOut.println("service_id,date,exception_type");        		
         	}
-        	calendarDatesServiceIds = new HashMap();
+        	calendarDatesServiceIds = new HashMap<String, String>();
         	String calendarDateServiceId;
         	String calendarDateExceptionType;
-        	HashMap calendarExceptions = new HashMap();
+        	HashMap<String, String> calendarExceptions = new HashMap<String, String>();
         	for (int i = 0; i < this.getCalendarDates().getListCalendarDates__service_id().size(); i++) {
-        		calendarDateServiceId = ((ValueList)this.getCalendarDates().getListCalendarDates__service_id().get(i)).getValue(0);
-        		calendarDateExceptionType = ((ValueList)this.getCalendarDates().getListCalendarDates__exception_type().get(i)).getValue(0);
+        		calendarDateServiceId = (this.getCalendarDates().getListCalendarDates__service_id().get(i)).getValue(0);
+        		calendarDateExceptionType = (this.getCalendarDates().getListCalendarDates__exception_type().get(i)).getValue(0);
         		if (this.hasCalendarServiceId(calendarDateServiceId) || !calendarDateExceptionType.equals("2") || !skipEmptyService) {
         			outLine = calendarDateServiceId + "," + 
-        				((ValueList)this.getCalendarDates().getListCalendarDates__date().get(i)).getValue(0) + "," + 
+        				(this.getCalendarDates().getListCalendarDates__date().get(i)).getValue(0) + "," + 
         				calendarDateExceptionType;
         			if (!calendarExceptions.containsKey(outLine)) {
 //	        		calendarDatesOut.print(calendarDateServiceId);
 //	        		calendarDatesOut.print(",");
-//	        		calendarDatesOut.print(((ValueList)this.getCalendarDates().getListCalendarDates__date().get(i)).getValue(0));
+//	        		calendarDatesOut.print((this.getCalendarDates().getListCalendarDates__date().get(i)).getValue(0));
 //	        		calendarDatesOut.print(",");
 //	        		calendarDatesOut.println(calendarDateExceptionType);
 	        			calendarDatesOut.println(outLine);
@@ -592,16 +598,16 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		String tripsDirectionId; // v.1.7.3
 		String tripsRouteRef; // v.1.7.3
         for (int i = 0; i < this.getTrips().getListTrips__route_id().size(); i++) {
-        	tripsServiceId = ((ValueList)this.getTrips().getListTrips__service_id().get(i)).getValue(0);
-        	tripsDirectionId = ((ValueList)this.getTrips().getListTrips__direction_id().get(i)).getValue(0); // v.1.7.3
-        	tripsRouteRef = ((ValueList)this.getTrips().getListTrips__routeref().get(i)).getValue(0); // v.1.7.3
+        	tripsServiceId = (this.getTrips().getListTrips__service_id().get(i)).getValue(0);
+        	tripsDirectionId = (this.getTrips().getListTrips__direction_id().get(i)).getValue(0); // v.1.7.3
+        	tripsRouteRef = (this.getTrips().getListTrips__routeref().get(i)).getValue(0); // v.1.7.3
         	if (!skipEmptyService || this.hasCalendarServiceId(tripsServiceId) || this.hasCalendarDatesServiceId(tripsServiceId)) {
-        		tripsRouteId = ((ValueList)this.getTrips().getListTrips__route_id().get(i)).getValue(0);
+        		tripsRouteId = (this.getTrips().getListTrips__route_id().get(i)).getValue(0);
 	        	tripsOut.print(tripsRouteId);
 	        	tripsOut.print(",");
 	        	tripsOut.print(tripsServiceId);
 	        	tripsOut.print(",");
-	        	tripsOut.print(((ValueList)this.getTrips().getListTrips__trip_id().get(i)).getKeyName());
+	        	tripsOut.print((this.getTrips().getListTrips__trip_id().get(i)).getKeyName());
 	        	tripsOut.print(",");
 	        	String tripHeadsign = this.getRoutes().getRouteDescription(tripsRouteRef);
 	        	if (tripHeadsign.contains(",")) // v1.7.5: csv-proof output
@@ -611,7 +617,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	        	tripsOut.print(",");
 	        	tripsOut.print(tripsDirectionId); // v1.7.3
 	        	tripsOut.print(",");
-	        	tripsOut.print(((ValueList)this.getTrips().getListTrips__block_id().get(i)).getValue(0));
+	        	tripsOut.print((this.getTrips().getListTrips__block_id().get(i)).getValue(0));
 	        	tripsOut.print(",");
 	        	tripsOut.println();
             }       
@@ -636,18 +642,18 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 			agenciesOut.println("agency_id,agency_name,agency_url,agency_timezone,agency_lang,agency_phone");
 		}
 		for (int i = 0; i < this.getAgencies().getListAgency__agency_name().size(); i++) {
-			if (((String)(((ValueList)this.getAgencies().getListAgency__agency_id().get(i))).getValue(0)).length() > 0) {
-				agenciesOut.print(((ValueList)this.getAgencies().getListAgency__agency_id().get(i)).getValue(0));
+			if ((((this.getAgencies().getListAgency__agency_id().get(i))).getValue(0)).length() > 0) {
+				agenciesOut.print((this.getAgencies().getListAgency__agency_id().get(i)).getValue(0));
 				agenciesOut.print(","); 
-				agenciesOut.print(((ValueList)this.getAgencies().getListAgency__agency_name().get(i)).getValue(0));
+				agenciesOut.print((this.getAgencies().getListAgency__agency_name().get(i)).getValue(0));
 				agenciesOut.print(",");
-				agenciesOut.print(((ValueList)this.getAgencies().getListAgency__agency_url().get(i)).getValue(0));
+				agenciesOut.print((this.getAgencies().getListAgency__agency_url().get(i)).getValue(0));
 				agenciesOut.print(",");
-				agenciesOut.print(((ValueList)this.getAgencies().getListAgency__agency_timezone().get(i)).getValue(0));
+				agenciesOut.print((this.getAgencies().getListAgency__agency_timezone().get(i)).getValue(0));
 				agenciesOut.print(","); 
-				agenciesOut.print(((ValueList)this.getAgencies().getListAgency__agency_lang().get(i)).getValue(0));
+				agenciesOut.print((this.getAgencies().getListAgency__agency_lang().get(i)).getValue(0));
 				agenciesOut.print(","); 
-				agenciesOut.print(((ValueList)this.getAgencies().getListAgency__agency_phone().get(i)).getValue(0));
+				agenciesOut.print((this.getAgencies().getListAgency__agency_phone().get(i)).getValue(0));
 				agenciesOut.println();
 	        }
         }
@@ -662,11 +668,11 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		}
 		String stopId, stopName;
 		for (int i = 0; i < this.getStops().getListStops__stop_id().size(); i++) {
-			stopId = ((ValueList)this.getStops().getListStops__stop_id().get(i)).getValue(0);
+			stopId = (this.getStops().getListStops__stop_id().get(i)).getValue(0);
 			if (stopId.length() > 0 && (!skipOrphanStops || stops.hasStop(stopId))) {
-				stopName = ((ValueList)this.getStops().getListStops__stop_name().get(i)).getValue(0);
-				String[] coordinates = {((ValueList)this.getStops().getListStops__stop_lat().get(i)).getValue(0), 
-					((ValueList)this.getStops().getListStops__stop_lon().get(i)).getValue(0) };
+				stopName = (this.getStops().getListStops__stop_name().get(i)).getValue(0);
+				String[] coordinates = {(this.getStops().getListStops__stop_lat().get(i)).getValue(0), 
+					(this.getStops().getListStops__stop_lon().get(i)).getValue(0) };
 
 				// If requested, geocode lat/lon
 				if (isGeocodeMissingStops() && (coordinates[0].equals("OpenRequired") || coordinates[1].equals("OpenRequired"))) {
@@ -682,7 +688,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 				stopsOut.print(",");
 				stopsOut.print(stopName);
 				stopsOut.print(",");
-				stopsOut.print(((ValueList)this.getStops().getListStops__stop_desc().get(i)).getValue(0));
+				stopsOut.print((this.getStops().getListStops__stop_desc().get(i)).getValue(0));
 				stopsOut.print(",");
 				stopsOut.print(coordinates[0]);
 				stopsOut.print(",");
@@ -691,15 +697,15 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 				stopsOut.print(","); // no stop URL
 				stopsOut.println();
 // Below a number of attributes (stop_street to stop_country) which have been deprecated in the GTFS (9-Apr-2007 release of the spec)
-//        		stopsOut.print(((ValueList)this.getStops().getListStops__stop_street().get(i)).getValue(0));
+//        		stopsOut.print((this.getStops().getListStops__stop_street().get(i)).getValue(0));
 //        		stopsOut.print(",");
-//        		stopsOut.print(((ValueList)this.getStops().getListStops__stop_city().get(i)).getValue(0));
+//        		stopsOut.print((this.getStops().getListStops__stop_city().get(i)).getValue(0));
 //        		stopsOut.print(",");
-//        		stopsOut.print(((ValueList)this.getStops().getListStops__stop_postcode().get(i)).getValue(0));
+//        		stopsOut.print((this.getStops().getListStops__stop_postcode().get(i)).getValue(0));
 //        		stopsOut.print(",");
-//        		stopsOut.print(((ValueList)this.getStops().getListStops__stop_region().get(i)).getValue(0));
+//        		stopsOut.print((this.getStops().getListStops__stop_region().get(i)).getValue(0));
 //        		stopsOut.print(",");
-//        		stopsOut.print(((ValueList)this.getStops().getListStops__stop_country().get(i)).getValue(0));
+//        		stopsOut.print((this.getStops().getListStops__stop_country().get(i)).getValue(0));
 //				stopsOut.println();
 			}
 		}		
@@ -713,22 +719,22 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	        routesOut.println("route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_url,route_color,route_text_color");
 		}
 		for (int i = 0; i < this.getRoutes().getListRoutes__route_id().size(); i++) {
-			if (((String)(((ValueList)this.getRoutes().getListRoutes__route_id().get(i))).getValue(0)).length() > 0) {
-				routesOut.print(((ValueList)this.getRoutes().getListRoutes__route_id().get(i)).getValue(0));
+			if ((((this.getRoutes().getListRoutes__route_id().get(i))).getValue(0)).length() > 0) {
+				routesOut.print((this.getRoutes().getListRoutes__route_id().get(i)).getValue(0));
 				routesOut.print(",");
-				routesOut.print(((ValueList)this.getRoutes().getListRoutes__agency_id().get(i)).getValue(0));
+				routesOut.print((this.getRoutes().getListRoutes__agency_id().get(i)).getValue(0));
 				routesOut.print(",");
-				String routeShortname = ((ValueList)this.getRoutes().getListRoutes__route_short_name().get(i)).getValue(0);
+				String routeShortname = (this.getRoutes().getListRoutes__route_short_name().get(i)).getValue(0);
 				routesOut.print(routeShortname);
 				routesOut.print(",");
-				String routeLongname = ((ValueList)this.getRoutes().getListRoutes__route_long_name().get(i)).getValue(0);
+				String routeLongname = (this.getRoutes().getListRoutes__route_long_name().get(i)).getValue(0);
 				routesOut.print(routeLongname);
 				routesOut.print(",");
-				String routeDesc = ((ValueList)this.getRoutes().getListRoutes__route_desc().get(i)).getValue(0); // v1.7.5: Do not write route description if equal to route short or long name
+				String routeDesc = (this.getRoutes().getListRoutes__route_desc().get(i)).getValue(0); // v1.7.5: Do not write route description if equal to route short or long name
 				if (routeDesc != null && !(routeDesc.equals(routeShortname) || routeDesc.equals(routeLongname)))
 					routesOut.print(routeDesc);
 				routesOut.print(",");
-				routesOut.print(((ValueList)this.getRoutes().getListRoutes__route_type().get(i)).getValue(0));
+				routesOut.print((this.getRoutes().getListRoutes__route_type().get(i)).getValue(0));
 				routesOut.print(","); // no route url
 				routesOut.print(","); // no route color
 				routesOut.print(","); // no route text color
@@ -779,10 +785,10 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
         ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(outdir + /* "/" + serviceStartDate + */ "/" + gtfsZipfileName));
         byte[] buf = new byte[1024]; // Create a buffer for reading the files
         for (int i = 0; i < filenames.size(); i++) {
-            FileInputStream in = new FileInputStream(outdir + /* "/" + serviceStartDate + */ "/" + (String)filenames.get(i));
+            FileInputStream in = new FileInputStream(outdir + /* "/" + serviceStartDate + */ "/" + filenames.get(i));
     
             // Add ZIP entry to output stream.
-            zipOut.putNextEntry(new ZipEntry((String)filenames.get(i)));
+            zipOut.putNextEntry(new ZipEntry(filenames.get(i)));
     
             // Transfer bytes from the file to the ZIP file
             int len;

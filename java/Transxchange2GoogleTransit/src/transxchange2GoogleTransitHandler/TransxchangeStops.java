@@ -49,10 +49,10 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	static final String[] key_stops__stop_country = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
 
 	static final String [] _key_stops__stop_locality = new String[] {"StopPoints", "LocalityName"}; 
-	List _listStops__stop_locality;
+	List<ValueList> _listStops__stop_locality;
 	ValueList _newStops__stop_locality;
 	static final String [] _key_stops__stop_indicator = new String[] {"StopPoints", "Indicator"}; 
-	List _listStops__stop_indicator;
+	List<ValueList> _listStops__stop_indicator;
 	ValueList _newStops__stop_indicator;
 	
 	static final String[] _key_route_section = {"RouteSection"};
@@ -67,14 +67,14 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	String stopPointToLat = ""; // Store current lat of stop-to to maintain lat of last stop in route link
 	String stopPointToLon = ""; // same for lon
 	
-	static Map lat = null;
-	static Map lon = null;
-	static HashMap stopIx = null;
+	static Map<String, String> lat = null;
+	static Map<String, String> lon = null;
+	static Map<String, Integer> stopIx = null;
 	
-	static HashMap stops = null;
+	static Map<String, String> stops = null;
 
-	static HashMap stopColumnIxs = null;
-	static ArrayList[] columnValues = {null, null, null, null, null, null, null, null, null, null,
+	static Map<String, Integer> stopColumnIxs = null;
+	static List[] columnValues = {null, null, null, null, null, null, null, null, null, null,
 		null, null, null, null, null, null, null, null, null, null,
 		null, null, null, null, null, null, null, null, null, null,
 		null, null, null, null, null, null, null, null, null, null,
@@ -85,55 +85,55 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	String keyRef = "";
 		
 	// Parsed data 
-	List listStops__stop_id;
+	List<ValueList> listStops__stop_id;
 	ValueList newStops__stop_id;
-	List listStops__stop_name;
+	List<ValueList> listStops__stop_name;
 	ValueList newStops__stop_name;
-	List listStops__stop_desc;
+	List<ValueList> listStops__stop_desc;
 	ValueList newStops__stop_desc;
-	List listStops__stop_lat;
+	List<ValueList> listStops__stop_lat;
 	ValueList newStops__stop_lat;
-	List listStops__stop_lon;
+	List<ValueList> listStops__stop_lon;
 	ValueList newStops__stop_lon;
-	List listStops__stop_street;
+	List<ValueList> listStops__stop_street;
 	ValueList newStops__stop_street;
-	List listStops__stop_city;
+	List<ValueList> listStops__stop_city;
 	ValueList newStops__stop_city;
-	List listStops__stop_postcode;
+	List<ValueList> listStops__stop_postcode;
 	ValueList newStops__stop_postcode;
-	List listStops__stop_region;
+	List<ValueList> listStops__stop_region;
 	ValueList newStops__stop_region;
-	List listStops__stop_country;
+	List<ValueList> listStops__stop_country;
 	ValueList newStops__stop_country;
 
-	public List getListStops__stop_id() {
+	public List<ValueList> getListStops__stop_id() {
 		return listStops__stop_id;
 	}
-	public List getListStops__stop_name() {
+	public List<ValueList> getListStops__stop_name() {
 		return listStops__stop_name;
 	}
-	public List getListStops__stop_desc() {
+	public List<ValueList> getListStops__stop_desc() {
 		return listStops__stop_desc;
 	}
-	public List getListStops__stop_lat() {
+	public List<ValueList> getListStops__stop_lat() {
 		return listStops__stop_lat;
 	}
-	public List getListStops__stop_lon() {
+	public List<ValueList> getListStops__stop_lon() {
 		return listStops__stop_lon;
 	}
-	public List getListStops__stop_street() {
+	public List<ValueList> getListStops__stop_street() {
 		return listStops__stop_street;
 	}
-	public List getListStops__stop_city() {
+	public List<ValueList> getListStops__stop_city() {
 		return listStops__stop_city;
 	}
-	public List getListStops__stop_postcode() {
+	public List<ValueList> getListStops__stop_postcode() {
 		return listStops__stop_postcode;
 	}
-	public List getListStops__stop_region() {
+	public List<ValueList> getListStops__stop_region() {
 		return listStops__stop_region;
 	}
-	public List getListStops__stop_country() {
+	public List<ValueList> getListStops__stop_country() {
 		return listStops__stop_country;
 	}
 	
@@ -141,7 +141,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 		if (stopId == null || stopId.length() == 0)
 			return;
 		if (stops == null)
-			stops = new HashMap();
+			stops = new HashMap<String, String>();
 		stops.put(stopId, "0");
 	}
 	public boolean hasStop(String testId) {
@@ -149,7 +149,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 			return false;
 		if (!stops.containsKey(testId))
 			return false;
-		if (!((String)stops.get(testId)).equals("1"))
+		if (!(stops.get(testId)).equals("1"))
 			return false;
 		return true;
 	}
@@ -161,8 +161,8 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	public void flagAllStops(String flag) {
 		if (stops == null || flag == null)
 			return;
-		for (Object key : stops.keySet()) {
-			stops.put((String)key, flag);
+		for (String key : stops.keySet()) {
+			stops.put(key, flag);
 		}
 	}
 
@@ -319,7 +319,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	       	i = 0;
 	       	hot = true;
 	       	while (hot && i < listStops__stop_lat.size()) {
-	       		if (stopPointFrom.equals((String)((ValueList)listStops__stop_lat.get(i)).getKeyName()))
+	       		if (stopPointFrom.equals((listStops__stop_lat.get(i)).getKeyName()))
 	       			hot = false;
 	       		else
 	       			i++;
@@ -334,7 +334,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	    	i = 0;
 	    	hot = true;
 	    	while (hot && i < listStops__stop_lon.size()) {
-	    		if (stopPointFrom.equals((String)((ValueList)listStops__stop_lon.get(i)).getKeyName()))
+	    		if (stopPointFrom.equals((listStops__stop_lon.get(i)).getKeyName()))
 	    			hot = false;
 	    		else
 	    			i++;
@@ -422,12 +422,12 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 
 	    // Backfill missing stop coordinates with default lat/lon
 	    for (i = 0; i < listStops__stop_id.size(); i++) {
-	    	iterator = (ValueList)listStops__stop_id.get(i);
-	    	stopId = (String)iterator.getValue(0);
+	    	iterator = listStops__stop_id.get(i);
+	    	stopId = iterator.getValue(0);
 	    	j = 0;
 	    	hot = true;
 	    	while (hot && j < listStops__stop_lat.size()) {
-	    		jterator = (ValueList)listStops__stop_lat.get(j);
+	    		jterator = listStops__stop_lat.get(j);
 	    		if (jterator.getKeyName().equals(stopId))
 	    			hot = false;
 	    		else
@@ -444,56 +444,56 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	    }
 	    
 	    // Roll stop locality and indicator into stopname
-    	ArrayList stopColumns = handler.getStopColumns();
+    	List<String> stopColumns = handler.getStopColumns();
     	if (stopColumns == null)
     		if (handler.getNaptanHelperStopColumn() == -1)
 			    for (i = 0; i < listStops__stop_name.size(); i++) {
 			    	indicator = "";
 			    	locality = "";
-			    	iterator = (ValueList)listStops__stop_name.get(i);
-			    	stopId = (String)iterator.getKeyName();
+			    	iterator = listStops__stop_name.get(i);
+			    	stopId = iterator.getKeyName();
 			    	j = 0; // Find locality
 			    	hot = true;
 			    	jterator = null;
 			    	while (hot && j < _listStops__stop_locality.size()) {
-			    		jterator = (ValueList)_listStops__stop_locality.get(j);
+			    		jterator = _listStops__stop_locality.get(j);
 			    		if (jterator.getKeyName().equals(stopId))
 			    			hot = false;
 			    		else
 			    			j++;
 			    	}
 			    	if (!hot)
-			    		locality = (String)jterator.getValue(0);
+			    		locality = jterator.getValue(0);
 			    	j = 0; // Find indicator
 			    	hot = true;
 			    	jterator = null;
 			    	while (hot && j < _listStops__stop_indicator.size()) {
-			    		jterator = (ValueList)_listStops__stop_indicator.get(j);
+			    		jterator = _listStops__stop_indicator.get(j);
 			    		if (jterator.getKeyName().equals(stopId))
 			    			hot = false;
 			    		else
 			    			j++;
 			    	}
 			    	if (!hot)
-			    		indicator = (String)jterator.getValue(0);
+			    		indicator = jterator.getValue(0);
 			    	
 			    	if (locality.length() > 0 && iterator != null) // Prefix locality
-			    		iterator.setValue(0, locality + ", " + (String)iterator.getValue(0));
+			    		iterator.setValue(0, locality + ", " + iterator.getValue(0));
 			    	if (indicator.length() > 0 && iterator != null) // Postfix indicator
-			        	iterator.setValue(0, (String)iterator.getValue(0) + ", "+ indicator);
+			        	iterator.setValue(0, iterator.getValue(0) + ", "+ indicator);
 			    }
     		else
 			    for (i = 0; i < listStops__stop_name.size(); i++) {
-			    	iterator = (ValueList)listStops__stop_name.get(i);
-			    	stopId = (String)iterator.getKeyName();
+			    	iterator = listStops__stop_name.get(i);
+			    	stopId = iterator.getKeyName();
 			    	iterator.setValue(0, handler.getNaPTANStopname(stopId));
 			    }
     	else 
 		    for (i = 0; i < listStops__stop_name.size(); i++) {
-//		    	iterator = (ValueList)listStops__stop_id.get(i);
-//		    	stopId = (String)iterator.getValue(0);
-		    	iterator = (ValueList)listStops__stop_name.get(i);
-		    	stopId = (String)iterator.getKeyName();
+//		    	iterator = listStops__stop_id.get(i);
+//		    	stopId = iterator.getValue(0);
+		    	iterator = listStops__stop_name.get(i);
+		    	stopId = iterator.getKeyName();
 		    	stopname = ""; 
 		    	for (j = 0; j < 30; j++) {
 		    		if (columnValues[j] != null) {
@@ -504,7 +504,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 		    				if (stopname.length() == 0)
 		    					stopname += "OpenRequired";
 		    			} else {
-		    				naptanPick = (String)columnValues[j].get((Integer)stopIx.get(stopId));
+		    				naptanPick = (String) columnValues[j].get((Integer)stopIx.get(stopId));
 		    				naptanPick = naptanPick.replaceAll("\"", "");
 		    				stopname += naptanPick;
 			    		}
@@ -536,19 +536,19 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 		
 	    System.out.println("*** Stops");
 	    for (i = 0; i < listStops__stop_id.size(); i++) {
-	    	iterator = (ValueList)listStops__stop_id.get(i);
+	    	iterator = listStops__stop_id.get(i);
 	    	iterator.dumpValues();
 	    }
 	    for (i = 0; i < listStops__stop_name.size(); i++) {
-	    	iterator = (ValueList)listStops__stop_name.get(i);
+	    	iterator = listStops__stop_name.get(i);
 	    	iterator.dumpValues();
 	    }
 	    for (i = 0; i < listStops__stop_lat.size(); i++) {
-	    	iterator = (ValueList)listStops__stop_lat.get(i);
+	    	iterator = listStops__stop_lat.get(i);
 	    	iterator.dumpValues();
 	    }
 	    for (i = 0; i < listStops__stop_lon.size(); i++) {
-	    	iterator = (ValueList)listStops__stop_lon.get(i);
+	    	iterator = listStops__stop_lon.get(i);
 	    	iterator.dumpValues();
 	    }
 	    
@@ -561,7 +561,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 			return key_stops__stop_lat[2];
 		
 		if (lat.containsKey(stop))
-			return (String)lat.get(stop);
+			return lat.get(stop);
 		else
 			return key_stops__stop_lat[2];
 	}
@@ -572,7 +572,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 			return key_stops__stop_lon[2];
 
 		if (lon.containsKey(stop))
-			return (String)lon.get(stop);
+			return lon.get(stop);
 		else
 			return key_stops__stop_lon[2];
 	}
@@ -599,23 +599,23 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 */
 	public TransxchangeStops(TransxchangeHandlerEngine owner) { 
 		super(owner);
-		listStops__stop_id = new ArrayList();
-		listStops__stop_name = new ArrayList();
-		listStops__stop_desc = new ArrayList();
-		listStops__stop_lat = new ArrayList();
-		listStops__stop_lon = new ArrayList();
-		listStops__stop_street = new ArrayList();
-		listStops__stop_city = new ArrayList();
-		listStops__stop_postcode = new ArrayList();
-		listStops__stop_region = new ArrayList();
-		listStops__stop_country = new ArrayList();
+		listStops__stop_id = new ArrayList<ValueList>();
+		listStops__stop_name = new ArrayList<ValueList>();
+		listStops__stop_desc = new ArrayList<ValueList>();
+		listStops__stop_lat = new ArrayList<ValueList>();
+		listStops__stop_lon = new ArrayList<ValueList>();
+		listStops__stop_street = new ArrayList<ValueList>();
+		listStops__stop_city = new ArrayList<ValueList>();
+		listStops__stop_postcode = new ArrayList<ValueList>();
+		listStops__stop_region = new ArrayList<ValueList>();
+		listStops__stop_country = new ArrayList<ValueList>();
 		
-		_listStops__stop_locality = new ArrayList();
-		_listStops__stop_indicator = new ArrayList();
+		_listStops__stop_locality = new ArrayList<ValueList>();
+		_listStops__stop_indicator = new ArrayList<ValueList>();
 	}
 
 	
-	public static void readStopfile(String stopsFileName, ArrayList stopColumns) 
+	public static void readStopfile(String stopsFileName, List<String> stopColumns) 
 		throws UnsupportedEncodingException, IOException {
 
 		// Read Naptan format stop file
@@ -643,9 +643,9 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 			lat.clear();
 		if (lon != null)
 			lon.clear();
-		lat = new HashMap();		
-		lon = new HashMap();
-		stopIx = new HashMap();
+		lat = new HashMap<String, String>();		
+		lon = new HashMap<String, String>();
+		stopIx = new HashMap<String, Integer>();
 		String stopcode;
 		String tokens[] = {"", "", "", "", "", "", "", "", "", "",
 				"", "", "", "", "", "", "", "", "", "",
@@ -673,21 +673,21 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 		if (stopColumns != null && stopColumns.size() > 0) {
 			bufFileIn = new BufferedReader(new FileReader(stopsFileName));
 			if ((line = bufFileIn.readLine()) != null) {
-				Iterator iterator = stopColumns.iterator();
+				Iterator<String> iterator = stopColumns.iterator();
 				String column;
-				stopColumnIxs = new HashMap();
+				stopColumnIxs = new HashMap<String, Integer>();
 				while (iterator.hasNext()) {
-					column = (String)iterator.next();
+					column = iterator.next();
 					stopColumnIxs.put(column, (Integer)NaPTANHelper.findColumn(line, column));
 				}
 			} else
 				throw new UnsupportedEncodingException("stopfile is empty");
 			while((line = bufFileIn.readLine()) != null) {
-				Iterator iterator = stopColumns.iterator();
+				Iterator<String> iterator = stopColumns.iterator();
 				i = 0;
 				String column;
 				while(iterator.hasNext() && i < 30) {
-					column = (String)iterator.next();
+					column = iterator.next();
 					StringTokenizer st = new StringTokenizer(line, ",");
 					String token;
 					j = 0;
@@ -695,7 +695,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 						token = st.nextToken();
 						if ((Integer)stopColumnIxs.get(column) == j) {
 							if (columnValues[i] == null)
-								columnValues[i] = new ArrayList();
+								columnValues[i] = new ArrayList<String>();
 							columnValues[i].add(token);
 						}
 						j++;

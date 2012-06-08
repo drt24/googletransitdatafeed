@@ -3,18 +3,19 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.StringTokenizer;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 public class NaPTANHelper {
 
-	public static HashMap readStopfile(String stopsFileName)
+	public static Map<String, String> readStopfile(String stopsFileName)
 		throws UnsupportedEncodingException, IOException {
 
 		if (!(stopsFileName != null && stopsFileName.length() > 0)) 
 			return null;
 		   
-		HashMap result = new HashMap();
+		Map<String, String> result = new HashMap<String, String>();
 		
 	    BufferedReader bufFileIn = new BufferedReader(new FileReader(stopsFileName));
 		
@@ -217,25 +218,25 @@ public class NaPTANHelper {
 	// Preferred indicator values. Key = preferred, value = preferred normalised
 	private static String[] indicatorkeysbefore = {"opposite", "outside", "adjacent", "near", "behind", "inside", "by", "in", "at", "on", "just before", "just after", "corner of"};
 	private static String[] indicatorvaluesbefore = {"opp", "o/s", "adj", "nr", "behind", "inside", "by", "in", "at", "on", "just before", "just after", "corner of"};
-	private static HashMap indicatorsbefore = null;
+	private static Map<String, String> indicatorsbefore = null;
 	private static String[] indicatorkeysafter = {"corner", "cnr", "drt", "Stop", "stance", "stand", "bay", "platform", "entrance", "main entrance", "side entrance", "front entrance", "back entrance", "rear entrance", "north entrance", "east entrance", "south entrance", "west entrance", "north east entrance", "NE entrance", "north west entrance", "NW entrance", "south east entrance", "SE entrance", "south west entrance", "SW entrance", "N entrance", "E entrance", "S entrance", "W entrance", "arrivals", "departures", "Northbound", "N-bound", "Southbound", "S-bound", "Eastbound", "E-bound", "Westbound", "W-bound", "NE-bound", "NW-bound", "SW-bound", "SE-bound", "N bound", "E bound", "S bound", "W bound", "NE bound", "SE bound", "SW bound", "NW bound"};
 	private static String[] indicatorvaluesafter = {"corner", "cnr", "drt", "Stop", "stance", "stand", "bay", "platform", "entrance", "main entrance", "side entrance", "front entrance", "back entrance", "rear entrance", "north entrance", "east entrance", "south entrance", "west entrance", "NE entrance", "NE entrance", "NW entrance", "NW entrance", "SE entrance", "SE entrance", "SW entrance", "SW entrance", "N entrance", "E entrance", "S entrance", "W entrance", "arrivals", "departures", "N-bound", "N-bound", "S-bound", "S-bound", "E-bound", "E-bound", "W-bound", "W-bound", "NE-bound", "NW-bound", "SW-bound", "SE-bound", "N-bound", "E-bound", "S-bound", "W-bound", "NE-bound", "SE-bound", "SW-bound", "NW-bound"};
-	private static HashMap indicatorsafter = null;
+	private static Map<String, String> indicatorsafter = null;
 	private static final int INDICATOR_UNKNOWN = 0;
 	private static final int INDICATOR_BEFORE = 1;
 	private static final int INDICATOR_AFTER = 2;
 	private static void initializeIndicatorMap() {
-		indicatorsbefore = new HashMap();
+		indicatorsbefore = new HashMap<String, String>();
 		for (int i = 0; i < indicatorkeysbefore.length; i++) {
 			indicatorsbefore.put(indicatorkeysbefore[i], indicatorvaluesbefore[i]);
 		}
-		indicatorsafter = new HashMap();
+		indicatorsafter = new HashMap<String, String>();
 		for (int i = 0; i < indicatorkeysafter.length; i++) {
 			indicatorsbefore.put(indicatorkeysafter[i], indicatorvaluesafter[i]);
 		}
 	}
 
-	private static String getPreferredIndicator(String in, HashMap indicator) {
+	private static String getPreferredIndicator(String in, Map<String, String> indicator) {
 		if (in == null || indicator == null)
 			return null;
 		in = in.toLowerCase();
@@ -243,7 +244,7 @@ public class NaPTANHelper {
 			return in;
 		}
 		if (indicator.containsKey(in)) {
-			return (String)indicator.get(in);
+			return indicator.get(in);
 		}
 		return "";
 	}

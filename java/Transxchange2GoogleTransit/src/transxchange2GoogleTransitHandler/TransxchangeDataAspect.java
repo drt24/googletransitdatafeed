@@ -129,15 +129,15 @@ public abstract class TransxchangeDataAspect {
 	/*
 	 * CSV-"proof" field
 	 */
-	static void csvProofList(List values) {
+	static void csvProofList(List<ValueList> values) {
 		int i, j;
 		String s;
 		ValueList iterator;
 		
 		for (i = 0; i < values.size(); i++) {
-		    iterator = (ValueList)values.get(i);
+		    iterator = values.get(i);
 		    for (j = 0; j < iterator.size(); j++) {
-		    	s = (String)iterator.getValue(j);
+		    	s = iterator.getValue(j);
 		    	if (s != null) { // v1.6.3: may contain null value
 			    	if (s.lastIndexOf(",") != -1) // || s.lastIndexOf("\"") != -1) // v1.7.2: Remove addition of \" here, leads to duplication if \" used in configuration file
 			    		s = "\"" + s + "\"";
