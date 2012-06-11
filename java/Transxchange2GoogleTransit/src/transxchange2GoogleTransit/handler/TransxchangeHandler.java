@@ -45,14 +45,6 @@ import org.xml.sax.SAXParseException;
  */
 public class TransxchangeHandler {
 
-	// Additional contributions to resulting GTFS file set which cannot be extracted from a TransXChange input file
-	static String gtfsUrl = "";
-	static String gtfsTimezone = "";
-	static String gtfsDefaultRouteType = "";
-	static String gtfsOutfile = "";
-	static String gtfsLang = "";
-	static String gtfsPhone = "";
-
 	static TransxchangeHandlerEngine parseHandler = null;
 	static List<TransxchangeHandlerEngine> parseHandlers = null;
 
@@ -62,36 +54,6 @@ public class TransxchangeHandler {
 	/*
 	 * Utility methods to set and get attribute values
 	 */
-	public void setUrl(String url) {
-		gtfsUrl = url;
-	}
-	public void setTimezone(String timezone) {
-		gtfsTimezone = timezone;
-	}
-	public void setDefaultRouteType(String defaultRouteType) {
-		gtfsDefaultRouteType = defaultRouteType;
-	}
-	public void setLang(String lang) {
-		gtfsLang = lang;
-	}
-	public void setPhone(String phone) {
-		gtfsPhone = phone;
-	}
-	public String getUrl() {
-		return gtfsUrl;
-	}
-	public String getTimezone() {
-		return gtfsTimezone;
-	}
-	public String getDefaultRouteType() {
-		return gtfsDefaultRouteType;
-	}
-	public String getLang() {
-		return gtfsLang;
-	}
-	public String getPhone() {
-		return gtfsPhone;
-	}
 	public void setAgencyOverride(String agency) {
 		agencyOverride = agency;
 	}
