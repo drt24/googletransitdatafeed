@@ -38,6 +38,8 @@ import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import transxchange2GoogleTransit.Configuration;
+
 /*
  * This class extends DefaultHandler to parse a TransXChange v2.1 xml file,
  * 	build corresponding GTFS data structures
@@ -70,6 +72,27 @@ public class TransxchangeHandler {
 			Map<String, String> agencyMap)
 	    throws SAXException, SAXParseException, IOException, ParserConfigurationException
 	{
+	  Configuration config = new Configuration();
+	  config.setInputFileName(filename);
+	  config.setUrl(url);
+	  config.setTimezone(timezone);
+	  config.setDefaultRouteType(defaultRouteType);
+	  config.setRootDirectory(rootDirectory);
+	  config.setOutputDirectory(workDirectory);
+	  config.setStopFile(stopFile);
+	  config.setLang(lang);
+	  config.setPhone(phone);
+	  config.setUseAgencyShortName(useAgencyShortName);
+	  config.setSkipEmptyService(skipEmptyService);
+	  config.setSkipOrphanStops(skipOrphanStops);
+	  config.setGeocodeMissingStops(geocodeMissingStops);
+	  config.setNaptanHelperStopColumn(naptanHelperStopColumn);
+	  config.setNaptanStopnames(naptanStopnames);
+	  config.setAgencyMap(agencyMap);
+	  parse(config);
+	}
+
+	public void parse(Configuration config) throws ParserConfigurationException, SAXException{
 		ZipFile zipfile = null;
 		boolean zipinput = true; // Handle zip files
 		boolean processing = true;
@@ -77,7 +100,7 @@ public class TransxchangeHandler {
 
 		// Open infile, zip or single xml
 		try { // Try to open filename as zip file
-			zipfile = new ZipFile(filename);
+			zipfile = new ZipFile(config.getInputFileName());
 		} catch (IOException e) {
 			zipinput = false; // Opening file as zip file crashed; assume it is a single XML file
 		}
@@ -85,35 +108,20 @@ public class TransxchangeHandler {
 		try {
 
 			// Prepare output files
-			TransxchangeHandlerEngine.prepareOutput(rootDirectory, workDirectory);
+			TransxchangeHandlerEngine.prepareOutput(config.getQualifiedOutputDirectory());
 
 			// Read stopfile
+			String stopFile = config.getStopFile();
 			if (stopFile != null && stopFile.length() > 0)
-				TransxchangeStops.readStopfile(stopFile, stopColumns);
+				TransxchangeStops.readStopfile(stopFile, config.getStopColumns());
 
 			// Roll single as well as zipped infiles into a unified data structure for later transparent processing (stops only, rest goes straight to output files)
 			parseHandlers = new ArrayList<TransxchangeHandlerEngine>();
 			if (zipinput)
 				enumer = zipfile.entries();
 			do {
-				parseHandler = new TransxchangeHandlerEngine();
-				parseHandler.setUrl(url);
-				parseHandler.setTimezone(timezone);
-				parseHandler.setDefaultRouteType(defaultRouteType);
-				parseHandler.setLang(lang);
-				parseHandler.setPhone(phone);
-				parseHandler.setUseAgencyShortname(useAgencyShortName);
-				parseHandler.setSkipEmptyService(skipEmptyService);
-				parseHandler.setSkipOrphanStops(skipOrphanStops);
-				parseHandler.setGeocodeMissingStops(geocodeMissingStops);
-				parseHandler.setModeList(modeList);
-				parseHandler.setStopColumns(stopColumns);
-				parseHandler.setStopfilecolumnseparator(stopfilecolumnseparator);
-				parseHandler.setNaptanHelperStopColumn(naptanHelperStopColumn);
-				parseHandler.setNaPTANStopnames(naptanStopnames);
-				parseHandler.setRootDirectory(rootDirectory);
-				parseHandler.setWorkDirectory(workDirectory);
-				parseHandler.setAgencyMap(agencyMap);
+				parseHandler = new TransxchangeHandlerEngine(config);
+				
 				if (agencyOverride != null && agencyOverride.length() > 0)
 					parseHandler.setAgencyOverride(agencyOverride);
 
@@ -130,7 +138,7 @@ public class TransxchangeHandler {
 						parseHandler.clearDataSansAgenciesStopsRoutes(); // No need to keep the data structures
 					}
 				} else {
-					parser.parse(new File(filename), parseHandler);
+					parser.parse(new File(config.getInputFileName()), parseHandler);
 					parseHandler.writeOutputSansAgenciesStopsRoutes(); // Dump data structure with exception of stops which need later consolidation over all input files
 					processing = false;
 				}

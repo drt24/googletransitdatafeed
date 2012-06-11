@@ -41,17 +41,6 @@ import transxchange2GoogleTransit.handler.*;
  */
 public class Transxchange2GoogleTransit {
 
-	static boolean 										useAgencyShortname = false;
-	static boolean 										skipEmptyService = false;
-	static boolean 										skipOrphanStops = false;
-	static boolean 										geocodeMissingStops = false;
-	static Map<String, String>										modeList = null;
-	static List<String>									stopColumns = null;
-	static String										stopfilecolumnseparator;
-	static int											naptanHelperStopColumn = -1;
-	static Map<String, String>										naptanStopnames = null;
-	static Map<String, String>										agencyMap = null;
-
 	public static void main(String[] args) {
 
 		TransxchangeHandler handler = null;
@@ -72,11 +61,11 @@ public class Transxchange2GoogleTransit {
 	        	System.out.println("Usage: $ transxchange2GoogleTransit <transxchange input filename> <output-directory> -c <configuration file name>");
 	        	System.out.println("Usage: $ transxchange2GoogleTransit <transxchange input filename> <output-directory> <agency name> -c <configuration file name>");
 	        	System.out.println("Usage: $ transxchange2GoogleTransit <transxchange input filename> -");
-	        	System.out.println("         <url> <timezone> <default route type> <output-directory> [<stopfile>]");
+	        	System.out.println("         <url> <timezone> <default route type> <output-directory> [<stopfile> [<lang> <phone>]]");
 	        	System.out.println();
 	        	System.out.println("         Please refer to ");
 	        	System.out.println("             http://code.google.com/transit/spec/transit_feed_specification.html");
-	        	System.out.println("         for instructions about the values of the arguments <url>, <timezone> and <default route type>.");
+	        	System.out.println("         for instructions about the values of the arguments <url>, <timezone>, <default route type>, <lang> and <phone>.");
 	        	System.exit(1);
 	        }
 
@@ -85,31 +74,36 @@ public class Transxchange2GoogleTransit {
 
         	handler = new TransxchangeHandler();
 
+        	Configuration config = null;
         	// v1.6.4: Read configuration file
-        	if (args.length == 3)
-        		args = readConfigFile(args[0], args[2]);
-        	if (args.length == 4 && foundConfigFile == 2) {
+        	if (args.length == 3){
+        	  config = readConfigFile(args[0], args[2]);
+        	} else if (args.length == 4 && foundConfigFile == 2) {
         		String outdir = args[1];
-        		args = readConfigFile(args[0], args[3]);
-        		args[4] = outdir; // Copy work directory over
-        	}
-        	if (args.length == 5 && foundConfigFile == 3) {
+        		config = readConfigFile(args[0], args[3]);
+        		config.outputDirectory = outdir;// Copy work directory over
+        	} else if (args.length == 5 && foundConfigFile == 3) {
         		handler.setAgencyOverride(args[2]);
         		String outdir = args[1];
-        		args = readConfigFile(args[0], args[4]);
-        		args[4] = outdir; // Copy work directory over
+        		config = readConfigFile(args[0], args[4]);
+        		config.outputDirectory = outdir; // Copy work directory over
+        	} else if (args.length == 8 || args.length == 6 || args.length == 5){
+        	  config = new Configuration();
+        	  config.inputFileName = args[0];
+        	  config.url = args[1];
+        	  config.timezone = args[2];
+        	  config.defaultRouteType = args[3];
+        	  config.outputDirectory = args[4];
+        	  if (args.length >= 6){
+        	    config.stopFile = args[5];
+        	    if (args.length == 8){
+        	      config.lang = args[6];
+        	      config.phone = args[7];
+        	    }
+        	  }
         	}
-        	switch (args.length) {
-        	case 8:
-        		handler.parse(args[0], args[1], args[2], args[3], "", args[4], args[5], args[6], args[7], useAgencyShortname, skipEmptyService, skipOrphanStops, geocodeMissingStops, modeList, stopColumns, stopfilecolumnseparator, naptanHelperStopColumn, naptanStopnames, agencyMap);
-        		break;
-        	case 6:
-       			handler.parse(args[0], args[1], args[2], args[3], "", args[4], args[5], "", "", useAgencyShortname, skipEmptyService, skipOrphanStops, geocodeMissingStops, modeList, stopColumns, stopfilecolumnseparator, naptanHelperStopColumn, naptanStopnames, agencyMap);
-       			break;
-       		default:
-       			handler.parse(args[0], args[1], args[2], args[3], "", args[4], "", "", "", useAgencyShortname, skipEmptyService, skipOrphanStops, geocodeMissingStops, modeList, stopColumns, stopfilecolumnseparator, naptanHelperStopColumn, naptanStopnames, agencyMap);
-       			break;
-        	}
+        	
+        	handler.parse(config);
 		} catch (ParserConfigurationException e) {
         	System.err.println("transxchange2GTFS ParserConfiguration parse error:");
         	e.printStackTrace();
@@ -143,12 +137,12 @@ public class Transxchange2GoogleTransit {
     	System.exit(0);
     }
 
-	private static String[] readConfigFile(String inputFileName, String configFilename)
+	private static Configuration readConfigFile(String inputFileName, String configFilename)
 		throws IOException
 
 	{
-		String[] result = {inputFileName, "", "", "", "", "", "", ""};
-		useAgencyShortname = false;
+	  Configuration config = new Configuration();
+	  config.inputFileName = inputFileName;
 
 		BufferedReader in = new BufferedReader(new FileReader(configFilename));
 		String line;
@@ -165,49 +159,49 @@ public class Transxchange2GoogleTransit {
 					configValues[0] = configValues[0].trim().toLowerCase();
 //					configurationValue = st.nextToken().trim();
 					if (configValues[0].equals("url"))
-						result[1] = new String(configValues[1]);
+						config.url = configValues[1];
 					if (configValues[0].equals("timezone"))
-						result[2] = new String(configValues[1]);
+						config.timezone = configValues[1];
 					if (configValues[0].equals("default-route-type"))
-						result[3] = new String(configValues[1]);
+						config.defaultRouteType = configValues[1];
 					if (configValues[0].equals("lang"))
-						result[6] = new String(configValues[1]);
+						config.lang = configValues[1];
 					if (configValues[0].equals("phone"))
-						result[7] = new String(configValues[1]);
+						config.phone = configValues[1];
 					if (configValues[0].equals("output-directory"))
-						result[4] = new String(configValues[1]);
+						config.outputDirectory = configValues[1];
 					if (configValues[0].equals("stopfile")) {
-						result[5] = new String(configValues[1]);
-						if (naptanStopnames == null)
-							naptanStopnames = NaPTANHelper.readStopfile(configValues[1]);
+						config.stopFile = configValues[1];
+						if (config.naptanStopnames == null)
+							config.naptanStopnames = NaPTANHelper.readStopfile(configValues[1]);
 					}
 					if (configValues[0].equals("naptanstopcolumn")) {
-						if (stopColumns == null)
-							stopColumns = new ArrayList<String>();
-						stopColumns.add(configValues[1]);
+						if (config.stopColumns == null)
+						  config.stopColumns = new ArrayList<String>();
+						config.stopColumns.add(configValues[1]);
 					}
 					if (configValues[0].equals("naptanstophelper"))
-						if (stopColumns == null)
-							naptanHelperStopColumn = 0;
+						if (config.stopColumns == null)
+						  config.naptanHelperStopColumn = 0;
 						else
-							naptanHelperStopColumn = stopColumns.size();
+						  config.naptanHelperStopColumn = config.stopColumns.size();
 
-					if (configValues[0].equals("stopfilecolumnseparator"))
-						stopfilecolumnseparator = new String(configValues[1]);
+					if (configValues[0].equals("stopfileColumnSeparator"))
+					  config.stopfileColumnSeparator = new String(configValues[1]);
 
 					if (configValues[0].equals("useagencyshortname") && configValues[1] != null && configValues[1].trim().toLowerCase().equals("true"))
-						useAgencyShortname = true;
+					  config.useAgencyShortName = true;
 					if (configValues[0].equals("skipemptyservice") && configValues[1] != null && configValues[1].trim().toLowerCase().equals("true"))
-						skipEmptyService = true;
+					  config.skipEmptyService = true;
 					if (configValues[0].equals("skiporphanstops") && configValues[1] != null && configValues[1].trim().toLowerCase().equals("true"))
-						skipOrphanStops = true;
+					  config.skipOrphanStops = true;
 					if (configValues[0].equals("geocodemissingstops") && configValues[1] != null && configValues[1].trim().toLowerCase().equals("true"))
-						geocodeMissingStops = true;
+					  config.geocodeMissingStops = true;
 					if (txcMode != null)
 						if (txcMode.length() > 0 && configValues[1].length() > 0) {
-							if (modeList == null)
-								modeList = new HashMap<String, String>();
-							modeList.put(txcMode, configValues[1]);
+							if (config.modeList == null)
+							  config.modeList = new HashMap<String, String>();
+							config.modeList.put(txcMode, configValues[1]);
 						}
 						txcMode = null;
 					}
@@ -218,9 +212,9 @@ public class Transxchange2GoogleTransit {
 				}
 				if (tokenCount == 2) {
 					if (configValues[0].equals("agency")) {
-						if (agencyMap == null)
-							agencyMap = new HashMap<String, String>();
-						agencyMap.put(configValues[1], configValues[2]);
+						if (config.agencyMap == null)
+						  config.agencyMap = new HashMap<String, String>();
+						config.agencyMap.put(configValues[1], configValues[2]);
 					}
 				}
 				if (configValues[0].length() >= 5 && configValues[0].substring(0, 5).equals("mode:"))
@@ -230,6 +224,6 @@ public class Transxchange2GoogleTransit {
 		}
 		in.close();
 
-		return result;
+		return config;
 	}
 }

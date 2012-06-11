@@ -36,6 +36,9 @@ import java.net.MalformedURLException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
+
+import transxchange2GoogleTransit.Configuration;
+
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
@@ -63,14 +66,6 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	static String parseError = "";
 	static String parseInfo = "";
 
-	// Additional contributions to resulting GTFS file set which cannot be extracted from a TransXChange input file
-	static String gtfsUrl = "";
-	static String gtfsTimezone = "";
-	static String gtfsDefaultRouteType = "";
-	static String gtfsLang = "";
-	static String gtfsPhone = "";
-	static String gtfsOutfile = "";
-
 	// GTFS file names
 	static final String agencyFilename = "agency";
 	static final String stopsFilename = "stops";
@@ -94,58 +89,45 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	static List<String> filenames = null;
 	static String outdir = "";
 
-	static boolean useAgencyShortName = false;
-	static boolean skipEmptyService = false;
-	static boolean skipOrphanStops = false;
-	static boolean geocodeMissingStops = false;
-	static Map<String, String> modeList = null;
-	static List<String> stopColumns = null;
-	static String stopfilecolumnseparator = ",";
-	static int naptanHelperStopColumn = -1;
-	static Map<String, String> naptanStopnames = null;
-
 	Map<String, String> calendarServiceIds = null;
 	Map<String, String> calendarDatesServiceIds = null;
 	Map<String, String> tripServiceIds = null;
-
-	static String rootDirectory = "";
-	static String workDirectory = "";
+  private Configuration config;
 
 	static String agencyOverride = "";
-	static Map<String, String> agencyMap = null;
 
 	/*
 	 * Utility methods to set and get attribute values
 	 */
 	public void setUrl(String url) {
-		gtfsUrl = url;
+		config.setUrl(url);
 	}
 	public void setTimezone(String timezone) {
-		gtfsTimezone = timezone;
+		config.setTimezone(timezone);
 	}
 	public void setDefaultRouteType(String defaultRouteType) {
-		gtfsDefaultRouteType = defaultRouteType;
+		config.setDefaultRouteType(defaultRouteType);
 	}
 	public void setLang(String lang) {
-		gtfsLang = lang;
+		config.setLang(lang);
 	}
 	public void setPhone(String phone) {
-		gtfsPhone = phone;
+		config.setPhone(phone);
 	}
 	public String getUrl() {
-		return gtfsUrl;
+		return config.getUrl();
 	}
 	public String getTimezone() {
-		return gtfsTimezone;
+		return config.getTimezone();
 	}
 	public String getDefaultRouteType() {
-		return gtfsDefaultRouteType;
+		return config.getDefaultRouteType();
 	}
 	public String getLang() {
-		return gtfsLang;
+		return config.getLang();
 	}
 	public String getPhone() {
-		return gtfsPhone;
+		return config.getPhone();
 	}
 	public TransxchangeAgency getAgencies() {
 		return agencies;
@@ -171,70 +153,72 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	public void setParseError(String txt) {
 		parseError = txt;
 	}
-	public void setUseAgencyShortname(boolean flag) {
-		useAgencyShortName = flag;
+	public void setUseAgencyShortname(boolean useAgencyShortName) {
+		config.setUseAgencyShortName(useAgencyShortName);
 	}
-	public void setSkipEmptyService(boolean flag) {
-		skipEmptyService = flag;
+	public void setSkipEmptyService(boolean skipEmptyService) {
+		config.setSkipEmptyService(skipEmptyService);
 	}
-	public void setSkipOrphanStops(boolean flag) {
-		skipOrphanStops = flag;
+	public void setSkipOrphanStops(boolean skipOrphanStops) {
+		config.setSkipOrphanStops(skipOrphanStops);
 	}
-	public void setGeocodeMissingStops(boolean flag) {
-		geocodeMissingStops = flag;
+	public void setGeocodeMissingStops(boolean geocodeMissingStops) {
+		config.setGeocodeMissingStops(geocodeMissingStops);
 	}
-	public void setModeList(Map<String, String> list) {
-		modeList = list;
+	public void setModeList(Map<String, String> modeList) {
+		config.setModeList(modeList);
 	}
-	public void setStopColumns(List<String> list) {
-		stopColumns = list;
+	public void setStopColumns(List<String> stopColumns) {
+		config.setStopColumns(stopColumns);
 	}
 	public void setStopfilecolumnseparator(String separator) {
-		if (separator == null)
-			stopfilecolumnseparator = "";
-		stopfilecolumnseparator = separator;
+		config.setStopfileColumnSeparator(separator);
 	}
 	public String getStopfilecolumnseparator() {
-		return stopfilecolumnseparator;
+		return config.getStopfileColumnSeparator();
 	}
 	public void setNaptanHelperStopColumn(int column) {
-		naptanHelperStopColumn = column;
+	  config.setNaptanHelperStopColumn(column);
 	}
 	public int getNaptanHelperStopColumn() {
-		return naptanHelperStopColumn;
+		return config.getNaptanHelperStopColumn();
 	}
 	public void setNaPTANStopnames(Map<String, String> stopnames) {
-		naptanStopnames = stopnames;
+		config.setNaptanStopnames(stopnames);
 	}
 	public String getNaPTANStopname(String atcoCode) {
-		if (naptanStopnames == null || atcoCode == null)
+	  Map<String,String> naptanStopNames = config.getNaptanStopnames();
+		if (naptanStopNames == null || atcoCode == null){
 			return "";
-		if (!naptanStopnames.containsKey(atcoCode))
+		}
+		String name = naptanStopNames.get(atcoCode);
+		if (null == name){
 			return "";
-		return naptanStopnames.get(atcoCode);
+		}
+		return name;
 	}
 
 	public Map<String, String> getModeList() {
-		return modeList;
+		return config.getModeList();
 	}
 	public List<String> getStopColumns() {
-		return stopColumns;
+		return config.getStopColumns();
 	}
 
-	public void setRootDirectory(String eRootDirectory) {
-		rootDirectory = eRootDirectory;
+	public void setRootDirectory(String rootDirectory) {
+		config.setRootDirectory(rootDirectory);
 	}
-	public void setWorkDirectory(String eWorkDirectory) {
-		workDirectory = eWorkDirectory;
+	public void setWorkDirectory(String outputDirectory) {
+		config.setOutputDirectory(outputDirectory);
 	}
 	public void setAgencyMap(Map<String, String> agencies) {
-		agencyMap = agencies;
+		config.setAgencyMap(agencies);
 	}
 	public String getRootDirectory() {
-		return rootDirectory;
+		return config.getRootDirectory();
 	}
 	public String getWorkDirectory() {
-		return workDirectory;
+		return config.getOutputDirectory();
 	}
 
 	public String getParseError() {
@@ -250,16 +234,16 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	}
 
 	public boolean isAgencyShortName() {
-		return useAgencyShortName;
+		return config.useAgencyShortName();
 	}
 	public boolean isSkipEmptyService() {
-		return skipEmptyService;
+		return config.skipEmptyService();
 	}
 	public boolean isSkipOrphanStops() {
-		return skipOrphanStops;
+		return config.skipOrphanStops();
 	}
 	public boolean isGeocodeMissingStops() {
-		return geocodeMissingStops;
+		return config.geocodeMissingStops();
 	}
 
 	public void addFilename(String fileName) {
@@ -303,7 +287,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		return agencyOverride;
 	}
 	public Map<String, String> getAgencyMap() {
-		return agencyMap;
+		return config.getAgencyMap();
 	}
 
 	/*
@@ -405,10 +389,10 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	/*
 	 * Prepare GTFS file set files
 	 */
-	public static void prepareOutput(String rootDirectory, String workDirectory)
+	protected static void prepareOutput(String outputDirectory)
 	throws IOException
 	{
-		outdir = rootDirectory + workDirectory;
+		outdir = outputDirectory;
 		filenames = new ArrayList<String>();
 
 		// Delete existing GTFS files in output directory
@@ -449,6 +433,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
         }
         calendarServiceIds = new HashMap<String, String>();
 
+        boolean skipEmptyService = config.skipEmptyService();
         String outLine;
         for (int i = 0; i < this.getCalendar().getListCalendar__service_id().size(); i++) {
         	outLine = "";
@@ -565,7 +550,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
         	for (int i = 0; i < this.getCalendarDates().getListCalendarDates__service_id().size(); i++) {
         		calendarDateServiceId = (this.getCalendarDates().getListCalendarDates__service_id().get(i)).getValue(0);
         		calendarDateExceptionType = (this.getCalendarDates().getListCalendarDates__exception_type().get(i)).getValue(0);
-        		if (this.hasCalendarServiceId(calendarDateServiceId) || !calendarDateExceptionType.equals("2") || !skipEmptyService) {
+        		if (this.hasCalendarServiceId(calendarDateServiceId) || !calendarDateExceptionType.equals("2") || !config.skipEmptyService()) {
         			outLine = calendarDateServiceId + "," +
         				(this.getCalendarDates().getListCalendarDates__date().get(i)).getValue(0) + "," +
         				calendarDateExceptionType;
@@ -669,7 +654,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		String stopId, stopName;
 		for (int i = 0; i < this.getStops().getListStops__stop_id().size(); i++) {
 			stopId = (this.getStops().getListStops__stop_id().get(i)).getValue(0);
-			if (stopId.length() > 0 && (!skipOrphanStops || stops.hasStop(stopId))) {
+			if (stopId.length() > 0 && (!config.skipOrphanStops() || stops.hasStop(stopId))) {
 				stopName = (this.getStops().getListStops__stop_name().get(i)).getValue(0);
 				String[] coordinates = {(this.getStops().getListStops__stop_lat().get(i)).getValue(0),
 					(this.getStops().getListStops__stop_lon().get(i)).getValue(0) };
@@ -915,4 +900,8 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		calendar = new TransxchangeCalendar(this);
 		calendarDates = new TransxchangeCalendarDates(this);
 	}
+  public TransxchangeHandlerEngine(Configuration config) throws UnsupportedEncodingException, IOException {
+    this();
+    this.config = config;
+  }
 }
