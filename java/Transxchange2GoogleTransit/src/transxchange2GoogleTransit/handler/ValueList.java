@@ -14,7 +14,7 @@
  * the License.
  */
 
-package transxchange2GoogleTransitHandler;
+package transxchange2GoogleTransit.handler;
 
 import java.util.ArrayList;
 import java.util.List;

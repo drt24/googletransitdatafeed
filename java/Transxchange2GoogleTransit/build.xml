@@ -36,7 +36,7 @@
         <jar destfile="dist/transxchange2GoogleTransit.jar"
              basedir="bin">
              <manifest>
-                <attribute name="Main-Class" value="Transxchange2GoogleTransit"/>
+                <attribute name="Main-Class" value="transxchange2GoogleTransit.Transxchange2GoogleTransit"/>
              </manifest>
         </jar>
     </target>

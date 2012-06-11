@@ -1,3 +1,4 @@
+package transxchange2GoogleTransit;
 /*
  * Copyright 2007, 2008, 2009, 2010, 2011, 2012 GoogleTransitDataFeed
  *
@@ -30,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import transxchange2GoogleTransitHandler.*;
+import transxchange2GoogleTransit.handler.*;
 
 /*
  * Transxchange2GTFS

@@ -1,4 +1,4 @@
-package transxchange2GoogleTransitHandler;
+package transxchange2GoogleTransit.handler;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;

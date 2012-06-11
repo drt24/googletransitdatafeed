@@ -14,7 +14,7 @@
  * the License.
  */
 
-package transxchange2GoogleTransitHandler;
+package transxchange2GoogleTransit.handler;
 import java.io.IOException;
 import java.util.List;
 import java.util.StringTokenizer;
