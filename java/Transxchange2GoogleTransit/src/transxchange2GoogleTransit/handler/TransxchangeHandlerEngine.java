@@ -99,21 +99,6 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	/*
 	 * Utility methods to set and get attribute values
 	 */
-	public void setUrl(String url) {
-		config.setUrl(url);
-	}
-	public void setTimezone(String timezone) {
-		config.setTimezone(timezone);
-	}
-	public void setDefaultRouteType(String defaultRouteType) {
-		config.setDefaultRouteType(defaultRouteType);
-	}
-	public void setLang(String lang) {
-		config.setLang(lang);
-	}
-	public void setPhone(String phone) {
-		config.setPhone(phone);
-	}
 	public String getUrl() {
 		return config.getUrl();
 	}
@@ -153,38 +138,11 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	public void setParseError(String txt) {
 		parseError = txt;
 	}
-	public void setUseAgencyShortname(boolean useAgencyShortName) {
-		config.setUseAgencyShortName(useAgencyShortName);
-	}
-	public void setSkipEmptyService(boolean skipEmptyService) {
-		config.setSkipEmptyService(skipEmptyService);
-	}
-	public void setSkipOrphanStops(boolean skipOrphanStops) {
-		config.setSkipOrphanStops(skipOrphanStops);
-	}
-	public void setGeocodeMissingStops(boolean geocodeMissingStops) {
-		config.setGeocodeMissingStops(geocodeMissingStops);
-	}
-	public void setModeList(Map<String, String> modeList) {
-		config.setModeList(modeList);
-	}
-	public void setStopColumns(List<String> stopColumns) {
-		config.setStopColumns(stopColumns);
-	}
-	public void setStopfilecolumnseparator(String separator) {
-		config.setStopfileColumnSeparator(separator);
-	}
 	public String getStopfilecolumnseparator() {
 		return config.getStopfileColumnSeparator();
 	}
-	public void setNaptanHelperStopColumn(int column) {
-	  config.setNaptanHelperStopColumn(column);
-	}
 	public int getNaptanHelperStopColumn() {
 		return config.getNaptanHelperStopColumn();
-	}
-	public void setNaPTANStopnames(Map<String, String> stopnames) {
-		config.setNaptanStopnames(stopnames);
 	}
 	public String getNaPTANStopname(String atcoCode) {
 	  Map<String,String> naptanStopNames = config.getNaptanStopnames();
@@ -205,15 +163,6 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		return config.getStopColumns();
 	}
 
-	public void setRootDirectory(String rootDirectory) {
-		config.setRootDirectory(rootDirectory);
-	}
-	public void setWorkDirectory(String outputDirectory) {
-		config.setOutputDirectory(outputDirectory);
-	}
-	public void setAgencyMap(Map<String, String> agencies) {
-		config.setAgencyMap(agencies);
-	}
 	public String getRootDirectory() {
 		return config.getRootDirectory();
 	}
