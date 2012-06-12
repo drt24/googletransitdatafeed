@@ -183,7 +183,7 @@ public class TransxchangeHandler {
     		while ((line = stop_timesIn.readLine()) != null) {
     			parsers = parseHandlers.iterator();
     			while (parsers.hasNext()) {
-    				parser = (TransxchangeHandlerEngine)parsers.next();
+    				parser = parsers.next();
     				if (parser != null) {
     					st = new StringTokenizer(line, ",");
     					inTrip = st.nextToken(); // trip id is first column
@@ -225,30 +225,29 @@ public class TransxchangeHandler {
 	public void consolidateStops() {
 		Iterator<TransxchangeHandlerEngine> parsers = parseHandlers.iterator();
 		int parseHandlersCount = 0;
-		int j;
-		String curStopId;
 		List<ValueList> followStopIds;
 		TransxchangeStops followStops;
 		Iterator<TransxchangeHandlerEngine> followParser;
 
+		// For each parser go through all subsequent ones and remove stops in the current parser
 		while (parsers.hasNext()) {
-			TransxchangeStops stops = ((TransxchangeHandlerEngine)parsers.next()).getStops();
+			TransxchangeStops stops = parsers.next().getStops();
 			parseHandlersCount += 1;
 			List<ValueList> stopIds = stops.getListStops__stop_id();
-			for (int i = 0; i < stopIds.size(); i++) {
+			for (ValueList curStop : stopIds) {
 				followParser = parseHandlers.iterator(); // Set follow parser to parsed input files following current; Iterator is not Cloneable; need to create a new Iterator and step forward to get to the right position (anybody know a more elegant solution?)
-				j = 0;
+				int j = 0;
 				while (j < parseHandlersCount && followParser.hasNext()) {
 					j++;
 					followParser.next();
 				}
-				curStopId = (stopIds.get(i)).getValue(0);
+				String curStopId = (curStop).getValue(0);
 				while (followParser.hasNext()) { // Run through stops of following parsed input files and eliminate duplicates there
-					followStops = ((TransxchangeHandlerEngine)followParser.next()).getStops();
+					followStops = followParser.next().getStops();
 					followStopIds = followStops.getListStops__stop_id();
-					for (j = 0; j < followStopIds.size(); j++) {
-						if (curStopId.equals((followStopIds.get(j)).getValue(0))) {
-							(followStopIds.get(j)).setValue(0, "");
+					for (int i = 0; i < followStopIds.size(); i++) {
+						if (curStopId.equals((followStopIds.get(i)).getValue(0))) {
+							(followStopIds.get(i)).setValue(0, "");
 						}
 					}
 				}
