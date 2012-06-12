@@ -492,7 +492,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 		    			index = (Integer)stopIx.get(stopId);
 		    			if (index == null) {
 		    				if (stopname.length() == 0)
-		    					stopname += "OpenRequired";
+		    					stopname += "OpenRequired";//FIXME BUG, don't do that
 		    			} else {
 		    				naptanPick = (String) columnValues[j].get((Integer)stopIx.get(stopId));
 		    				naptanPick = naptanPick.replaceAll("\"", "");
@@ -548,23 +548,23 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 
 		// If no coordinates, return key
 		if (lat == null)
-			return key_stops__stop_lat[2];
+			return null;
 
 		if (lat.containsKey(stop))
 			return lat.get(stop);
 		else
-			return key_stops__stop_lat[2];
+			return null;
 	}
 	private String getLon(String stop) {
 
 		// If no coordinates, return key
 		if (lon == null)
-			return key_stops__stop_lon[2];
+			return null;
 
 		if (lon.containsKey(stop))
 			return lon.get(stop);
 		else
-			return key_stops__stop_lon[2];
+			return null;
 	}
 
 /*	private static int findColumn(String headline, String code) {

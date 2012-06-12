@@ -145,6 +145,8 @@ public abstract class TransxchangeDataAspect {
 			    	if (s.lastIndexOf(",") != -1) // || s.lastIndexOf("\"") != -1) // v1.7.2: Remove addition of \" here, leads to duplication if \" used in configuration file
 			    		s = "\"" + s + "\"";
 			    	iterator.setValue(j, s);
+		    	} else {
+		    	  iterator.setValue(j, "");// set to empty string when null
 		    	}
 		    }
 		}

@@ -38,6 +38,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 
 import transxchange2GoogleTransit.Configuration;
+import transxchange2GoogleTransit.LatLong;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -601,18 +602,19 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	        stopsOut.println("stop_id,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url");
 		}
 		String stopId, stopName;
-		for (int i = 0; i < this.getStops().getListStops__stop_id().size(); i++) {
-			stopId = (this.getStops().getListStops__stop_id().get(i)).getValue(0);
+		TransxchangeStops stops = this.getStops();
+		for (int i = 0; i < stops.getListStops__stop_id().size(); i++) {
+			stopId = (stops.getListStops__stop_id().get(i)).getValue(0);
 			if (stopId.length() > 0 && (!config.skipOrphanStops() || stops.hasStop(stopId))) {
-				stopName = (this.getStops().getListStops__stop_name().get(i)).getValue(0);
-				String[] coordinates = {(this.getStops().getListStops__stop_lat().get(i)).getValue(0),
-					(this.getStops().getListStops__stop_lon().get(i)).getValue(0) };
+				stopName = (stops.getListStops__stop_name().get(i)).getValue(0);
+				LatLong coordinates = new LatLong((stops.getListStops__stop_lat().get(i)).getValue(0),
+					(stops.getListStops__stop_lon().get(i)).getValue(0) );
 
 				// If requested, geocode lat/lon
-				if (isGeocodeMissingStops() && (coordinates[0].equals("OpenRequired") || coordinates[1].equals("OpenRequired"))) {
+				if (isGeocodeMissingStops() && (coordinates.latitude == null || coordinates.longitude == null)) {
 					try {
 						System.out.println("Geocoding stop (id / name): " + stopId + " / " + stopName);
-						geocodeMissingStop(stopName, coordinates);
+						geocodeMissingStop(stopName);
 					} catch (Exception e) {
 						System.out.println("Geocoding exception: " + e.getMessage() + " for stop: " + stopName);
 					}
@@ -624,9 +626,9 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 				stopsOut.print(",");
 				stopsOut.print((this.getStops().getListStops__stop_desc().get(i)).getValue(0));
 				stopsOut.print(",");
-				stopsOut.print(coordinates[0]);
+				stopsOut.print(coordinates.latitude);
 				stopsOut.print(",");
-				stopsOut.print(coordinates[1]);
+				stopsOut.print(coordinates.longitude);
 				stopsOut.print(","); // no zone id
 				stopsOut.print(","); // no stop URL
 				stopsOut.println();
@@ -742,7 +744,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
         return workDirectory + /* "/" + serviceStartDate + */ "/" + "google_transit.zip";
 	}
 
-	private void geocodeMissingStop(String stopname, String[] coordinates)
+	private LatLong geocodeMissingStop(String stopname)
 		throws MalformedURLException, UnsupportedEncodingException, XPathExpressionException, IOException, ParserConfigurationException, SAXException
 	{
 		float[] coordFloat = {-999999, -999999};
@@ -794,15 +796,16 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 			geocodeStop(stopname, coordFloat);
 		}
 
-		if (coordFloat[0] == -999999)
-			coordinates[0] = "OpenRequired";
-		else
-			coordinates[0] = "" + coordFloat[0];
-		if (coordFloat[1] == -999999)
-			coordinates[1] = "OpenRequired";
-		else
-			coordinates[1] = "" + coordFloat[1];
+		String latitude = null;
+		if (coordFloat[0] != -999999){
+		  latitude = "" + coordFloat[0];
+		}
+		String longitude = null;
+		if (coordFloat[1] != -999999){
+		  longitude = "" + coordFloat[1];
+		}
 
+		return new LatLong(latitude,longitude);
 	}
 	private void geocodeStop(String stopname, float[] coordinates)
 		throws MalformedURLException, UnsupportedEncodingException, XPathExpressionException, IOException, ParserConfigurationException, SAXException
