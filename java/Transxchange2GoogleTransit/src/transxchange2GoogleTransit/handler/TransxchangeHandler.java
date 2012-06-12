@@ -150,6 +150,10 @@ public class TransxchangeHandler {
 		}
 	}
 
+	public String writeOutput(Configuration config) throws IOException{
+	  return writeOutput(config.getRootDirectory(),config.getOutputDirectory());
+	}
+
 	/*
 	 * Create GTFS file set from GTFS data structures
 	 */
