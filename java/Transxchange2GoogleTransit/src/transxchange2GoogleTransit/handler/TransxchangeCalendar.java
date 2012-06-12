@@ -143,10 +143,12 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 
 		Iterator<ValueList> i = listCalendar__end_date.iterator();
 		while (i.hasNext()) {
-			date = ((i.next())).getValue(0);
-			testYear = Integer.parseInt(date.substring(0, 4));
-			if (testYear > highestYear)
-				highestYear = testYear;
+			date = i.next().getValue(0);
+      if (date != null) {
+        testYear = Integer.parseInt(date.substring(0, 4));
+        if (testYear > highestYear)
+          highestYear = testYear;
+      }
 
 		}
 		return highestYear;
@@ -608,7 +610,7 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 		if (listCalendar__end_date.size() >= i){
    		ValueList newCalendar__end_date = new ValueList(key_calendar__end_date[1]);
    		listCalendar__end_date.add(newCalendar__end_date);
-   		newCalendar__end_date.addValue((listCalendar__end_date.get(i)).getValue(0));
+   		newCalendar__end_date.addValue(listCalendar__end_date.get(i).getValue(0));
 		}
 	}
 
