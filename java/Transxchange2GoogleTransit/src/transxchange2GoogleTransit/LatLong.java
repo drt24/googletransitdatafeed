@@ -15,4 +15,13 @@ public class LatLong {
     this.latitude = latitude;
     this.longitude = longitude;
   }
+
+  /**
+   * Return whether this LatLong has actually been set to real values
+   * 
+   * @return
+   */
+  public boolean notSet() {
+    return latitude == null || longitude == null || latitude.length() == 0 || longitude.length() == 0;
+  }
 }
