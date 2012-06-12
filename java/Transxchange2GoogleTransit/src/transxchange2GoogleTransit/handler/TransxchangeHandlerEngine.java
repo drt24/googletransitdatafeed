@@ -21,6 +21,7 @@ import java.io.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 
+import java.util.logging.Logger;
 import java.util.zip.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,6 +56,7 @@ import javax.xml.xpath.XPathConstants;
  */
 public class TransxchangeHandlerEngine extends DefaultHandler {
 
+  private static Logger log = Logger.getLogger(TransxchangeHandlerEngine.class.getCanonicalName());
 	// GTFS structures
 	TransxchangeAgency agencies;
 	TransxchangeStops stops;

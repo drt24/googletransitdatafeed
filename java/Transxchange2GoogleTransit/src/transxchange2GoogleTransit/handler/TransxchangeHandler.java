@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -48,6 +49,7 @@ import transxchange2GoogleTransit.Stop;
  */
 public class TransxchangeHandler {
 
+  private static Logger log = Logger.getLogger(TransxchangeHandler.class.getCanonicalName());
 	static TransxchangeHandlerEngine parseHandler = null;
 	static List<TransxchangeHandlerEngine> parseHandlers = null;
 
@@ -132,7 +134,7 @@ public class TransxchangeHandler {
 				if (zipinput) {
 					if (processing = enumer.hasMoreElements()) {
 						ZipEntry zipentry = (ZipEntry)enumer.nextElement();
-						System.out.println(zipentry.getName());
+						log.info(zipentry.getName());
 						InputStream in = zipfile.getInputStream(zipentry);
 						parser.parse(in, parseHandler);
 						parseHandler.writeOutputSansAgenciesStopsRoutes(); // Dump data structure with exception of stops which need later consolidation over all input files
@@ -146,7 +148,7 @@ public class TransxchangeHandler {
 				parseHandlers.add(parseHandler);
 			} while (processing);
 		} catch (IOException e) {
-        	System.out.println("TransxchangeHandler Parse Exception: " + e.getMessage());
+        	System.err.println("TransxchangeHandler Parse Exception: " + e.getMessage());
 		}
 	}
 

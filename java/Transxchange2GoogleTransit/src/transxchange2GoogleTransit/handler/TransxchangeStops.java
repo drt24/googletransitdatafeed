@@ -624,13 +624,13 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 		int lonIx;
 		if ((line = bufFileIn.readLine()) != null) {
 			if ((stopcodeIx = NaPTANHelper.findColumn(line, "\"AtcoCode\"")) == -1)
-				throw new UnsupportedEncodingException("stopfile column AtcoCode not found");
+				throw new IOException("stopfile column AtcoCode not found");
 			if ((latIx = NaPTANHelper.findColumn(line, "\"Latitude\"")) == -1)
-				throw new UnsupportedEncodingException("stopfile column Latitude not found");
+				throw new IOException("stopfile column Latitude not found");
 			if ((lonIx = NaPTANHelper.findColumn(line, "\"Longitude\"")) == -1)
-				throw new UnsupportedEncodingException("stopfile column Longitude not found");
+				throw new IOException("stopfile column Longitude not found");
 		} else
-			throw new UnsupportedEncodingException("stopfile is empty");
+			throw new IOException("stopfile is empty");
 
 		if (lat != null)
 			lat.clear();
@@ -674,7 +674,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 					stopColumnIxs.put(column, (Integer)NaPTANHelper.findColumn(line, column));
 				}
 			} else
-				throw new UnsupportedEncodingException("stopfile is empty");
+				throw new IOException("stopfile is empty");
 			while((line = bufFileIn.readLine()) != null) {
 				Iterator<String> iterator = stopColumns.iterator();
 				i = 0;
