@@ -50,8 +50,11 @@ public abstract class TransxchangeDataAspect {
 
 	public void characters (char ch[], int start, int length) {
 		if (key.length() > 0) {
-			for (int i = start; i < start + length; i++)
-				niceString = niceString + ch[i];
+		  StringBuffer buffer = new StringBuffer(niceString);
+			for (int i = start; i < start + length; i++) {
+				buffer.append(ch[i]);
+			}
+			niceString = buffer.toString();
 		}
 	}
 
