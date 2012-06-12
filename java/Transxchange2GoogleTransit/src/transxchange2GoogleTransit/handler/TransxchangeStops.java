@@ -86,25 +86,15 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 
 	// Parsed data
 	List<ValueList> listStops__stop_id;
-	ValueList newStops__stop_id;
 	List<ValueList> listStops__stop_name;
-	ValueList newStops__stop_name;
 	List<ValueList> listStops__stop_desc;
-	ValueList newStops__stop_desc;
 	List<ValueList> listStops__stop_lat;
-	ValueList newStops__stop_lat;
 	List<ValueList> listStops__stop_lon;
-	ValueList newStops__stop_lon;
 	List<ValueList> listStops__stop_street;
-	ValueList newStops__stop_street;
 	List<ValueList> listStops__stop_city;
-	ValueList newStops__stop_city;
 	List<ValueList> listStops__stop_postcode;
-	ValueList newStops__stop_postcode;
 	List<ValueList> listStops__stop_region;
-	ValueList newStops__stop_region;
 	List<ValueList> listStops__stop_country;
-	ValueList newStops__stop_country;
 
 	public List<ValueList> getListStops__stop_id() {
 		return listStops__stop_id;
@@ -247,37 +237,37 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	    	return;
 
 	    if (key.equals(key_stops__stop_id[0]) && keyNested.equals(key_stops__stop_id[1])) {
-	    	newStops__stop_id = new ValueList(key_stops__stop_id[0]);
+	      ValueList newStops__stop_id = new ValueList(key_stops__stop_id[0]);
 	    	listStops__stop_id.add(newStops__stop_id);
 	    	newStops__stop_id.addValue(niceString);
 	    	keyRef = niceString;
 	    }
 	    if (key.equals(key_stops__stop_id2[0]) && keyNested.equals(key_stops__stop_id2[1])) {
-	    	newStops__stop_id = new ValueList(key_stops__stop_id2[0]);
+	      ValueList newStops__stop_id = new ValueList(key_stops__stop_id2[0]);
 	    	listStops__stop_id.add(newStops__stop_id);
 	    	newStops__stop_id.addValue(niceString);
 	    	keyRef = niceString;
 	    }
 	    if (key.equals(key_stops__stop_name[0]) && keyNested.equals(key_stops__stop_name[1])) {
-	    	newStops__stop_name = new ValueList(keyRef);
+	      ValueList newStops__stop_name = new ValueList(keyRef);
 	    	listStops__stop_name.add(newStops__stop_name);
 	    	newStops__stop_name.addValue(niceString);
-	    	newStops__stop_desc = new ValueList(keyRef); // Default for _desc
+	    	ValueList newStops__stop_desc = new ValueList(keyRef); // Default for _desc
 	    	listStops__stop_desc.add(newStops__stop_desc);
 	    	newStops__stop_desc.addValue(key_stops__stop_desc[2]);
-	    	newStops__stop_street = new ValueList(keyRef); // Default for _street
+	    	ValueList newStops__stop_street = new ValueList(keyRef); // Default for _street
 	    	listStops__stop_street.add(newStops__stop_street);
 	    	newStops__stop_street.addValue(key_stops__stop_street[2]);
-	    	newStops__stop_city = new ValueList(keyRef); // Default for _city
+	    	ValueList newStops__stop_city = new ValueList(keyRef); // Default for _city
 	    	listStops__stop_city.add(newStops__stop_city);
 	    	newStops__stop_city.addValue(key_stops__stop_city[2]);
-	    	newStops__stop_postcode = new ValueList(keyRef); // Default for _postcode
+	    	ValueList newStops__stop_postcode = new ValueList(keyRef); // Default for _postcode
 	    	listStops__stop_postcode.add(newStops__stop_postcode);
 	    	newStops__stop_postcode.addValue(key_stops__stop_postcode[2]);
-	    	newStops__stop_region = new ValueList(keyRef); // Default for _region
+	    	ValueList newStops__stop_region = new ValueList(keyRef); // Default for _region
 	    	listStops__stop_region.add(newStops__stop_region);
 	    	newStops__stop_region.addValue(key_stops__stop_region[2]);
-	    	newStops__stop_country = new ValueList(keyRef); // Default for _country
+	    	ValueList newStops__stop_country = new ValueList(keyRef); // Default for _country
 	    	listStops__stop_country.add(newStops__stop_country);
 	    	newStops__stop_country.addValue(key_stops__stop_country[2]);
 	    }
@@ -292,24 +282,24 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	    	_newStops__stop_indicator.addValue(niceString);
 	    }
 	    if (key.equals(key_stops__stop_east[0]) && keyNested.equals(key_stops__stop_east[1])) {
-	    	newStops__stop_lat = new ValueList(keyRef);
+	    	ValueList newStops__stop_lat = new ValueList(keyRef);
 	    	listStops__stop_lat.add(newStops__stop_lat);
 	    	newStops__stop_lat.addValue(niceString);
        	}
 	    if (key.equals(key_stops__stop_north[0]) && keyNested.equals(key_stops__stop_north[1])) {
-	       	newStops__stop_lon = new ValueList(keyRef);
+	      ValueList newStops__stop_lon = new ValueList(keyRef);
 	       	listStops__stop_lon.add(newStops__stop_lon);
 	       	newStops__stop_lon.addValue(niceString);
        	}
 
 	    // Embedded coordinates
 	    if (key.equals(key_stops__stop_lat[0]) && keyNested.equals(key_stops__stop_lat[1])) {
-	    	newStops__stop_lat = new ValueList(keyRef);
+	      ValueList newStops__stop_lat = new ValueList(keyRef);
 	    	listStops__stop_lat.add(newStops__stop_lat);
 	    	newStops__stop_lat.addValue(niceString);
        	}
 	    if (key.equals(key_stops__stop_lon[0]) && keyNested.equals(key_stops__stop_lon[1])) {
-	       	newStops__stop_lon = new ValueList(keyRef);
+	      ValueList newStops__stop_lon = new ValueList(keyRef);
 	       	listStops__stop_lon.add(newStops__stop_lon);
 	       	newStops__stop_lon.addValue(niceString);
        	}
@@ -325,7 +315,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	       			i++;
 	       	}
 	    	if (hot) {
-       			newStops__stop_lat = new ValueList(stopPointFrom);
+	    	  ValueList newStops__stop_lat = new ValueList(stopPointFrom);
        			listStops__stop_lat.add(newStops__stop_lat);
        			newStops__stop_lat.addValue(niceString);
        		}
@@ -340,7 +330,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	    			i++;
 	    	}
 	    	if (hot) {
-	    		newStops__stop_lon = new ValueList(stopPointFrom);
+	    	  ValueList newStops__stop_lon = new ValueList(stopPointFrom);
 	    		listStops__stop_lon.add(newStops__stop_lon);
 	    		newStops__stop_lon.addValue(niceString);
 	    		stopPointFrom = "";
@@ -380,12 +370,12 @@ public class TransxchangeStops extends TransxchangeDataAspect{
     	if (qName.equals(_key_route_section[0])) {
     		if (inRouteSection) {
     			if (stopPointToLat.length() > 0) {
-    				newStops__stop_lat = new ValueList(stopPointTo); // last stop in route section
+    			  ValueList newStops__stop_lat = new ValueList(stopPointTo); // last stop in route section
     				listStops__stop_lat.add(newStops__stop_lat);
     				newStops__stop_lat.addValue(stopPointToLat);
     			}
     			if (stopPointToLon.length() > 0) {
-    				newStops__stop_lon = new ValueList(stopPointTo); // last stop in route section
+    			  ValueList newStops__stop_lon = new ValueList(stopPointTo); // last stop in route section
     				listStops__stop_lon.add(newStops__stop_lon);
     				newStops__stop_lon.addValue(stopPointToLon);
     			}
@@ -434,12 +424,12 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	    			j++;
 	    	}
 	    	if (hot) {
-	       		newStops__stop_lat = new ValueList(stopId);
-				listStops__stop_lat.add(i, newStops__stop_lat);
-				newStops__stop_lat.addValue(getLat(stopId));
-	       		newStops__stop_lon = new ValueList(stopId);
-				listStops__stop_lon.add(i, newStops__stop_lon);
-				newStops__stop_lon.addValue(getLon(stopId));
+	    	  ValueList newStops__stop_lat = new ValueList(stopId);
+	    	  listStops__stop_lat.add(i, newStops__stop_lat);
+	    	  newStops__stop_lat.addValue(getLat(stopId));
+	    	  ValueList newStops__stop_lon = new ValueList(stopId);
+	    	  listStops__stop_lon.add(i, newStops__stop_lon);
+	    	  newStops__stop_lon.addValue(getLon(stopId));
 	    	}
 	    }
 

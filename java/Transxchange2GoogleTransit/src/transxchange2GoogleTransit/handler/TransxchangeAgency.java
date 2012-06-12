@@ -40,19 +40,13 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 
 	// Parsed data
 	List<ValueList> listAgency__agency_id;
-	ValueList newAgency__agency_id;
 	List<ValueList> listAgency__agency_name;
-	ValueList newAgency__agency_name;
 	List<ValueList> listAgency__agency_url;
-	ValueList newAgency__agency_url;
 	List<ValueList> listAgency__agency_timezone;
-	ValueList newAgency__agency_timezone;
 	List<ValueList> listAgency__agency_lang;
-	ValueList newAgency__agency_lang;
 	List<ValueList> listAgency__agency_phone;
-	ValueList newAgency__agency_phone;
 
-    String agencyId;
+  String agencyId;
 
 
 	public List<ValueList> getListAgency__agency_id() {
@@ -90,7 +84,7 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 		if (qName.equals(key_agency__agency_id[0]) || qName.equals(key_agency__agency_lid[0])) {
         	qualifierIx = atts.getIndex("id");
         	agencyId = atts.getValue(qualifierIx);
-        	newAgency__agency_id = new ValueList(key_agency__agency_id[0]);
+        	ValueList newAgency__agency_id = new ValueList(key_agency__agency_id[0]);
         	listAgency__agency_id.add(newAgency__agency_id);
         	newAgency__agency_id.addValue(agencyId);
 		}
@@ -102,22 +96,23 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 
    	@Override
 	public void endElement (String uri, String name, String qName) {
-		if (niceString == null || niceString.length() == 0)
-			return;
-	    if (key.equals(key_agency__agency_name[0])) {
-	   		newAgency__agency_name = new ValueList(key_agency__agency_name[0]);
-	   		listAgency__agency_name.add(newAgency__agency_name);
-	   		String agencyOverride = handler.getAgencyOverride();
-	   		if (agencyOverride != null && agencyOverride.length() > 0)
-	   			newAgency__agency_name.addValue(agencyOverride);
-	   		else {
-	   			Map<String, String> agencyMap = handler.getAgencyMap();
-	   			if (agencyMap == null || !agencyMap.containsKey(agencyId))
-	   				newAgency__agency_name.addValue(niceString);
-	   			else
-	   				newAgency__agency_name.addValue(agencyMap.get(agencyId));
-	   		}
-	    }
+   	  if (niceString == null || niceString.length() == 0){
+   	    return;
+   	  }
+   	  if (key.equals(key_agency__agency_name[0])) {
+   	    ValueList newAgency__agency_name = new ValueList(key_agency__agency_name[0]);
+   	    listAgency__agency_name.add(newAgency__agency_name);
+   	    String agencyOverride = handler.getAgencyOverride();
+   	    if (agencyOverride != null && agencyOverride.length() > 0)
+   	      newAgency__agency_name.addValue(agencyOverride);
+   	    else {
+   	      Map<String, String> agencyMap = handler.getAgencyMap();
+   	      if (agencyMap == null || !agencyMap.containsKey(agencyId))
+   	        newAgency__agency_name.addValue(niceString);
+   	      else
+   	        newAgency__agency_name.addValue(agencyMap.get(agencyId));
+   	    }
+   	  }
 	}
 
    	@Override
@@ -135,18 +130,18 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 		int i, j;
 	    boolean hot;
 
-   		newAgency__agency_url = new ValueList(handler.getUrl());
+   		ValueList newAgency__agency_url = new ValueList(handler.getUrl());
    		listAgency__agency_url.add(newAgency__agency_url);
    		newAgency__agency_url.addValue(handler.getUrl());
 
    		for (i = 0; i < listAgency__agency_name.size(); i++) {
-  	    	newAgency__agency_timezone = new ValueList(handler.getTimezone());
+        ValueList newAgency__agency_timezone = new ValueList(handler.getTimezone());
 	    	listAgency__agency_timezone.add(newAgency__agency_timezone);
 	    	newAgency__agency_timezone.addValue(handler.getTimezone());
-  	    	newAgency__agency_lang = new ValueList(handler.getLang());
+        ValueList newAgency__agency_lang = new ValueList(handler.getLang());
 	    	listAgency__agency_lang.add(newAgency__agency_lang);
 	    	newAgency__agency_lang.addValue(handler.getLang());
-  	    	newAgency__agency_phone = new ValueList(handler.getPhone());
+        ValueList newAgency__agency_phone = new ValueList(handler.getPhone());
 	    	listAgency__agency_phone.add(newAgency__agency_phone);
 	    	newAgency__agency_phone.addValue(handler.getPhone());
 	    	j = 0;
