@@ -123,8 +123,9 @@ public abstract class TransxchangeDataAspect {
 		StringTokenizer st = new StringTokenizer(inString, "-");
 		String ret = "";
 		int i = 0;
-		while (st.hasMoreTokens() && i < 2) {
+		while (st.hasMoreTokens() && i < 3) {
 			ret = ret + st.nextToken();
+			++i;
 		}
 		return ret;
 	}
