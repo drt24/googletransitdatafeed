@@ -154,31 +154,19 @@ public abstract class TransxchangeDataAspect {
 	 * Return date in GTFS format
 	 * introduced to support Java 1.4.2
 	 */
-	static Integer iYear;
-	static Integer iMonth;
-	static Integer iDay_of_month;
 	static String formatDate(int year, int month, int day_of_month) {
-		result = "";
-		digis = "";
 
-		iYear = new Integer(year);
-		result = iYear.toString();
+		String result = Integer.toString(year);
 
-		iMonth = new Integer(month);
-		digis = iMonth.toString();
+		String digis = Integer.toString(month);
 		if (digis.length() == 1)
 			digis = "0" + digis;
 		result = result + digis;
 
-		iDay_of_month = new Integer(day_of_month);
-		digis = iDay_of_month.toString();
+		digis = Integer.toString(day_of_month);
 		if (digis.length() == 1)
 			digis = "0" + digis;
 		result = result + digis;
-
-		iYear = null;
-		iMonth = null;
-		iDay_of_month = null;
 
 		return result;
 	}
@@ -187,32 +175,22 @@ public abstract class TransxchangeDataAspect {
 	 * Return time in GTFS format
 	 * introduced to support Java 1.4.2
 	 */
-	static String result;
-	static String digis;
-	static Integer iHour;
-	static Integer iMins;
 	static String formatTime(int hour, int mins) {
-		result = "";
-		digis = "";
+		String result = "";
 
-		iHour = new Integer(hour);
-		digis = iHour.toString();
+		String digis = Integer.toString(hour);
 		if (digis.length() == 1)
 			digis = "0" + digis;
 		result = result + digis;
 
 		result = result + ":";
 
-		iMins = new Integer(mins);
-		digis = iMins.toString();
+		digis = Integer.toString(mins);
 		if (digis.length() == 1)
 			digis = "0" + digis;
 		result = result + digis;
 
 		result = result + ":00";
-
-		iHour = null;
-		iMins = null;
 
 		return result;
 	}
