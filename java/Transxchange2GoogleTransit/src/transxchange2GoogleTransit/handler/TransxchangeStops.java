@@ -443,50 +443,47 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 			    for (i = 0; i < listStops__stop_name.size(); i++) {
 			    	indicator = "";
 			    	locality = "";
-			    	iterator = listStops__stop_name.get(i);
-			    	stopId = iterator.getKeyName();
+			    	ValueList stopNameVL = listStops__stop_name.get(i);
+			    	stopId = stopNameVL.getKeyName();
 			    	j = 0; // Find locality
-			    	hot = true;
 			    	jterator = null;
-			    	while (hot && j < _listStops__stop_locality.size()) {
+			    	while (j < _listStops__stop_locality.size()) {
 			    		jterator = _listStops__stop_locality.get(j);
-			    		if (jterator.getKeyName().equals(stopId))
-			    			hot = false;
-			    		else
+			    		if (jterator.getKeyName().equals(stopId)){
+			    		  locality = jterator.getValue(0);
+			    			break;
+			    		} else
 			    			j++;
 			    	}
-			    	if (!hot)
-			    		locality = jterator.getValue(0);
+			    		
 			    	j = 0; // Find indicator
-			    	hot = true;
 			    	jterator = null;
-			    	while (hot && j < _listStops__stop_indicator.size()) {
+			    	while (j < _listStops__stop_indicator.size()) {
 			    		jterator = _listStops__stop_indicator.get(j);
-			    		if (jterator.getKeyName().equals(stopId))
-			    			hot = false;
-			    		else
+			    		if (jterator.getKeyName().equals(stopId)){
+			    		  indicator = jterator.getValue(0);
+			    			break;
+			    		} else
 			    			j++;
-			    	}
-			    	if (!hot)
-			    		indicator = jterator.getValue(0);
+			    	}			    		
 
-			    	if (locality.length() > 0 && iterator != null) // Prefix locality
-			    		iterator.setValue(0, locality + ", " + iterator.getValue(0));
-			    	if (indicator.length() > 0 && iterator != null) // Postfix indicator
-			        	iterator.setValue(0, iterator.getValue(0) + ", "+ indicator);
+			    	if (locality.length() > 0 && stopNameVL != null) // Prefix locality
+			    		stopNameVL.setValue(0, locality + ", " + stopNameVL.getValue(0));
+			    	if (indicator.length() > 0 && stopNameVL != null) // Postfix indicator
+			        	stopNameVL.setValue(0, stopNameVL.getValue(0) + ", "+ indicator);
 			    }
     		else
 			    for (i = 0; i < listStops__stop_name.size(); i++) {
-			    	iterator = listStops__stop_name.get(i);
-			    	stopId = iterator.getKeyName();
-			    	iterator.setValue(0, handler.getNaPTANStopname(stopId));
+			    	ValueList stopNameVL = listStops__stop_name.get(i);
+			    	stopId = stopNameVL.getKeyName();
+			    	stopNameVL.setValue(0, handler.getNaPTANStopname(stopId));
 			    }
     	else
 		    for (i = 0; i < listStops__stop_name.size(); i++) {
 //		    	iterator = listStops__stop_id.get(i);
 //		    	stopId = iterator.getValue(0);
-		    	iterator = listStops__stop_name.get(i);
-		    	stopId = iterator.getKeyName();
+		    	ValueList stopNameVL = listStops__stop_name.get(i);
+		    	stopId = stopNameVL.getKeyName();
 		    	stopname = "";
 		    	for (j = 0; j < 30; j++) {
 		    		if (columnValues[j] != null) {
@@ -503,7 +500,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 			    		}
 		    		}
 		    	}
-		    	iterator.setValue(0, stopname);
+		    	stopNameVL.setValue(0, stopname);
 		    }
 	}
 
