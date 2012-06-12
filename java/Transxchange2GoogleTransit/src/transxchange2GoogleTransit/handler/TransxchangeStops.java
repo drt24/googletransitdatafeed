@@ -283,6 +283,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	    	_listStops__stop_indicator.add(_newStops__stop_indicator);
 	    	_newStops__stop_indicator.addValue(niceString);
 	    }
+	    //TODO(drt24) Wrong: easting and northing need to be converted to latitude and longitude, they can't be used as is
 	    if (key.equals(key_stops__stop_east[0]) && keyNested.equals(key_stops__stop_east[1])) {
 	    	ValueList newStops__stop_lat = new ValueList(keyRef);
 	    	listStops__stop_lat.add(newStops__stop_lat);
