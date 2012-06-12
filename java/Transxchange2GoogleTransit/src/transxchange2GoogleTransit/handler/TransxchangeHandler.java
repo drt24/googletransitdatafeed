@@ -39,6 +39,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import transxchange2GoogleTransit.Configuration;
+import transxchange2GoogleTransit.Stop;
 
 /*
  * This class extends DefaultHandler to parse a TransXChange v2.1 xml file,
@@ -68,7 +69,7 @@ public class TransxchangeHandler {
 			String lang, String phone,
 			boolean useAgencyShortName, boolean skipEmptyService, boolean skipOrphanStops, boolean geocodeMissingStops,
 			Map<String, String> modeList, List<String> stopColumns, String stopfilecolumnseparator,
-			int naptanHelperStopColumn, Map<String, String> naptanStopnames,
+			int naptanHelperStopColumn, Map<String, Stop> naptanStops,
 			Map<String, String> agencyMap)
 	    throws SAXException, SAXParseException, IOException, ParserConfigurationException
 	{
@@ -87,7 +88,7 @@ public class TransxchangeHandler {
 	  config.setSkipOrphanStops(skipOrphanStops);
 	  config.setGeocodeMissingStops(geocodeMissingStops);
 	  config.setNaptanHelperStopColumn(naptanHelperStopColumn);
-	  config.setNaptanStopnames(naptanStopnames);
+	  config.setNaptanStops(naptanStops);
 	  config.setAgencyMap(agencyMap);
 	  parse(config);
 	}

@@ -15,23 +15,20 @@ package transxchange2GoogleTransit;
  * the License.
  */
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.StringTokenizer;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-
-import transxchange2GoogleTransit.handler.*;
+import transxchange2GoogleTransit.handler.NaPTANHelper;
+import transxchange2GoogleTransit.handler.TransxchangeHandler;
 
 /*
  * Transxchange2GTFS
@@ -172,8 +169,8 @@ public class Transxchange2GoogleTransit {
 						config.outputDirectory = configValues[1];
 					if (configValues[0].equals("stopfile")) {
 						config.stopFile = configValues[1];
-						if (config.naptanStopnames == null)
-							config.naptanStopnames = NaPTANHelper.readStopfile(configValues[1]);
+						if (config.naptanStops == null)
+							config.naptanStops = NaPTANHelper.readStopfile(configValues[1]);
 					}
 					if (configValues[0].equals("naptanstopcolumn")) {
 						if (config.stopColumns == null)

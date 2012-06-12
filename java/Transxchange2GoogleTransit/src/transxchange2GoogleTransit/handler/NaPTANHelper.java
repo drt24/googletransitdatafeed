@@ -7,15 +7,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import transxchange2GoogleTransit.LatLong;
+import transxchange2GoogleTransit.Stop;
+
 public class NaPTANHelper {
 
-	public static Map<String, String> readStopfile(String stopsFileName)
+	public static Map<String, Stop> readStopfile(String stopsFileName)
 		throws UnsupportedEncodingException, IOException {
 
 		if (!(stopsFileName != null && stopsFileName.length() > 0))
 			return null;
 
-		Map<String, String> result = new HashMap<String, String>();
+		Map<String, Stop> result = new HashMap<String, Stop>();
 
 	    BufferedReader bufFileIn = new BufferedReader(new FileReader(stopsFileName));
 
@@ -59,7 +62,7 @@ public class NaPTANHelper {
 
 	    String commonName;
 	    String atcoCode;
-	    String stopcode;
+//	    String stopcode;
 	    String smscode;
 	    String stopname;
 	    String rawIndicator, indicator;
@@ -73,6 +76,8 @@ public class NaPTANHelper {
 	            "", "", "", "", "", "", "", "", "", "",
 	            "", "", "", "", "", "", "", "", "", "",
 	            "", "", "", "", "", "", "", "", "", ""};
+	    String latitude;
+	    String longitude;
 
 	    int i;
 	    initializeIndicatorMap();
@@ -88,25 +93,23 @@ public class NaPTANHelper {
 	            }
 
 	            // Stop code (for queries to server and display as "stop number"
-	            atcoCode = tokens[stopcodeAltIx].substring(1, tokens[stopcodeAltIx].length() - 1);
-	            smscode = tokens[smscodeIx].substring(1, tokens[smscodeIx].length() - 1); // Use SMS code as stop code - Remove quotation marks
-	            if (smscode == null || smscode.length() == 0)
-		            stopcode = atcoCode; // In the absence of SMS code: Go for alternative stop code
-	            else
-	            	stopcode = smscode;
+	            atcoCode = removeQuotes(tokens[stopcodeAltIx]);
+	            smscode = removeQuotes(tokens[smscodeIx]); // Use SMS code as stop code - Remove quotation marks
+//	            if (smscode == null || smscode.length() == 0)
+//		            stopcode = atcoCode; // In the absence of SMS code: Go for alternative stop code
+//	            else
+//	            	stopcode = smscode;
 
 	            // Read CommonName, locality and the other relevant columns; remove quotation marks as necessary
-	            commonName = tokens[commonNameIx].substring(1, tokens[commonNameIx].length() - 1);
-	            rawIndicator = tokens[indicatorIx].substring(1, tokens[indicatorIx].length() - 1);
-	            direction = tokens[directionIx].substring(1, tokens[directionIx].length() - 1);
-	            street = tokens[streetIx].substring(1, tokens[streetIx].length() - 1);
-	            locality = tokens[localityIx].substring(1, tokens[localityIx].length() - 1);
-	            parentLocality = tokens[parentLocalityIx].substring(1, tokens[parentLocalityIx].length() - 1);
-	            if (tokens[busStopTypeIx].length() > 2){
-	            busStopType = tokens[busStopTypeIx].substring(1, tokens[busStopTypeIx].length() - 1);
-	            } else {
-	              busStopType = "";
-	            }
+	            commonName = removeQuotes(tokens[commonNameIx]);
+	            rawIndicator = removeQuotes(tokens[indicatorIx]);
+	            direction = removeQuotes(tokens[directionIx]);
+	            street = removeQuotes(tokens[streetIx]);
+	            locality = removeQuotes(tokens[localityIx]);
+	            parentLocality = removeQuotes(tokens[parentLocalityIx]);
+	            busStopType = removeQuotes(tokens[busStopTypeIx]);
+	            latitude = removeQuotes(tokens[latIx]);
+	            longitude = removeQuotes(tokens[lonIx]);
 
 	            // Create NaPTAN stop name following rules
 	            stopname = "";
@@ -167,7 +170,7 @@ public class NaPTANHelper {
 	            	stopname += " (Hail-and-Ride)";
 
 	            if (!busStopType.equals("FLX")) // Do not include flex service stops
-	            	result.put(atcoCode, stopname);
+	            	result.put(atcoCode, new Stop(atcoCode,stopname,new LatLong(latitude,longitude)));
 
 	    	} catch (Exception e) { // v1.7.4
 	    		System.err.println("At line: " + line + " Exception: " + e.getMessage());
@@ -178,6 +181,17 @@ public class NaPTANHelper {
 
         return result;
 
+	}
+
+	private static String removeQuotes(String quoted){
+	  if (quoted == null){
+	    return null;
+	  }
+	  if (!quoted.startsWith("\"")){
+	    return quoted;
+	  } else {
+	    return quoted.substring(1, quoted.length() - 1);
+	  }
 	}
 
 	public static int findColumn(String headline, String code) {

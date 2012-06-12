@@ -39,6 +39,7 @@ import org.w3c.dom.Node;
 
 import transxchange2GoogleTransit.Configuration;
 import transxchange2GoogleTransit.LatLong;
+import transxchange2GoogleTransit.Stop;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -145,12 +146,25 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	public int getNaptanHelperStopColumn() {
 		return config.getNaptanHelperStopColumn();
 	}
+	/**
+	 * Get the stop for the given atcoCode or null if we don't have one
+	 * @param atcoCode
+	 * @return the stop or null
+	 */
+	public Stop getStop(String atcoCode){
+	  Map<String,Stop> naptanStops = config.getNaptanStops();
+	  if (null == naptanStops){
+	    return null;
+	  } else {
+	    return naptanStops.get(atcoCode);
+	  }
+	}
 	public String getNaPTANStopname(String atcoCode) {
-	  Map<String,String> naptanStopNames = config.getNaptanStopnames();
-		if (naptanStopNames == null || atcoCode == null){
+	  Map<String,Stop> naptanStops = config.getNaptanStops();
+		if (naptanStops == null || atcoCode == null){
 			return "";
 		}
-		String name = naptanStopNames.get(atcoCode);
+		String name = naptanStops.get(atcoCode).getName();
 		if (null == name){
 			return "";
 		}

@@ -27,6 +27,8 @@ import java.io.*;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXParseException;
 
+import transxchange2GoogleTransit.Stop;
+
 /*
  * This class handles the TransXChange xml input file under the aspect of
  * 	stops
@@ -545,26 +547,27 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	}
 
 	private String getLat(String stop) {
-
-		// If no coordinates, return key
-		if (lat == null)
+		if (lat == null || !lat.containsKey(stop)){
+		  Stop nStop = handler.getStop(stop);
+		  if (nStop != null){
+		    return nStop.getPosition().latitude;
+		  }
 			return null;
-
-		if (lat.containsKey(stop))
-			return lat.get(stop);
-		else
-			return null;
+		} else {
+		  return lat.get(stop);
+		}
 	}
+
 	private String getLon(String stop) {
-
-		// If no coordinates, return key
-		if (lon == null)
-			return null;
-
-		if (lon.containsKey(stop))
-			return lon.get(stop);
-		else
-			return null;
+	  if (lon == null || !lon.containsKey(stop)){
+      Stop nStop = handler.getStop(stop);
+      if (nStop != null){
+        return nStop.getPosition().longitude;
+      }
+      return null;
+    } else {
+      return lon.get(stop);
+    }
 	}
 
 /*	private static int findColumn(String headline, String code) {
