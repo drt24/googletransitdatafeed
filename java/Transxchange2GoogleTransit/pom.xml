@@ -1,0 +1,16 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.google.code.googletransitdatafeed</groupId>
+  <artifactId>Transxchange2GoogleTransit</artifactId>
+  <version>1.8.0-SNAPSHOT</version>
+  <name>Transxchange2GoogleTransit</name>
+  <description>The purpose of the converter is to generate GTFS files from TransXChange standard data (Version 2.2 and later)</description>
+  <issueManagement>
+    <system>Google Code</system>
+    <url>http://code.google.com/p/googletransitdatafeed/issues/list</url>
+  </issueManagement>
+  <build>
+    <sourceDirectory>${basedir}/src</sourceDirectory>
+  </build>
+</project>
