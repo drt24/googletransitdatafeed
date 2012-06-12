@@ -39,31 +39,20 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 
 	// Parsed data
 	List<ValueList> listTrips__route_id;
-	ValueList newTrips__route_id;
 	List<ValueList> listTrips__service_id;
-	ValueList newTrips__service_id;
 	List<ValueList> listTrips__trip_id;
-	ValueList newTrips__trip_id;
 	List<ValueList> listTrips__trip_headsign;
-	ValueList newTrips__trip_headsign;
 	List<ValueList> listTrips__block_id;
-	ValueList newTrips__block_id;
 	List<ValueList> listTrips__direction_id; // v1.7.3
-	ValueList newTrips__direction_id; // v1.7.3
 	List<ValueList> listTrips__routeref; // v1.7.3
-	ValueList newTrips__routeref; // v1.7.3
 
 	static final String[] _key_trips__trip_journeypatternsection = new String [] {"JourneyPattern", "JourneyPatternSectionRefs"};
 	List<ValueList> _listJourneyPatternDestinationDisplays;
 	ValueList newJourneyPatternDestinationDisplay;
 	List<ValueList> _listJourneyPatternRef;
-	ValueList newJourneyPatternRef;
 	List<ValueList> _listJourneyPatternSectionRefs;
-	ValueList newJourneyPatternSectionRefs;
 	List<ValueList> _listJourneyPatternDirections; // v1.7.3
-	ValueList newJourneyPatternDirection; // v1.7.3
 	List<ValueList> _listJourneyPatternRouteRef; // v1.7.3
-	ValueList newJourneyPatternRouteRef; // v1.7.3
 
 	String _journeyPattern = "";
 
@@ -231,21 +220,21 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	    			 handler.getCalendarDates().resetOOLDates_start();
 	    			 handler.getCalendarDates().resetOOLDates_end();
 	    		 }
-	    		 newTrips__trip_id = new ValueList(_vehicleJourneyCode + "@" + _departureTime);
+	    		 ValueList newTrips__trip_id = new ValueList(_vehicleJourneyCode + "@" + _departureTime);
 	    		 listTrips__trip_id.add(newTrips__trip_id);
 	    		 newTrips__trip_id.addValue(_departureTime);
-	    		 newTrips__route_id = new ValueList(_vehicleJourneyCode + "@" + _departureTime);
+	    		 ValueList newTrips__route_id = new ValueList(_vehicleJourneyCode + "@" + _departureTime);
 	    		 listTrips__route_id.add(newTrips__route_id);
 	    		 newTrips__route_id.addValue(_lineName);
 	    		 tripId = _vehicleJourneyCode + "@" + _departureTime;
-	    		 newTrips__service_id = new ValueList(tripId);
+	    		 ValueList newTrips__service_id = new ValueList(tripId);
 	    		 handler.addTripServiceId(tripId, _serviceCode);
 	    		 listTrips__service_id.add(newTrips__service_id);
 	    		 newTrips__service_id.addValue(_serviceCode);
-	    		 newJourneyPatternRef = new ValueList(_vehicleJourneyCode + "@" + _departureTime);
+	    		 ValueList newJourneyPatternRef = new ValueList(_vehicleJourneyCode + "@" + _departureTime);
 	    		 _listJourneyPatternRef.add(newJourneyPatternRef);
 	    		 newJourneyPatternRef.addValue(_journeyPatternRef);
-	    		 newTrips__block_id = new ValueList(_vehicleJourneyCode + "@" + _departureTime);
+	    		 ValueList newTrips__block_id = new ValueList(_vehicleJourneyCode + "@" + _departureTime);
 	    		 listTrips__block_id.add(newTrips__block_id);
 	    		 newTrips__block_id.addValue(key_trips__block_id[2]);
 	    	 }
@@ -324,7 +313,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 		}
         // v1.7.3
         if (key.equals(key_trips__trip_direction[0]) && keyNested.equals(key_trips__trip_direction[1])) {
-        	newJourneyPatternDirection = new ValueList(_journeyPattern);
+          ValueList newJourneyPatternDirection = new ValueList(_journeyPattern);
         	_listJourneyPatternDirections.add(newJourneyPatternDirection);
         	boolean directionDetermined = false;
         	if (niceString.equals("outbound")) {
@@ -339,12 +328,12 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
         		newJourneyPatternDirection.addValue("");
 		}
         if (key.equals(key_trips__trip_routeref[0]) && keyNested.equals(key_trips__trip_routeref[1])) {
-        	newJourneyPatternRouteRef = new ValueList(_journeyPattern);
+          ValueList newJourneyPatternRouteRef = new ValueList(_journeyPattern);
         	_listJourneyPatternRouteRef.add(newJourneyPatternRouteRef);
     		newJourneyPatternRouteRef.addValue(niceString);
 		}
         if (key.equals(_key_trips__trip_journeypatternsection[0]) && keyNested.equals(_key_trips__trip_journeypatternsection[1])) {
-        	newJourneyPatternSectionRefs = new ValueList(_journeyPattern);
+          ValueList newJourneyPatternSectionRefs = new ValueList(_journeyPattern);
         	_listJourneyPatternSectionRefs.add(newJourneyPatternSectionRefs);
         	newJourneyPatternSectionRefs.addValue(niceString);
 		}
@@ -401,7 +390,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	       		} else
 	       			j++;
 	       	}
-	       	newTrips__trip_headsign = new ValueList(iterator.getKeyName());
+	       	ValueList newTrips__trip_headsign = new ValueList(iterator.getKeyName());
 	    	listTrips__trip_headsign.add(newTrips__trip_headsign);
 	    	newTrips__trip_headsign.addValue(tripHeadsign);
 	    }
@@ -421,7 +410,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	       		} else
 	       			j++;
 	       	}
-	       	newTrips__direction_id = new ValueList(iterator.getKeyName());
+	       	ValueList newTrips__direction_id = new ValueList(iterator.getKeyName());
 	    	listTrips__direction_id.add(newTrips__direction_id);
 	    	newTrips__direction_id.addValue(tripDirection);
 	    }
@@ -441,7 +430,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	       		} else
 	       			j++;
 	       	}
-	       	newTrips__routeref = new ValueList(iterator.getKeyName());
+	       	ValueList newTrips__routeref = new ValueList(iterator.getKeyName());
 	    	listTrips__routeref.add(newTrips__routeref);
 	    	newTrips__routeref.addValue(tripRouteRef);
 	    }
