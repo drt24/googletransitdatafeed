@@ -219,8 +219,9 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	}
 
 	public void addTripServiceId(String tripId, String serviceId) {
-		if (tripServiceIds == null)
+		if (tripServiceIds == null){
 			tripServiceIds = new HashMap<String, String>();
+		}
 		tripServiceIds.put(tripId, serviceId);
 	}
 	public boolean hasTripServiceId(String testId) {
@@ -619,21 +620,29 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		}
 		String stopId, stopName;
 		TransxchangeStops stops = this.getStops();
-		for (int i = 0; i < stops.getListStops__stop_id().size(); i++) {
-			stopId = (stops.getListStops__stop_id().get(i)).getValue(0);
+		List<ValueList> stopIds = stops.getListStops__stop_id();
+		int stopIdsSize = stopIds.size();
+		for (int i = 0; i < stopIdsSize; i++) {
+			stopId = stopIds.get(i).getValue(0);
 			if (stopId.length() > 0 && (!config.skipOrphanStops() || stops.hasStop(stopId))) {
 				stopName = (stops.getListStops__stop_name().get(i)).getValue(0);
 				LatLong coordinates = new LatLong((stops.getListStops__stop_lat().get(i)).getValue(0),
 					(stops.getListStops__stop_lon().get(i)).getValue(0) );
 
-				// If requested, geocode lat/lon
-				if (isGeocodeMissingStops() && (coordinates.latitude == null || coordinates.longitude == null)) {
-					try {
-						System.out.println("Geocoding stop (id / name): " + stopId + " / " + stopName);
-						geocodeMissingStop(stopName);
-					} catch (Exception e) {
-						System.out.println("Geocoding exception: " + e.getMessage() + " for stop: " + stopName);
-					}
+				if (coordinates.notSet()){
+          Stop stop = getStop(stopId);
+          if (null != stop) {
+            coordinates = stop.getPosition();
+          }
+				  // If requested, geocode lat/lon
+				  if (isGeocodeMissingStops() && coordinates.notSet()) {
+				    try {
+				      log.info("Geocoding stop (id / name): " + stopId + " / " + stopName);
+				      geocodeMissingStop(stopName);
+				    } catch (Exception e) {
+				      System.err.println("Geocoding exception: " + e.getMessage() + " for stop: " + stopName);
+				    }
+				  }
 				}
 
 				stopsOut.print(stopId);
