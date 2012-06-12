@@ -38,8 +38,8 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 	static final String[] key_calendar__friday = new String[] {"__transxchange2GTFS_drawDefault", "", "0"}; // GTFS required
 	static final String[] key_calendar__saturday = new String[] {"__transxchange2GTFS_drawDefault", "", "0"}; // GTFS required
 	static final String[] key_calendar__sunday = new String[] {"__transxchange2GTFS_drawDefault", "", "0"}; // GTFS required
-	static final String[] key_calendar__start_date = new String[] {"Service", "StartDate", "20060901"}; // GTFS required
-	static final String[] key_calendar__end_date = new String[] {"Service", "EndDate", "20091231"}; // GTFS required
+	static final String[] key_calendar__start_date = new String[] {"Service", "StartDate", ""}; // GTFS required
+	static final String[] key_calendar__end_date = new String[] {"Service", "EndDate", ""}; // GTFS required
 
 	// Parsed data
 	List<ValueList> listCalendar__service_id;
