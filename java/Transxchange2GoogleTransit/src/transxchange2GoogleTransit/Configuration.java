@@ -173,6 +173,14 @@ public class Configuration {
     return naptanStops;
   }
 
+  public Stop getNaptanStop(String atcoCode) {
+    if (null == naptanStops){
+      return null;
+    } else {
+      return naptanStops.get(atcoCode);
+    }
+  }
+
   /**
    * @param naptanStops the naptanStops to set
    */

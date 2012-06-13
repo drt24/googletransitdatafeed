@@ -476,7 +476,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 			    for (i = 0; i < listStops__stop_name.size(); i++) {
 			    	ValueList stopNameVL = listStops__stop_name.get(i);
 			    	stopId = stopNameVL.getKeyName();
-			    	stopNameVL.setValue(0, handler.getNaPTANStopname(stopId));
+			    	stopNameVL.setValue(0, handler.getNaPTANStopName(stopId));
 			    }
     	else
 		    for (i = 0; i < listStops__stop_name.size(); i++) {

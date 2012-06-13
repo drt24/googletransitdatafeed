@@ -154,14 +154,9 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	 * @return the stop or null
 	 */
 	public Stop getStop(String atcoCode){
-	  Map<String,Stop> naptanStops = config.getNaptanStops();
-	  if (null == naptanStops){
-	    return null;
-	  } else {
-	    return naptanStops.get(atcoCode);
-	  }
+	  return config.getNaptanStop(atcoCode);
 	}
-	public String getNaPTANStopname(String atcoCode) {
+	public String getNaPTANStopName(String atcoCode) {
 	  Map<String,Stop> naptanStops = config.getNaptanStops();
 		if (naptanStops == null || atcoCode == null){
 			return "";
