@@ -162,11 +162,11 @@ public class TransxchangeHandler {
 
         // if empty service skipping requested: Filter out trips that do not refer to an active service
 		if (parseHandler.isSkipEmptyService()) {
-    		String outdir = parseHandler.getRootDirectory() + parseHandler.getWorkDirectory();
+    		File outdir = new File(parseHandler.getRootDirectory() + parseHandler.getWorkDirectory());
     		String infileName = TransxchangeHandlerEngine.stop_timesFilename + "_tmp" + /* "_" + serviceStartDate + */ TransxchangeHandlerEngine.extension;
-        	File infile = new File(outdir + /* "/" + serviceStartDate + */ "/" + infileName);
+        	File infile = new File(outdir, infileName);
         	String outfileName = TransxchangeHandlerEngine.stop_timesFilename + /* "_" + serviceStartDate + */ TransxchangeHandlerEngine.extension;
-        	File outfile = new File(outdir + /* "/" + serviceStartDate + */ "/" + outfileName);
+        	File outfile = new File(outdir, outfileName);
         	BufferedReader stop_timesIn = new BufferedReader(new FileReader(infile));
 
             PrintWriter stop_timesOut = new PrintWriter(new FileWriter(outfile));

@@ -91,7 +91,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	static PrintWriter calendarDatesOut = null;
 
 	static List<String> filenames = null;
-	static String outdir = "";
+	static File outdir = new File("");
 
 	Map<String, String> calendarServiceIds = null;
 	Map<String, String> calendarDatesServiceIds = null;
@@ -354,22 +354,22 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	protected static void prepareOutput(String outputDirectory)
 	throws IOException
 	{
-		outdir = outputDirectory;
+		outdir = new File(outputDirectory);
 		filenames = new ArrayList<String>();
 
 		// Delete existing GTFS files in output directory
-		new File(outdir + "/" + agencyFilename + extension).delete();
-		new File(outdir + "/" + stopsFilename + extension).delete();
-		new File(outdir + "/" + routesFilename + extension).delete();
-		new File(outdir + "/" + tripsFilename + extension).delete();
-		new File(outdir + "/" + stop_timesFilename + extension).delete();
-		new File(outdir + "/" + calendarFilename + extension).delete();
-		new File(outdir + "/" + calendar_datesFilename + extension).delete();
-		new File(outdir + "/" + gtfsZipfileName).delete();
+		new File(outdir, agencyFilename + extension).delete();
+		new File(outdir, stopsFilename + extension).delete();
+		new File(outdir, routesFilename + extension).delete();
+		new File(outdir, tripsFilename + extension).delete();
+		new File(outdir, stop_timesFilename + extension).delete();
+		new File(outdir, calendarFilename + extension).delete();
+		new File(outdir, calendar_datesFilename + extension).delete();
+		new File(outdir, gtfsZipfileName).delete();
 
 		// Create output directory
 		// Note service start date not any longer used to determine directory name for outfiles
-		new File(outdir /* + "/" + serviceStartDate*/ ).mkdirs();
+		outdir.mkdirs();
 	}
 
 	/*
@@ -388,7 +388,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 
         if (calendarsOut == null) {
             outfileName = calendarFilename + /* "_" + serviceStartDate + */ extension;
-            outfile = new File(outdir + /* "/" + serviceStartDate + */ "/" + outfileName);
+            outfile = new File(outdir, outfileName);
             filenames.add(outfileName);
             calendarsOut = new PrintWriter(new FileWriter(outfile));
             calendarsOut.println("service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date");
@@ -500,7 +500,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
         if (this.getCalendarDates().getListCalendarDates__service_id().size() > 0) {
         	if (calendarDatesOut == null) {
             	outfileName = calendar_datesFilename + /* "_" + serviceStartDate + */ extension;
-            	outfile = new File(outdir + /* "/" + serviceStartDate + */ "/" + outfileName);
+            	outfile = new File(outdir, outfileName);
             	calendarDatesOut = new PrintWriter(new FileWriter(outfile));
             	filenames.add(outfileName);
             	calendarDatesOut.println("service_id,date,exception_type");
@@ -535,7 +535,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
         // trips.txt
 		if (tripsOut == null) {
 	        outfileName = tripsFilename + /* "_" + serviceStartDate + */ extension;
-	        outfile = new File(outdir + /* "/" + serviceStartDate + */ "/" + outfileName);
+	        outfile = new File(outdir, outfileName);
 	        filenames.add(outfileName);
 	        tripsOut = new PrintWriter(new FileWriter(outfile));
 	        tripsOut.println("route_id,service_id,trip_id,trip_headsign,direction_id,block_id,shape_id");
@@ -577,13 +577,10 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	public void writeOutputAgenciesStopsRoutes()
 	throws IOException
 	{
-		String outfileName = "";
-		File outfile = null;
-
 		// agencies.txt
 		if (agenciesOut == null) {
-			outfileName = agencyFilename + /* "_" + serviceStartDate + */ extension;
-			outfile = new File(outdir + /* "/" + serviceStartDate + */ "/"  + outfileName);
+			String outfileName = agencyFilename + /* "_" + serviceStartDate + */ extension;
+			File outfile = new File(outdir, outfileName);
 			filenames.add(outfileName);
 			agenciesOut = new PrintWriter(new FileWriter(outfile));
 			agenciesOut.println("agency_id,agency_name,agency_url,agency_timezone,agency_lang,agency_phone");
@@ -668,8 +665,8 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 
 		// routes.txt
 		if (routesOut == null) {
-	        outfileName = routesFilename + /* "_" + serviceStartDate + */ extension;
-	        outfile = new File(outdir + /* "/" + serviceStartDate + */ "/" + outfileName);
+	        String outfileName = routesFilename + /* "_" + serviceStartDate + */ extension;
+	        File outfile = new File(outdir, outfileName);
 	        filenames.add(outfileName);
 	        routesOut = new PrintWriter(new FileWriter(outfile));
 	        routesOut.println("route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_url,route_color,route_text_color");
@@ -719,29 +716,30 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	public String closeOutput(String rootDirectory, String workDirectory)
 	throws IOException
 	{
-		// Close out PrintWriter's
-		agenciesOut.close();
-		stopsOut.close();
-		routesOut.close();
-		tripsOut.close();
-//		stop_timesOut.close();
-		calendarsOut.close();
-		if (calendarDatesOut != null) // calendar_dates is optional; might not have been created
-			calendarDatesOut.close();
+  
+	  // Close out PrintWriter's
+	  stopsOut.close();
+	  agenciesOut.close();
+	  routesOut.close();
+	  tripsOut.close();
+	  //		stop_timesOut.close();
+	  calendarsOut.close();
+	  if (calendarDatesOut != null) // calendar_dates is optional; might not have been created
+	    calendarDatesOut.close();
 
-		agenciesOut = null;
-		stopsOut = null;
-		routesOut = null;
-		tripsOut = null;
-//		stop_timesOut = null;
-		calendarsOut = null;
-		calendarDatesOut = null;
+	  stopsOut = null;
+	  agenciesOut = null;
+	  routesOut = null;
+	  tripsOut = null;
+	  //		stop_timesOut = null;
+	  calendarsOut = null;
+	  calendarDatesOut = null;
 
 		// Compress the files
-        ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(outdir + /* "/" + serviceStartDate + */ "/" + gtfsZipfileName));
+        ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(new File(outdir, gtfsZipfileName)));
         byte[] buf = new byte[1024]; // Create a buffer for reading the files
         for (int i = 0; i < filenames.size(); i++) {
-            FileInputStream in = new FileInputStream(outdir + /* "/" + serviceStartDate + */ "/" + filenames.get(i));
+            FileInputStream in = new FileInputStream(new File(outdir, filenames.get(i)));
 
             // Add ZIP entry to output stream.
             zipOut.putNextEntry(new ZipEntry(filenames.get(i)));
