@@ -41,6 +41,7 @@ public class Transxchange2GoogleTransit {
 	public static void main(String[] args) {
 
 		TransxchangeHandler handler = null;
+		Configuration config = new Configuration();
 
         System.out.println("transxchange2GTFS 1.7.5");
         System.out.println("Please refer to LICENSE file for licensing information");
@@ -71,7 +72,6 @@ public class Transxchange2GoogleTransit {
 
         	handler = new TransxchangeHandler();
 
-        	Configuration config = null;
         	// v1.6.4: Read configuration file
         	if (args.length == 3){
         	  config = readConfigFile(args[0], args[2]);
@@ -85,7 +85,6 @@ public class Transxchange2GoogleTransit {
         		config = readConfigFile(args[0], args[4]);
         		config.outputDirectory = outdir; // Copy work directory over
         	} else if (args.length == 8 || args.length == 6 || args.length == 5){
-        	  config = new Configuration();
         	  config.inputFileName = args[0];
         	  config.url = args[1];
         	  config.timezone = args[2];
@@ -124,7 +123,7 @@ public class Transxchange2GoogleTransit {
 
        // Create final GTFS output files
         try {
-        	handler.writeOutput("", args[4]);
+        	handler.writeOutput(config);
         } catch (IOException e) {
         	System.err.println("transxchange2GTFS write error:");
         	System.err.println(e.getMessage());
