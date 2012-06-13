@@ -41,6 +41,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import transxchange2GoogleTransit.Agency;
 import transxchange2GoogleTransit.Configuration;
 import transxchange2GoogleTransit.Geocoder;
 import transxchange2GoogleTransit.LatLong;
@@ -210,14 +211,15 @@ public class TransxchangeHandler {
 					parser.getStops().flagAllStops("1");
 			}
         }
-		consolidateAgencies(); // Eliminiate possible duplicates from multiple input files in zip archive
+		Map<String,Agency> agencies = consolidateAgencies(); // Eliminiate possible duplicates from multiple input files in zip archive
 		Map<String,Stop> stops = consolidateStops();
 		consolidateRoutes(); // Eliminiate possible duplicates from multiple input files in zip archive
 		Iterator<TransxchangeHandlerEngine> parsers = parseHandlers.iterator();
 		
 		TransxchangeHandlerEngine.writeOutputStops(stops, config);
+		TransxchangeHandlerEngine.writeOutputAgencies(agencies);
 		while (parsers.hasNext()){
-			parsers.next().writeOutputAgenciesRoutes(); // Now write agencies, stops
+			parsers.next().writeOutputRoutes(); // Now write agencies, stops
 		}
 		return parseHandler.closeOutput(rootDirectory, workDirectory);
 	}
@@ -239,39 +241,14 @@ public class TransxchangeHandler {
 	/**
 	 * Eliminate possible duplicates from multiple input files in zip archive
 	 */
-	public void consolidateAgencies() {
-		Iterator<TransxchangeHandlerEngine> parsers = parseHandlers.iterator();
-		int parseHandlersCount = 0;
-		int j;
-		String curAgencyId;
-		List<ValueList> followAgencyIds;
-		TransxchangeAgency followAgencies;
-		Iterator<TransxchangeHandlerEngine> followParser;
-
-		while (parsers.hasNext()) {
-			TransxchangeAgency agencies = ((TransxchangeHandlerEngine)parsers.next()).getAgencies();
-			parseHandlersCount += 1;
-			List<ValueList> agencyIds = agencies.getListAgency__agency_id();
-			for (int i = 0; i < agencyIds.size(); i++) {
-				followParser = parseHandlers.iterator(); // Set follow parser to parsed input files following current; Iterator is not Cloneable; need to create a new Iterator and step forward to get to the right position (anybody know a more elegant solution?)
-				j = 0;
-				while (j < parseHandlersCount && followParser.hasNext()) {
-					j++;
-					followParser.next();
-				}
-				curAgencyId = (agencyIds.get(i)).getValue(0);
-				while (followParser.hasNext()) { // Run through stops of following parsed input files and eliminate duplicates there
-					followAgencies = ((TransxchangeHandlerEngine)followParser.next()).getAgencies();
-					followAgencyIds = followAgencies.getListAgency__agency_id();
-					for (j = 0; j < followAgencyIds.size(); j++) {
-						if (curAgencyId.equals(followAgencyIds.get(j).getValue(0))) {
-							followAgencyIds.get(j).setValue(0, "");
-						}
-					}
-				}
-			}
-		}
-	}
+  public Map<String, Agency> consolidateAgencies() {
+    // Use TreeMap so that we get output sorted by key
+    Map<String, Agency> agencyMap = new TreeMap<String, Agency>();// map of agency id to Agency
+    for (TransxchangeHandlerEngine parser : parseHandlers) {
+      parser.getAgencies().export(agencyMap);
+    }
+    return agencyMap;
+  }
 
 	/*
 	 * Eliminate possible duplicates from multiple input files in zip archive

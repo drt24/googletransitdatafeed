@@ -35,6 +35,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import transxchange2GoogleTransit.Agency;
 import transxchange2GoogleTransit.Configuration;
 import transxchange2GoogleTransit.Geocoder;
 import transxchange2GoogleTransit.LatLong;
@@ -562,34 +563,9 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	/*
 	 * Create GTFS file set from GTFS data structures except for stops
 	 */
-	public void writeOutputAgenciesRoutes()
+	public void writeOutputRoutes()
 	throws IOException
 	{
-		// agencies.txt
-		if (agenciesOut == null) {
-			String outfileName = agencyFilename + /* "_" + serviceStartDate + */ extension;
-			File outfile = new File(outdir, outfileName);
-			filenames.add(outfileName);
-			agenciesOut = new PrintWriter(new FileWriter(outfile));
-			agenciesOut.println("agency_id,agency_name,agency_url,agency_timezone,agency_lang,agency_phone");
-		}
-		for (int i = 0; i < this.getAgencies().getListAgency__agency_name().size(); i++) {
-			if ((((this.getAgencies().getListAgency__agency_id().get(i))).getValue(0)).length() > 0) {
-				agenciesOut.print((this.getAgencies().getListAgency__agency_id().get(i)).getValue(0));
-				agenciesOut.print(",");
-				agenciesOut.print((this.getAgencies().getListAgency__agency_name().get(i)).getValue(0));
-				agenciesOut.print(",");
-				agenciesOut.print((this.getAgencies().getListAgency__agency_url().get(i)).getValue(0));
-				agenciesOut.print(",");
-				agenciesOut.print((this.getAgencies().getListAgency__agency_timezone().get(i)).getValue(0));
-				agenciesOut.print(",");
-				agenciesOut.print((this.getAgencies().getListAgency__agency_lang().get(i)).getValue(0));
-				agenciesOut.print(",");
-				agenciesOut.print((this.getAgencies().getListAgency__agency_phone().get(i)).getValue(0));
-				agenciesOut.println();
-	        }
-        }
-
 		// routes.txt
 		if (routesOut == null) {
 	        String outfileName = routesFilename + /* "_" + serviceStartDate + */ extension;
@@ -622,6 +598,33 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	        }
         }
 	}
+
+  public static void writeOutputAgencies(Map<String, Agency> agencies) throws IOException {
+    // agencies.txt
+    if (agenciesOut == null) {
+      String outfileName = agencyFilename + /* "_" + serviceStartDate + */extension;
+      File outfile = new File(outdir, outfileName);
+      filenames.add(outfileName);
+      agenciesOut = new PrintWriter(new FileWriter(outfile));
+      agenciesOut.println("agency_id,agency_name,agency_url,agency_timezone,agency_lang,agency_phone");
+    }
+    for (Map.Entry<String, Agency> agencyEntry : agencies.entrySet()) {
+      String agencyId = agencyEntry.getKey();
+      Agency agency = agencyEntry.getValue();
+      agenciesOut.print(agencyId);
+      agenciesOut.print(",");
+      agenciesOut.print(agency.getName());
+      agenciesOut.print(",");
+      agenciesOut.print(agency.getUrl());
+      agenciesOut.print(",");
+      agenciesOut.print(agency.getTimeZone());
+      agenciesOut.print(",");
+      agenciesOut.print(agency.getLang());
+      agenciesOut.print(",");
+      agenciesOut.print(agency.getPhone());
+      agenciesOut.println();
+    }
+  }
 
 	public static void writeOutputStops(Map<String, Stop> stops, Configuration config) throws IOException {
     // stops.txt
