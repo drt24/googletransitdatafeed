@@ -24,10 +24,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -40,6 +42,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import transxchange2GoogleTransit.Configuration;
+import transxchange2GoogleTransit.Geocoder;
+import transxchange2GoogleTransit.LatLong;
 import transxchange2GoogleTransit.Stop;
 
 /*
@@ -207,51 +211,32 @@ public class TransxchangeHandler {
 			}
         }
 		consolidateAgencies(); // Eliminiate possible duplicates from multiple input files in zip archive
-		consolidateStops(); // Eliminiate possible duplicates from multiple input files in zip archive
+		Map<String,Stop> stops = consolidateStops();
 		consolidateRoutes(); // Eliminiate possible duplicates from multiple input files in zip archive
 		Iterator<TransxchangeHandlerEngine> parsers = parseHandlers.iterator();
-		while (parsers.hasNext())
-			((TransxchangeHandlerEngine)parsers.next()).writeOutputAgenciesStopsRoutes(); // Now write agencies, stops
+		
+		TransxchangeHandlerEngine.writeOutputStops(stops, config);
+		while (parsers.hasNext()){
+			parsers.next().writeOutputAgenciesRoutes(); // Now write agencies, stops
+		}
 		return parseHandler.closeOutput(rootDirectory, workDirectory);
 	}
+	
 
-	/*
+  /**
 	 * Eliminate possible duplicates from multiple input files in zip archive
 	 */
-	public void consolidateStops() {
-		Iterator<TransxchangeHandlerEngine> parsers = parseHandlers.iterator();
-		int parseHandlersCount = 0;
-		List<ValueList> followStopIds;
-		TransxchangeStops followStops;
-		Iterator<TransxchangeHandlerEngine> followParser;
+	public Map<String,Stop> consolidateStops() {
+	  // Use TreeMap so that we get output sorted by key
+		Map<String,Stop> stopsMap = new TreeMap<String,Stop>();//map of atco_code to Stop
 
-		// For each parser go through all subsequent ones and remove stops in the current parser
-		while (parsers.hasNext()) {
-			TransxchangeStops stops = parsers.next().getStops();
-			parseHandlersCount += 1;
-			List<ValueList> stopIds = stops.getListStops__stop_id();
-			for (ValueList curStop : stopIds) {
-				followParser = parseHandlers.iterator(); // Set follow parser to parsed input files following current; Iterator is not Cloneable; need to create a new Iterator and step forward to get to the right position (anybody know a more elegant solution?)
-				int j = 0;
-				while (j < parseHandlersCount && followParser.hasNext()) {
-					j++;
-					followParser.next();
-				}
-				String curStopId = (curStop).getValue(0);
-				while (followParser.hasNext()) { // Run through stops of following parsed input files and eliminate duplicates there
-					followStops = followParser.next().getStops();
-					followStopIds = followStops.getListStops__stop_id();
-					for (int i = 0; i < followStopIds.size(); i++) {
-						if (curStopId.equals((followStopIds.get(i)).getValue(0))) {
-							(followStopIds.get(i)).setValue(0, "");
-						}
-					}
-				}
-			}
+		for (TransxchangeHandlerEngine parser : parseHandlers){
+		  parser.getStops().export(stopsMap);
 		}
+		return stopsMap;
 	}
 
-	/*
+	/**
 	 * Eliminate possible duplicates from multiple input files in zip archive
 	 */
 	public void consolidateAgencies() {

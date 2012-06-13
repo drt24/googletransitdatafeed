@@ -27,6 +27,7 @@ import java.io.*;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXParseException;
 
+import transxchange2GoogleTransit.LatLong;
 import transxchange2GoogleTransit.Stop;
 
 /*
@@ -696,5 +697,40 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 			}
 			bufFileIn.close();
 		}
-	}
+  }
+
+  public void export(Map<String, Stop> stopsMap) {
+    int size = listStops__stop_id.size();
+    assert (listStops__stop_name.size() == size);
+    assert (listStops__stop_desc.size() == size);
+    assert (listStops__stop_lat.size() == size);
+    assert (listStops__stop_lon.size() == size);
+    assert (listStops__stop_street.size() == size);
+    assert (listStops__stop_city.size() == size);
+    assert (listStops__stop_postcode.size() == size);
+    assert (listStops__stop_region.size() == size);
+    assert (listStops__stop_country.size() == size);
+    for (int i = 0; i < size; ++i) {
+      String stopId = listStops__stop_id.get(i).getValue(0);
+      if (stopId != null && stopId.length() > 0){
+        // TODO(drt24) verify getKeyName matches stopId
+        Stop stop =
+            new Stop(stopId, listStops__stop_name.get(i).getValue(0), new LatLong(listStops__stop_lat
+                .get(i).getValue(0), listStops__stop_lon.get(i).getValue(0)));
+        stopsMap.put(stopId, stop);
+      }
+    }
+    // Now clear out all these lists so that we can't use them again and so that garbage collection
+    // can happen
+    listStops__stop_id.clear();
+    listStops__stop_name.clear();
+    listStops__stop_desc.clear();
+    listStops__stop_lat.clear();
+    listStops__stop_lon.clear();
+    listStops__stop_street.clear();
+    listStops__stop_city.clear();
+    listStops__stop_postcode.clear();
+    listStops__stop_region.clear();
+    listStops__stop_country.clear();
+  }
 }

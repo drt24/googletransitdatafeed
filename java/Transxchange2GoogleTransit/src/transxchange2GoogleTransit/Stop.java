@@ -10,10 +10,15 @@ public class Stop {
   private String code;
   private String name;
   private LatLong position;
+  private String description = "";
   public Stop(String code, String name, LatLong position){
     this.code = code;
     this.name = name;
     this.position = position;
+  }
+  public Stop(String code, String name, LatLong position, String description){
+    this(code,name,position);
+    this.description = description;
   }
   /**
    * @return the code
@@ -32,5 +37,8 @@ public class Stop {
    */
   public LatLong getPosition() {
     return position;
+  }
+  public String getDescription() {
+    return description;
   }
 }

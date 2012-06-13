@@ -16,38 +16,29 @@
 
 package transxchange2GoogleTransit.handler;
 
-import java.io.*;
-
-import org.xml.sax.*;
-import org.xml.sax.helpers.*;
-
-import java.util.logging.Logger;
-import java.util.zip.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
-import java.net.URL;
-import java.net.URLEncoder;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.helpers.DefaultHandler;
 
 import transxchange2GoogleTransit.Configuration;
+import transxchange2GoogleTransit.Geocoder;
 import transxchange2GoogleTransit.LatLong;
 import transxchange2GoogleTransit.Stop;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-import javax.xml.xpath.XPathConstants;
 
 /*
  * This class extends DefaultHandler to parse a TransXChange v2.1 xml file,
@@ -70,9 +61,9 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	static String parseError = "";
 	static String parseInfo = "";
 
-	// GTFS file names
+	private static final String stopsFilename = "stops";
+  // GTFS file names
 	static final String agencyFilename = "agency";
-	static final String stopsFilename = "stops";
 	static final String routesFilename = "routes";
 	static final String tripsFilename = "trips";
 	static final String stop_timesFilename = "stop_times";
@@ -81,9 +72,9 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	static final String extension = ".txt";
 	static final String gtfsZipfileName = "google_transit.zip";
 
-	// output files
+	private static PrintWriter stopsOut = null;
+  // output files
 	static PrintWriter agenciesOut = null;
-	static PrintWriter stopsOut = null;
 	static PrintWriter routesOut = null;
 	static PrintWriter tripsOut = null;
 //	static PrintWriter stop_timesOut = null;
@@ -203,11 +194,8 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	public boolean isSkipOrphanStops() {
 		return config.skipOrphanStops();
 	}
-	public boolean isGeocodeMissingStops() {
-		return config.geocodeMissingStops();
-	}
 
-	public void addFilename(String fileName) {
+	public static void addFilename(String fileName) {
 		if (fileName == null || filenames == null)
 			return;
 		filenames.add(fileName);
@@ -574,7 +562,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	/*
 	 * Create GTFS file set from GTFS data structures except for stops
 	 */
-	public void writeOutputAgenciesStopsRoutes()
+	public void writeOutputAgenciesRoutes()
 	throws IOException
 	{
 		// agencies.txt
@@ -601,67 +589,6 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 				agenciesOut.println();
 	        }
         }
-
-        // stops.txt
-		if (stopsOut == null) {
-	        outfileName = stopsFilename + /* "_" + serviceStartDate + */ extension;
-	        outfile = new File(outdir + /* "/" + serviceStartDate + */ "/" + outfileName);
-	        filenames.add(outfileName);
-	        stopsOut = new PrintWriter(new FileWriter(outfile));
-	        stopsOut.println("stop_id,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url");
-		}
-		String stopId, stopName;
-		TransxchangeStops stops = this.getStops();
-		List<ValueList> stopIds = stops.getListStops__stop_id();
-		int stopIdsSize = stopIds.size();
-		for (int i = 0; i < stopIdsSize; i++) {
-			stopId = stopIds.get(i).getValue(0);
-			if (stopId.length() > 0 && (!config.skipOrphanStops() || stops.hasStop(stopId))) {
-				stopName = (stops.getListStops__stop_name().get(i)).getValue(0);
-				LatLong coordinates = new LatLong((stops.getListStops__stop_lat().get(i)).getValue(0),
-					(stops.getListStops__stop_lon().get(i)).getValue(0) );
-
-				if (coordinates.notSet()){
-          Stop stop = getStop(stopId);
-          if (null != stop) {
-            coordinates = stop.getPosition();
-          }
-				  // If requested, geocode lat/lon
-				  if (isGeocodeMissingStops() && coordinates.notSet()) {
-				    try {
-				      log.info("Geocoding stop (id / name): " + stopId + " / " + stopName);
-				      geocodeMissingStop(stopName);
-				    } catch (Exception e) {
-				      System.err.println("Geocoding exception: " + e.getMessage() + " for stop: " + stopName);
-				    }
-				  }
-				}
-
-				stopsOut.print(stopId);
-				stopsOut.print(",");
-				stopsOut.print(stopName);
-				stopsOut.print(",");
-				stopsOut.print((this.getStops().getListStops__stop_desc().get(i)).getValue(0));
-				stopsOut.print(",");
-				stopsOut.print(coordinates.latitude);
-				stopsOut.print(",");
-				stopsOut.print(coordinates.longitude);
-				stopsOut.print(","); // no zone id
-				stopsOut.print(","); // no stop URL
-				stopsOut.println();
-// Below a number of attributes (stop_street to stop_country) which have been deprecated in the GTFS (9-Apr-2007 release of the spec)
-//        		stopsOut.print((this.getStops().getListStops__stop_street().get(i)).getValue(0));
-//        		stopsOut.print(",");
-//        		stopsOut.print((this.getStops().getListStops__stop_city().get(i)).getValue(0));
-//        		stopsOut.print(",");
-//        		stopsOut.print((this.getStops().getListStops__stop_postcode().get(i)).getValue(0));
-//        		stopsOut.print(",");
-//        		stopsOut.print((this.getStops().getListStops__stop_region().get(i)).getValue(0));
-//        		stopsOut.print(",");
-//        		stopsOut.print((this.getStops().getListStops__stop_country().get(i)).getValue(0));
-//				stopsOut.println();
-			}
-		}
 
 		// routes.txt
 		if (routesOut == null) {
@@ -695,6 +622,54 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	        }
         }
 	}
+
+	public static void writeOutputStops(Map<String, Stop> stops, Configuration config) throws IOException {
+    // stops.txt
+    if (stopsOut == null) {
+          String outfileName = stopsFilename + /* "_" + serviceStartDate + */ TransxchangeHandlerEngine.extension;
+          File outfile = new File(outdir, outfileName);
+          TransxchangeHandlerEngine.addFilename(outfileName);
+          stopsOut = new PrintWriter(new FileWriter(outfile));
+          stopsOut.println("stop_id,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url");
+    }
+    for (Map.Entry<String, Stop> stopEntry : stops.entrySet()) {
+      String stopId = stopEntry.getKey();
+      Stop stop = stopEntry.getValue();
+      //if (!config.skipOrphanStops()) {// TODO(drt24) what is this supposed to do?
+        String stopName = stop.getName();
+        LatLong coordinates = stop.getPosition();
+
+        if (coordinates.notSet()){
+          Stop nStop = config.getNaptanStop(stopId);
+          if (null != nStop) {
+            coordinates = nStop.getPosition();
+          }
+          // If requested, geocode lat/lon
+          if (config.geocodeMissingStops() && coordinates.notSet()) {
+            try {
+              log.info("Geocoding stop (id / name): " + stopId + " / " + stopName);
+              Geocoder.geocodeMissingStop(stopName);
+            } catch (Exception e) {
+              System.err.println("Geocoding exception: " + e.getMessage() + " for stop: " + stopName);
+            }
+          }
+        }
+
+        stopsOut.print(stopId);
+        stopsOut.print(",");
+        stopsOut.print(stopName);
+        stopsOut.print(",");
+        stopsOut.print(stop.getDescription());
+        stopsOut.print(",");
+        stopsOut.print(coordinates.latitude);
+        stopsOut.print(",");
+        stopsOut.print(coordinates.longitude);
+        stopsOut.print(","); // no zone id
+        stopsOut.print(","); // no stop URL
+        stopsOut.println();
+      //}
+    }    
+  }
 
 	/*
 	 * Clear data structures except for stops
@@ -760,101 +735,6 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 
         // Return path and name of GTFS zip file
         return workDirectory + /* "/" + serviceStartDate + */ "/" + "google_transit.zip";
-	}
-
-	private LatLong geocodeMissingStop(String stopname)
-		throws MalformedURLException, UnsupportedEncodingException, XPathExpressionException, IOException, ParserConfigurationException, SAXException
-	{
-		float[] coordFloat = {-999999, -999999};
-		String broadenedStopname;
-		String token;
-		StringTokenizer st;
-
-		geocodeStop(stopname, coordFloat);
-
-		// If no result: Broaden search. First try: remove cross street
-		if ((coordFloat[0] == -999999 || coordFloat[1] == -999999) && stopname.contains("/")) {
-			broadenedStopname = "";
-			st = new StringTokenizer(stopname, ",");
-			while (st.hasMoreTokens()) {
-				token = st.nextToken();
-				if (token.contains("/"))
-					token = token.substring(0, token.indexOf("/"));
-				if (broadenedStopname.length() > 0)
-					broadenedStopname += ", ";
-				broadenedStopname += token;
-			}
-			if (!broadenedStopname.equals(stopname)) {
-				stopname = broadenedStopname;
-				geocodeStop(stopname, coordFloat);
-			}
-		}
-
-		// Next try: Remove qualifiers in brackets
-		if ((coordFloat[0] == -999999 || coordFloat[1] == -999999) && stopname.contains("(")) {
-			broadenedStopname = "";
-			st = new StringTokenizer(stopname, ",");
-			while (st.hasMoreTokens()) {
-				token = st.nextToken();
-				if (token.contains("("))
-					token = token.substring(0, token.indexOf("("));
-				if (broadenedStopname.length() > 0)
-					broadenedStopname += ", ";
-				broadenedStopname += token;
-			}
-			if (!broadenedStopname.equals(stopname)) {
-				stopname = broadenedStopname;
-				geocodeStop(stopname, coordFloat);
-			}
-		}
-
-		// Go for broke: remove elements from least specific to broadest
-		while ((coordFloat[0] == -999999 || coordFloat[1] == -999999) && stopname.lastIndexOf(",") >= 0) {
-			stopname = stopname.substring(0, stopname.lastIndexOf(","));
-			geocodeStop(stopname, coordFloat);
-		}
-
-		String latitude = null;
-		if (coordFloat[0] != -999999){
-		  latitude = "" + coordFloat[0];
-		}
-		String longitude = null;
-		if (coordFloat[1] != -999999){
-		  longitude = "" + coordFloat[1];
-		}
-
-		return new LatLong(latitude,longitude);
-	}
-	private void geocodeStop(String stopname, float[] coordinates)
-		throws MalformedURLException, UnsupportedEncodingException, XPathExpressionException, IOException, ParserConfigurationException, SAXException
-	{
-		final String geocoderPrefix = "http://maps.google.com/maps/api/geocode/xml?address=";
-		final String geocoderPostfix = "&sensor=false";
-
-		if (stopname == null || coordinates == null || coordinates.length != 2)
-			return;
-		String geoaddress = geocoderPrefix + stopname + geocoderPostfix;
-		System.out.println("	Trying: " + geoaddress);
-		URL url = new URL(geocoderPrefix + URLEncoder.encode(stopname, "UTF-8") + geocoderPostfix);
-	    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-	    conn.connect();
-	    InputSource inputStream = new InputSource(conn.getInputStream());
-	    Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
-
-	    XPath xp = XPathFactory.newInstance().newXPath();
-	    NodeList geocodedNodes = (NodeList) xp.evaluate("/GeocodeResponse/result[1]/geometry/location/*", doc, XPathConstants.NODESET);
-	    float lat = -999999;
-	    float lon = -999999;
-	    Node node;
-	    for (int i = 0; i < geocodedNodes.getLength(); i++) {
-	    	node = geocodedNodes.item(i);
-	    	if("lat".equals(node.getNodeName()))
-	    		lat = Float.parseFloat(node.getTextContent());
-	    	if("lng".equals(node.getNodeName()))
-	    		lon = Float.parseFloat(node.getTextContent());
-	    }
-	    coordinates[0] = lat;
-	    coordinates[1] = lon;
 	}
 
 	/*
