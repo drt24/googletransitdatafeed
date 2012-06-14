@@ -110,8 +110,6 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	String stopPointTo = "";
 
 	int qualifierIx;
-	String _vehicleJourneyCode;
-	String _departureTime;
 
 	static PrintWriter stop_timesOut = null;
 
@@ -209,8 +207,8 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 		if (niceString == null || niceString.length() == 0)
 			return;
 
-	_vehicleJourneyCode = handler.getTrips().getVehicleJourneyCode();
-	_departureTime = handler.getTrips().getDepartureTime();
+	String _vehicleJourneyCode = handler.getTrips().getVehicleJourneyCode();
+	String _departureTime = handler.getTrips().getDepartureTime();
 	if (_vehicleJourneyCode.length() > 0)
 	    if (key.equals(_key_trips_activity_pass[0]) && keyNested.equals(_key_trips_activity_pass[1]) && keyNestedActivity.length() == 0)
 	    	_journeyPatternTimingLinkRefPass = niceString;
@@ -324,9 +322,6 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 
    	@Override
 	public void endDocument() throws IOException {
-	    List<ValueList> _listJourneyPatternRef;
-	    List<ValueList> _listJourneyPatternSectionRefs;
-	    List<ValueList> listTrips__trip_id;
 	    int i, j, k, l, jp;
 	    int sequenceNumber;
        	int stopTimehhmmss[] = {-1, -1, -1};
@@ -338,25 +333,10 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 		Integer sn;
 		int listSize, listSizeOuter, listSizeInner;
 
-		String outfileName = "";
-		File outfile = null;
-		String outdir = handler.getRootDirectory() + handler.getWorkDirectory();
-
-        if (stop_timesOut == null) {
-    		outfileName = TransxchangeHandlerEngine.stop_timesFilename + /* "_" + serviceStartDate + */ TransxchangeHandlerEngine.extension;
-            handler.addFilename(outfileName);
-        	if (handler.isSkipEmptyService())
-        		outfileName = TransxchangeHandlerEngine.stop_timesFilename + "_tmp" + /* "_" + serviceStartDate + */ TransxchangeHandlerEngine.extension;
-            outfile = new File(outdir + /* "/" + serviceStartDate + */ "/"  + outfileName);
-            stop_timesOut = new PrintWriter(new FileWriter(outfile));
-        	if (!handler.isSkipEmptyService())
-        		stop_timesOut.println("trip_id,arrival_time,departure_time,stop_id,stop_sequence,stop_headsign,pickup_type,drop_off_type,shape_dist_traveled");
-        }
-
         // Roll out stop times
-	    _listJourneyPatternRef = handler.getTrips().getListJourneyPatternRef();
-	    _listJourneyPatternSectionRefs = handler.getTrips().getListJourneyPatternSectionRefs();
-	    listTrips__trip_id = handler.getTrips().getListTrips__trip_id();
+	    List<ValueList> _listJourneyPatternRef = handler.getTrips().getListJourneyPatternRef();
+	    List<ValueList> _listJourneyPatternSectionRefs = handler.getTrips().getListJourneyPatternSectionRefs();
+	    List<ValueList> listTrips__trip_id = handler.getTrips().getListTrips__trip_id();
 	    for (i = 0; i < _listJourneyPatternRef.size(); i++) { // for all trips
 	    	iterator = _listJourneyPatternRef.get(i);
 	    	journeyPatternRef = iterator.getValue(0);
@@ -546,32 +526,56 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	   			newStoptimes__drop_off_type.addValue(key_stop_times__drop_off_type[2]);
 	   		}
 
-	        for (int ii = 0; ii < this.getListStoptimes__trip_id().size(); ii++) {
-	        	stop_timesOut.print((this.getListStoptimes__trip_id().get(ii)).getKeyName());
-	        	stop_timesOut.print(",");
-	        	stop_timesOut.print((this.getListStoptimes__arrival_time().get(ii)).getValue(0));
-	        	stop_timesOut.print(",");
-	        	stop_timesOut.print((this.getListStoptimes__departure_time().get(ii)).getValue(0));
-	        	stop_timesOut.print(",");
-	        	stop_timesOut.print((this.getListStoptimes__stop_id().get(ii)).getValue(0));
-	        	stop_timesOut.print(",");
-	        	stop_timesOut.print((this.getListStoptimes__stop_sequence().get(ii)).getValue(0));
-	        	stop_timesOut.print(",");
-	        	stop_timesOut.print(",");
-	        	stop_timesOut.print((this.getListStoptimes__pickup_type().get(ii)).getValue(0));
-	        	stop_timesOut.print(",");
-	        	stop_timesOut.print((this.getListStoptimes__drop_off_type().get(ii)).getValue(0));
-	        	stop_timesOut.println(",");
-	        }
-	        listStoptimes__trip_id.clear();
-	    	listStoptimes__arrival_time.clear();
-	    	listStoptimes__departure_time.clear();
-	    	listStoptimes__stop_id.clear();
-	    	listStoptimes__stop_sequence.clear();
-	    	listStoptimes__pickup_type.clear();
-	    	listStoptimes__drop_off_type.clear();
+	   		prepareStopTimesOutput();
+	   		printStopTimes();
 	    }
-	}
+  }
+
+  private void prepareStopTimesOutput() throws IOException {
+    String outfileName = "";
+    File outfile = null;
+    String outdir = handler.getRootDirectory() + handler.getWorkDirectory();
+
+    if (stop_timesOut == null) {
+      outfileName = TransxchangeHandlerEngine.stop_timesFilename + /* "_" + serviceStartDate + */TransxchangeHandlerEngine.extension;
+      TransxchangeHandlerEngine.addFilename(outfileName);
+      if (handler.isSkipEmptyService()) {
+        outfileName = TransxchangeHandlerEngine.stop_timesFilename + "_tmp"+ /* "_" + serviceStartDate + */TransxchangeHandlerEngine.extension;
+      }
+      outfile = new File(outdir + /* "/" + serviceStartDate + */"/" + outfileName);
+      stop_timesOut = new PrintWriter(new FileWriter(outfile));
+      if (!handler.isSkipEmptyService()) {
+        stop_timesOut.println("trip_id,arrival_time,departure_time,stop_id,stop_sequence,stop_headsign,pickup_type,drop_off_type,shape_dist_traveled");
+      }
+    }
+  }
+
+  private void printStopTimes() {
+    for (int ii = 0; ii < this.getListStoptimes__trip_id().size(); ii++) {
+      stop_timesOut.print((this.getListStoptimes__trip_id().get(ii)).getKeyName());
+      stop_timesOut.print(",");
+      stop_timesOut.print((this.getListStoptimes__arrival_time().get(ii)).getValue(0));
+      stop_timesOut.print(",");
+      stop_timesOut.print((this.getListStoptimes__departure_time().get(ii)).getValue(0));
+      stop_timesOut.print(",");
+      stop_timesOut.print((this.getListStoptimes__stop_id().get(ii)).getValue(0));
+      stop_timesOut.print(",");
+      stop_timesOut.print((this.getListStoptimes__stop_sequence().get(ii)).getValue(0));
+      stop_timesOut.print(",");
+      stop_timesOut.print(",");
+      stop_timesOut.print((this.getListStoptimes__pickup_type().get(ii)).getValue(0));
+      stop_timesOut.print(",");
+      stop_timesOut.print((this.getListStoptimes__drop_off_type().get(ii)).getValue(0));
+      stop_timesOut.println(",");
+    }
+    listStoptimes__trip_id.clear();
+    listStoptimes__arrival_time.clear();
+    listStoptimes__departure_time.clear();
+    listStoptimes__stop_id.clear();
+    listStoptimes__stop_sequence.clear();
+    listStoptimes__pickup_type.clear();
+    listStoptimes__drop_off_type.clear();
+  }
 
    	@Override
 	public void completeData() {
