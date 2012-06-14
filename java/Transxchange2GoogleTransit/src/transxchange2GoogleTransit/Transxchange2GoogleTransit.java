@@ -58,7 +58,7 @@ public class Transxchange2GoogleTransit {
 	        	System.out.println("Usage: $ transxchange2GoogleTransit <transxchange input filename> -c <configuration file name>");
 	        	System.out.println("Usage: $ transxchange2GoogleTransit <transxchange input filename> <output-directory> -c <configuration file name>");
 	        	System.out.println("Usage: $ transxchange2GoogleTransit <transxchange input filename> <output-directory> <agency name> -c <configuration file name>");
-	        	System.out.println("Usage: $ transxchange2GoogleTransit <transxchange input filename> -");
+	        	System.out.println("Usage: $ transxchange2GoogleTransit <transxchange input filename> ");
 	        	System.out.println("         <url> <timezone> <default route type> <output-directory> [<stopfile> [<lang> <phone>]]");
 	        	System.out.println();
 	        	System.out.println("         Please refer to ");
