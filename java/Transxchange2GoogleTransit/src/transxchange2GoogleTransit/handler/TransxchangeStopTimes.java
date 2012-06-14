@@ -321,210 +321,210 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	}
 
    	@Override
-	public void endDocument() throws IOException {
-	    int i, j, k, l, jp;
-	    int sequenceNumber;
-       	int stopTimehhmmss[] = {-1, -1, -1};
-	    ValueList iterator, jterator, jpterator;
-	    String journeyPatternRef, journeyPatternSectionRef = "", setDownTimingLink, vehicleJourneyRef, pickupTimingLink, passTimingLink;
-	    boolean hot, jps, setDownReached, pickedUp, notPassed = true, timingLinkOverrideFound;
-	    int waitTimeAdd, runTimeAdd, lastStopOnPattern = 0;
-	    int stopTimeInSeconds;
-		Integer sn;
-		int listSize, listSizeOuter, listSizeInner;
+   	public void endDocument() throws IOException {
+   	  int i, j, k, l, jp;
+   	  int sequenceNumber;
+   	  int stopTimehhmmss[] = {-1, -1, -1};
+   	  ValueList iterator, jterator, jpterator;
+   	  String journeyPatternRef, journeyPatternSectionRef = "", setDownTimingLink, vehicleJourneyRef, pickupTimingLink, passTimingLink;
+   	  boolean hot, jps, setDownReached, pickedUp, notPassed = true, timingLinkOverrideFound;
+   	  int waitTimeAdd, runTimeAdd, lastStopOnPattern = 0;
+   	  int stopTimeInSeconds;
+   	  Integer sn;
+   	  int listSize, listSizeOuter, listSizeInner;
 
-        // Roll out stop times
-	    List<ValueList> _listJourneyPatternRef = handler.getTrips().getListJourneyPatternRef();
-	    List<ValueList> _listJourneyPatternSectionRefs = handler.getTrips().getListJourneyPatternSectionRefs();
-	    List<ValueList> listTrips__trip_id = handler.getTrips().getListTrips__trip_id();
-	    for (i = 0; i < _listJourneyPatternRef.size(); i++) { // for all trips
-	    	iterator = _listJourneyPatternRef.get(i);
-	    	journeyPatternRef = iterator.getValue(0);
+   	  // Roll out stop times
+   	  List<ValueList> _listJourneyPatternRef = handler.getTrips().getListJourneyPatternRef();
+   	  List<ValueList> _listJourneyPatternSectionRefs = handler.getTrips().getListJourneyPatternSectionRefs();
+   	  List<ValueList> listTrips__trip_id = handler.getTrips().getListTrips__trip_id();
+   	  for (i = 0; i < _listJourneyPatternRef.size(); i++) { // for all trips
+   	    iterator = _listJourneyPatternRef.get(i);
+   	    journeyPatternRef = iterator.getValue(0);
 
-	    	jp = 0;
-	       	sequenceNumber = 1;
-	       	stopTimehhmmss[0] = -1;
-	       	stopTimehhmmss[1] = -1;
-	       	stopTimehhmmss[2] = -1;
-	       	listSizeOuter = _listJourneyPatternSectionRefs.size();
-	       	while (jp < listSizeOuter) { // for all referenced journeyPatternSections (stop sequence with timing links)
-	        	jps = true;
-	        	jpterator = _listJourneyPatternSectionRefs.get(jp);
-	       		if (jpterator.getKeyName().equals(journeyPatternRef)) {
-	       			journeyPatternSectionRef = jpterator.getValue(0);
-	       			jps = false;
-	       		}
-	       		jp++;
-	       		if (!jps) { // JourneyPatternSection found
-	       			j = 0; // Find out if this vehicle journey (as identified by iterator.geyKeyName())has a setDown (= premature end) and store link in setDownTimingLink
-	       			hot = true;
-	       			setDownTimingLink = "";
-	       			listSize = _listTripsJourneyPatternTimingLinkRefSetdown.size();
-	       			while (hot && j < listSize) {
-	       				vehicleJourneyRef = (_listTripsJourneyPatternTimingLinkRefSetdown.get(j)).getKeyName();
-	       				if (iterator.getKeyName().equals(vehicleJourneyRef)) {
-	       					hot = false;
-	       					setDownTimingLink = (_listTripsJourneyPatternTimingLinkRefSetdown.get(j)).getValue(0);
-	       				} else
-	       					j++;
-	       			}
+   	    jp = 0;
+   	    sequenceNumber = 1;
+   	    stopTimehhmmss[0] = -1;
+   	    stopTimehhmmss[1] = -1;
+   	    stopTimehhmmss[2] = -1;
+   	    listSizeOuter = _listJourneyPatternSectionRefs.size();
+   	    while (jp < listSizeOuter) { // for all referenced journeyPatternSections (stop sequence with timing links)
+   	      jps = true;
+   	      jpterator = _listJourneyPatternSectionRefs.get(jp);
+   	      if (jpterator.getKeyName().equals(journeyPatternRef)) {
+   	        journeyPatternSectionRef = jpterator.getValue(0);
+   	        jps = false;
+   	      }
+   	      jp++;
+   	      if (!jps) { // JourneyPatternSection found
+   	        j = 0; // Find out if this vehicle journey (as identified by iterator.geyKeyName())has a setDown (= premature end) and store link in setDownTimingLink
+   	        hot = true;
+   	        setDownTimingLink = "";
+   	        listSize = _listTripsJourneyPatternTimingLinkRefSetdown.size();
+   	        while (hot && j < listSize) {
+   	          vehicleJourneyRef = (_listTripsJourneyPatternTimingLinkRefSetdown.get(j)).getKeyName();
+   	          if (iterator.getKeyName().equals(vehicleJourneyRef)) {
+   	            hot = false;
+   	            setDownTimingLink = (_listTripsJourneyPatternTimingLinkRefSetdown.get(j)).getValue(0);
+   	          } else
+   	            j++;
+   	        }
 
-	       			j = 0; // Find out if this vehicle journey has a late pickup and store link in pickUpTimingLink
-	       			hot = true;
-	       			pickupTimingLink = "";
-	       			listSize = _listTripsJourneyPatternTimingLinkRefPickup.size();
-	       			while (hot && j < listSize) {
-	       				vehicleJourneyRef = (_listTripsJourneyPatternTimingLinkRefPickup.get(j)).getKeyName();
-	       				if (iterator.getKeyName().equals(vehicleJourneyRef)) {
-	       					hot = false;
-	       					pickupTimingLink = (_listTripsJourneyPatternTimingLinkRefPickup.get(j)).getValue(0);
-	       				} else
-	       					j++;
-	       			}
+   	        j = 0; // Find out if this vehicle journey has a late pickup and store link in pickUpTimingLink
+   	        hot = true;
+   	        pickupTimingLink = "";
+   	        listSize = _listTripsJourneyPatternTimingLinkRefPickup.size();
+   	        while (hot && j < listSize) {
+   	          vehicleJourneyRef = (_listTripsJourneyPatternTimingLinkRefPickup.get(j)).getKeyName();
+   	          if (iterator.getKeyName().equals(vehicleJourneyRef)) {
+   	            hot = false;
+   	            pickupTimingLink = (_listTripsJourneyPatternTimingLinkRefPickup.get(j)).getValue(0);
+   	          } else
+   	            j++;
+   	        }
 
-	       			j = 0;
-	       			setDownReached = false;
-	       			pickedUp = (pickupTimingLink.length() == 0); // If no late pickup in vehicle journey, then start at first stop
-	       			listSize = _listTimingLinksJourneyPatternSection.size();
-	       			while (!setDownReached && j < listSize) { // Unroll stop sequence in trip
-	       				jterator = _listTimingLinksJourneyPatternSection.get(j);
-	       				if (jterator.getValue(0).equals(journeyPatternSectionRef)) {
-	       					if (sequenceNumber == 1)
-	       						readTransxchangeTime(stopTimehhmmss, (listTrips__trip_id.get(i)).getValue(0));
-	       					hot = true;
-	       					k = 0; // Find out if this stop is being passed
-	       					listSizeInner = _listTripsJourneyPatternTimingLinkRefPass.size();
-	       					while (hot && k < listSizeInner) {
-	       						passTimingLink = (_listTripsJourneyPatternTimingLinkRefPass.get(k)).getValue(0);
-	       						vehicleJourneyRef = (_listTripsJourneyPatternTimingLinkRefPass.get(k)).getKeyName();
-	       						if (iterator.getKeyName().equals(vehicleJourneyRef) && passTimingLink.equals((_listTimingLinksJourneyPatternTimingLink.get(j)).getValue(0)))
-	       							hot = false;
-	       						else
-	       							k++;
-	       					}
-	       					// Find out if we reached late pickup stop
-	       					if (!pickedUp && pickupTimingLink.equals((_listTimingLinksJourneyPatternTimingLink.get(j)).getValue(0)))
-	       						pickedUp = true;
-	       					if (pickedUp) {
-	       						newStoptimes__trip_id = new ValueList(iterator.getKeyName());
-	       						listStoptimes__trip_id.add(newStoptimes__trip_id);
-	       						newStoptimes__trip_id.addValue(journeyPatternRef);
-	       						newStoptimes__arrival_time = new ValueList(iterator.getKeyName());
-	       						listStoptimes__arrival_time.add(newStoptimes__arrival_time);
-	       						if (sequenceNumber > 1 && notPassed && !setDownReached) // Arrival time if not first stop and not a pass
-	       							newStoptimes__arrival_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
-	       						else {
+   	        j = 0;
+   	        setDownReached = false;
+   	        pickedUp = (pickupTimingLink.length() == 0); // If no late pickup in vehicle journey, then start at first stop
+   	        listSize = _listTimingLinksJourneyPatternSection.size();
+   	        while (!setDownReached && j < listSize) { // Unroll stop sequence in trip
+   	          jterator = _listTimingLinksJourneyPatternSection.get(j);
+   	          if (jterator.getValue(0).equals(journeyPatternSectionRef)) {
+   	            if (sequenceNumber == 1)
+   	              readTransxchangeTime(stopTimehhmmss, (listTrips__trip_id.get(i)).getValue(0));
+   	            hot = true;
+   	            k = 0; // Find out if this stop is being passed
+   	            listSizeInner = _listTripsJourneyPatternTimingLinkRefPass.size();
+   	            while (hot && k < listSizeInner) {
+   	              passTimingLink = (_listTripsJourneyPatternTimingLinkRefPass.get(k)).getValue(0);
+   	              vehicleJourneyRef = (_listTripsJourneyPatternTimingLinkRefPass.get(k)).getKeyName();
+   	              if (iterator.getKeyName().equals(vehicleJourneyRef) && passTimingLink.equals((_listTimingLinksJourneyPatternTimingLink.get(j)).getValue(0)))
+   	                hot = false;
+   	              else
+   	                k++;
+   	            }
+   	            // Find out if we reached late pickup stop
+   	            if (!pickedUp && pickupTimingLink.equals((_listTimingLinksJourneyPatternTimingLink.get(j)).getValue(0)))
+   	              pickedUp = true;
+   	            if (pickedUp) {
+   	              newStoptimes__trip_id = new ValueList(iterator.getKeyName());
+   	              listStoptimes__trip_id.add(newStoptimes__trip_id);
+   	              newStoptimes__trip_id.addValue(journeyPatternRef);
+   	              newStoptimes__arrival_time = new ValueList(iterator.getKeyName());
+   	              listStoptimes__arrival_time.add(newStoptimes__arrival_time);
+   	              if (sequenceNumber > 1 && notPassed && !setDownReached) // Arrival time if not first stop and not a pass
+   	                newStoptimes__arrival_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
+   	              else {
 
-	       							// Conformance with GTFS revision 20-Nov-2007: If first stop, arrival time = departure time
-	       							if (sequenceNumber == 1)
-	       								newStoptimes__arrival_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
-	       							else
-	       								newStoptimes__arrival_time.addValue("");
-	       						}
-	       						if ((_listTimingLinksRunTime.get(j)).getValue(1) != null) { // add wait time #1 ?
-	       							waitTimeAdd = readTransxchangeFrequency((_listTimingLinksRunTime.get(j)).getValue(1));
-	       			        		stopTimeInSeconds = stopTimehhmmss[2] + stopTimehhmmss[1] * 60 + stopTimehhmmss[0] * 3600;
-	       			        		stopTimeInSeconds += waitTimeAdd;
-	       			        		stopTimehhmmss[0] = stopTimeInSeconds / 3600;
-	       			        		stopTimehhmmss[1] = (stopTimeInSeconds / 60) % 60;
-	       			        		stopTimehhmmss[2] = stopTimeInSeconds % 60;
+   	                // Conformance with GTFS revision 20-Nov-2007: If first stop, arrival time = departure time
+   	                if (sequenceNumber == 1)
+   	                  newStoptimes__arrival_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
+   	                else
+   	                  newStoptimes__arrival_time.addValue("");
+   	              }
+   	              if ((_listTimingLinksRunTime.get(j)).getValue(1) != null) { // add wait time #1 ?
+   	                waitTimeAdd = readTransxchangeFrequency((_listTimingLinksRunTime.get(j)).getValue(1));
+   	                stopTimeInSeconds = stopTimehhmmss[2] + stopTimehhmmss[1] * 60 + stopTimehhmmss[0] * 3600;
+   	                stopTimeInSeconds += waitTimeAdd;
+   	                stopTimehhmmss[0] = stopTimeInSeconds / 3600;
+   	                stopTimehhmmss[1] = (stopTimeInSeconds / 60) % 60;
+   	                stopTimehhmmss[2] = stopTimeInSeconds % 60;
 
-	       						}
-	       						if ((_listTimingLinksRunTime.get(j)).getValue(2) != null) { // add wait time # 2 ?
-	       							waitTimeAdd = readTransxchangeFrequency((_listTimingLinksRunTime.get(j)).getValue(2));
-	       			        		stopTimeInSeconds = stopTimehhmmss[2] + stopTimehhmmss[1] * 60 + stopTimehhmmss[0] * 3600;
-	       			        		stopTimeInSeconds += waitTimeAdd;
-	       			        		stopTimehhmmss[0] = stopTimeInSeconds / 3600;
-	       			        		stopTimehhmmss[1] = (stopTimeInSeconds / 60) % 60;
-	       			        		stopTimehhmmss[2] = stopTimeInSeconds % 60;
-	       						}
-	       						newStoptimes__departure_time = new ValueList(iterator.getKeyName());
-	       						listStoptimes__departure_time.add(newStoptimes__departure_time);
-	       						if (notPassed && !setDownReached) // Departure time if no pass, else empty
-	       							newStoptimes__departure_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
-	       						else
-	       							newStoptimes__departure_time.addValue("");
-	       						newStoptimes__stop_id = new ValueList(journeyPatternSectionRef);
-	       						listStoptimes__stop_id.add(newStoptimes__stop_id);
-	       						newStoptimes__stop_id.addValue((_listTimingLinksFromStop.get(j)).getValue(0));
-	       						handler.getStops().addStop((_listTimingLinksFromStop.get(j)).getValue(0));
-	       						newStoptimes__stop_sequence = new ValueList(journeyPatternSectionRef);
-	       						listStoptimes__stop_sequence.add(newStoptimes__stop_sequence);
-								sn = new Integer(sequenceNumber);
-								newStoptimes__stop_sequence.addValue(sn.toString());
-								sn = null;
-	       						sequenceNumber++;
+   	              }
+   	              if ((_listTimingLinksRunTime.get(j)).getValue(2) != null) { // add wait time # 2 ?
+   	                waitTimeAdd = readTransxchangeFrequency((_listTimingLinksRunTime.get(j)).getValue(2));
+   	                stopTimeInSeconds = stopTimehhmmss[2] + stopTimehhmmss[1] * 60 + stopTimehhmmss[0] * 3600;
+   	                stopTimeInSeconds += waitTimeAdd;
+   	                stopTimehhmmss[0] = stopTimeInSeconds / 3600;
+   	                stopTimehhmmss[1] = (stopTimeInSeconds / 60) % 60;
+   	                stopTimehhmmss[2] = stopTimeInSeconds % 60;
+   	              }
+   	              newStoptimes__departure_time = new ValueList(iterator.getKeyName());
+   	              listStoptimes__departure_time.add(newStoptimes__departure_time);
+   	              if (notPassed && !setDownReached) // Departure time if no pass, else empty
+   	                newStoptimes__departure_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
+   	              else
+   	                newStoptimes__departure_time.addValue("");
+   	              newStoptimes__stop_id = new ValueList(journeyPatternSectionRef);
+   	              listStoptimes__stop_id.add(newStoptimes__stop_id);
+   	              newStoptimes__stop_id.addValue((_listTimingLinksFromStop.get(j)).getValue(0));
+   	              handler.getStops().addStop((_listTimingLinksFromStop.get(j)).getValue(0));
+   	              newStoptimes__stop_sequence = new ValueList(journeyPatternSectionRef);
+   	              listStoptimes__stop_sequence.add(newStoptimes__stop_sequence);
+   	              sn = new Integer(sequenceNumber);
+   	              newStoptimes__stop_sequence.addValue(sn.toString());
+   	              sn = null;
+   	              sequenceNumber++;
 
-	       						// Find out if timing link runtime is overridden by vehicle journey specific run times
-	       						l = 0;
-	       						timingLinkOverrideFound = false;
-	       						listSizeInner = _listTripsTimingLinkRunTime.size();
-	       						while (!timingLinkOverrideFound && l < listSizeInner) {
-	       							if (iterator.getKeyName().equals((_listTripsTimingLinkRunTime.get(l)).getKeyName()) && ((_listTimingLinksJourneyPatternTimingLink.get(j)).getValue(0)).equals((_listTripsTimingLinkRunTime.get(l)).getValue(0)))
-	       								timingLinkOverrideFound = true;
-	       							else
-	       								l++;
-	       						}
-	       						if (timingLinkOverrideFound)
-	       							runTimeAdd = readTransxchangeFrequency((_listTripsTimingLinkRunTime.get(l)).getValue(1));
-	       						else
-	       							runTimeAdd = readTransxchangeFrequency((_listTimingLinksRunTime.get(j)).getValue(0));
-       			        		stopTimeInSeconds = stopTimehhmmss[2] + stopTimehhmmss[1] * 60 + stopTimehhmmss[0] * 3600;
-       			        		stopTimeInSeconds += runTimeAdd;
-       			        		stopTimehhmmss[0] = stopTimeInSeconds / 3600;
-       			        		stopTimehhmmss[1] = (stopTimeInSeconds / 60) % 60;
-       			        		stopTimehhmmss[2] = stopTimeInSeconds % 60;
-	       						newStoptimes__pickup_type = new ValueList(key_stop_times__pickup_type[0]);
-	       						listStoptimes__pickup_type.add(newStoptimes__pickup_type);
-	       						newStoptimes__pickup_type.addValue(key_stop_times__pickup_type[2]);
-	       						newStoptimes__drop_off_type = new ValueList(key_stop_times__drop_off_type[0]);
-	       						listStoptimes__drop_off_type.add(newStoptimes__drop_off_type);
-	       						newStoptimes__drop_off_type.addValue(key_stop_times__drop_off_type[2]);
+   	              // Find out if timing link runtime is overridden by vehicle journey specific run times
+   	              l = 0;
+   	              timingLinkOverrideFound = false;
+   	              listSizeInner = _listTripsTimingLinkRunTime.size();
+   	              while (!timingLinkOverrideFound && l < listSizeInner) {
+   	                if (iterator.getKeyName().equals((_listTripsTimingLinkRunTime.get(l)).getKeyName()) && ((_listTimingLinksJourneyPatternTimingLink.get(j)).getValue(0)).equals((_listTripsTimingLinkRunTime.get(l)).getValue(0)))
+   	                  timingLinkOverrideFound = true;
+   	                else
+   	                  l++;
+   	              }
+   	              if (timingLinkOverrideFound)
+   	                runTimeAdd = readTransxchangeFrequency((_listTripsTimingLinkRunTime.get(l)).getValue(1));
+   	              else
+   	                runTimeAdd = readTransxchangeFrequency((_listTimingLinksRunTime.get(j)).getValue(0));
+   	              stopTimeInSeconds = stopTimehhmmss[2] + stopTimehhmmss[1] * 60 + stopTimehhmmss[0] * 3600;
+   	              stopTimeInSeconds += runTimeAdd;
+   	              stopTimehhmmss[0] = stopTimeInSeconds / 3600;
+   	              stopTimehhmmss[1] = (stopTimeInSeconds / 60) % 60;
+   	              stopTimehhmmss[2] = stopTimeInSeconds % 60;
+   	              newStoptimes__pickup_type = new ValueList(key_stop_times__pickup_type[0]);
+   	              listStoptimes__pickup_type.add(newStoptimes__pickup_type);
+   	              newStoptimes__pickup_type.addValue(key_stop_times__pickup_type[2]);
+   	              newStoptimes__drop_off_type = new ValueList(key_stop_times__drop_off_type[0]);
+   	              listStoptimes__drop_off_type.add(newStoptimes__drop_off_type);
+   	              newStoptimes__drop_off_type.addValue(key_stop_times__drop_off_type[2]);
 
-	       						lastStopOnPattern = j;
-	       						notPassed = hot;
-	       					}
+   	              lastStopOnPattern = j;
+   	              notPassed = hot;
+   	            }
 
-	       					// Find out if setdown has been reached
-	       					if (setDownTimingLink.equals((_listTimingLinksJourneyPatternTimingLink.get(j)).getValue(0)))
-	       						setDownReached = true;
-	       				}
-	       				j++;
-	       			}
-	       		}
-	       	}
-	   		// Add last stop in vehicle journey
-	   		if (_listTimingLinksJourneyPatternSection.size() > 0) { // && jp == _listJourneyPatternSectionRefs.size()) {
-	   			newStoptimes__trip_id = new ValueList(iterator.getKeyName());
-	   			listStoptimes__trip_id.add(newStoptimes__trip_id);
-	   			newStoptimes__trip_id.addValue(journeyPatternRef);
-	   			newStoptimes__arrival_time = new ValueList(iterator.getKeyName());
-	   			listStoptimes__arrival_time.add(newStoptimes__arrival_time);
-	   			if (notPassed)
-	   				newStoptimes__arrival_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
-	   			else
-	   				newStoptimes__arrival_time.addValue("");
-	   			newStoptimes__departure_time = new ValueList(iterator.getKeyName()); // departure time
-	   			listStoptimes__departure_time.add(newStoptimes__departure_time);
+   	            // Find out if setdown has been reached
+   	            if (setDownTimingLink.equals((_listTimingLinksJourneyPatternTimingLink.get(j)).getValue(0)))
+   	              setDownReached = true;
+   	          }
+   	          j++;
+   	        }
+   	      }
+   	    }
+   	    // Add last stop in vehicle journey
+   	    if (_listTimingLinksJourneyPatternSection.size() > 0) { // && jp == _listJourneyPatternSectionRefs.size()) {
+   	      newStoptimes__trip_id = new ValueList(iterator.getKeyName());
+   	      listStoptimes__trip_id.add(newStoptimes__trip_id);
+   	      newStoptimes__trip_id.addValue(journeyPatternRef);
+   	      newStoptimes__arrival_time = new ValueList(iterator.getKeyName());
+   	      listStoptimes__arrival_time.add(newStoptimes__arrival_time);
+   	      if (notPassed)
+   	        newStoptimes__arrival_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
+   	      else
+   	        newStoptimes__arrival_time.addValue("");
+   	      newStoptimes__departure_time = new ValueList(iterator.getKeyName()); // departure time
+   	      listStoptimes__departure_time.add(newStoptimes__departure_time);
 
-	   			// Conformance with GTFS revision 20-Nov-2007: Departure time at last stop
-	   			newStoptimes__departure_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
-	   			newStoptimes__stop_id = new ValueList(journeyPatternSectionRef);
-	   			listStoptimes__stop_id.add(newStoptimes__stop_id);
-	   			newStoptimes__stop_id.addValue((_listTimingLinksToStop.get(lastStopOnPattern)).getValue(0));
-	   			handler.getStops().addStop((_listTimingLinksToStop.get(lastStopOnPattern)).getValue(0));
-	   			newStoptimes__stop_sequence = new ValueList(journeyPatternSectionRef);
-	   			listStoptimes__stop_sequence.add(newStoptimes__stop_sequence);
-				sn = new Integer(sequenceNumber);
-				newStoptimes__stop_sequence.addValue(sn.toString());
-				sn = null;
-	   			newStoptimes__pickup_type = new ValueList(key_stop_times__pickup_type[0]);
-	   			listStoptimes__pickup_type.add(newStoptimes__pickup_type);
-	   			newStoptimes__pickup_type.addValue(key_stop_times__pickup_type[2]);
-	   			newStoptimes__drop_off_type = new ValueList(key_stop_times__drop_off_type[0]);
-	   			listStoptimes__drop_off_type.add(newStoptimes__drop_off_type);
-	   			newStoptimes__drop_off_type.addValue(key_stop_times__drop_off_type[2]);
-	   		}
+   	      // Conformance with GTFS revision 20-Nov-2007: Departure time at last stop
+   	      newStoptimes__departure_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
+   	      newStoptimes__stop_id = new ValueList(journeyPatternSectionRef);
+   	      listStoptimes__stop_id.add(newStoptimes__stop_id);
+   	      newStoptimes__stop_id.addValue((_listTimingLinksToStop.get(lastStopOnPattern)).getValue(0));
+   	      handler.getStops().addStop((_listTimingLinksToStop.get(lastStopOnPattern)).getValue(0));
+   	      newStoptimes__stop_sequence = new ValueList(journeyPatternSectionRef);
+   	      listStoptimes__stop_sequence.add(newStoptimes__stop_sequence);
+   	      sn = new Integer(sequenceNumber);
+   	      newStoptimes__stop_sequence.addValue(sn.toString());
+   	      sn = null;
+   	      newStoptimes__pickup_type = new ValueList(key_stop_times__pickup_type[0]);
+   	      listStoptimes__pickup_type.add(newStoptimes__pickup_type);
+   	      newStoptimes__pickup_type.addValue(key_stop_times__pickup_type[2]);
+   	      newStoptimes__drop_off_type = new ValueList(key_stop_times__drop_off_type[0]);
+   	      listStoptimes__drop_off_type.add(newStoptimes__drop_off_type);
+   	      newStoptimes__drop_off_type.addValue(key_stop_times__drop_off_type[2]);
+   	    }
 
 	   		prepareStopTimesOutput();
 	   		printStopTimes();
