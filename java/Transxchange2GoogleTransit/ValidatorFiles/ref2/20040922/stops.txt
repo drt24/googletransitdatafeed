@@ -1,5 +1,5 @@
 stop_id,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url
-0600000001,Suborn Bus Station,,523400,178600,,
+0600000001,Suborn Bus Station,,,,,
 0600000002,"Suborn, Garden Village Shops",,,,,
 0600000003,"Suborn, Plough",,,,,
 0600000004,"Suborn, Red Lion",,,,,

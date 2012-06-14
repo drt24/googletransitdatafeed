@@ -16,13 +16,16 @@
 
 package transxchange2GoogleTransit.handler;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.Map;
-import java.util.HashMap;
-import java.io.*;
+import java.util.StringTokenizer;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXParseException;
@@ -61,14 +64,14 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	static final String[] _key_route_section = {"RouteSection"};
 	static final String[] _key_route_link_from = new String [] {"RouteLink", "From", "StopPointRef"};
 	static final String[] _key_route_link_to = new String [] {"RouteLink", "To", "StopPointRef"};
-	static final String[] _key_route_link_location_x = new String [] {"RouteLink", "Easting-removed!"}; // v1.7.5. Do not pick up Easting/Northing from route links any longer
-	static final String[] _key_route_link_location_y = new String [] {"RouteLink", "Northing-removed!"}; // v1.7.5
+	//static final String[] _key_route_link_location_x = new String [] {"RouteLink", "Easting-removed!"}; // v1.7.5. Do not pick up Easting/Northing from route links any longer
+	//static final String[] _key_route_link_location_y = new String [] {"RouteLink", "Northing-removed!"}; // v1.7.5
 	boolean inRouteSection = false;
 	String keyNestedLocation = "";
 	String stopPointFrom = "";
 	String stopPointTo = "";
-	String stopPointToLat = ""; // Store current lat of stop-to to maintain lat of last stop in route link
-	String stopPointToLon = ""; // same for lon
+	//String stopPointToLat = ""; // Store current lat of stop-to to maintain lat of last stop in route link
+	//String stopPointToLon = ""; // same for lon
 
 	static Map<String, String> lat = null;
 	static Map<String, String> lon = null;
@@ -217,12 +220,12 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 		if (key.equals(_key_route_link_from[0]) && qName.equals(_key_route_link_from[1])) {
 			keyNested = _key_route_link_from[1];
 		}
-		if (key.equals(_key_route_link_location_x[0]) && qName.equals(_key_route_link_location_x[1])) {
-			keyNested = _key_route_link_location_x[1];
-		}
-		if (key.equals(_key_route_link_location_y[0]) && qName.equals(_key_route_link_location_y[1])) {
-			keyNested = _key_route_link_location_y[1];
-		}
+//		if (key.equals(_key_route_link_location_x[0]) && qName.equals(_key_route_link_location_x[1])) {
+//			keyNested = _key_route_link_location_x[1];
+//		}
+//		if (key.equals(_key_route_link_location_y[0]) && qName.equals(_key_route_link_location_y[1])) {
+//			keyNested = _key_route_link_location_y[1];
+//		}
 		if (qName.equals(_key_route_link_from[0])) 	// this also covers route_link_location_x and _y
 			key = _key_route_link_from[0];
 
@@ -233,8 +236,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 
    	@Override
 	public void endElement (String uri, String name, String qName) {
-		int i;
-	    boolean hot;
+		
 
 	    if (niceString == null || niceString.length() == 0)
 	    	return;
@@ -285,16 +287,16 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	    	_newStops__stop_indicator.addValue(niceString);
 	    }
 	    //TODO(drt24) Wrong: easting and northing need to be converted to latitude and longitude, they can't be used as is
-	    if (key.equals(key_stops__stop_east[0]) && keyNested.equals(key_stops__stop_east[1])) {
-	    	ValueList newStops__stop_lat = new ValueList(keyRef);
-	    	listStops__stop_lat.add(newStops__stop_lat);
-	    	newStops__stop_lat.addValue(niceString);
-       	}
-	    if (key.equals(key_stops__stop_north[0]) && keyNested.equals(key_stops__stop_north[1])) {
-	      ValueList newStops__stop_lon = new ValueList(keyRef);
-	       	listStops__stop_lon.add(newStops__stop_lon);
-	       	newStops__stop_lon.addValue(niceString);
-       	}
+//	    if (key.equals(key_stops__stop_east[0]) && keyNested.equals(key_stops__stop_east[1])) {
+//	    	ValueList newStops__stop_lat = new ValueList(keyRef);
+//	    	listStops__stop_lat.add(newStops__stop_lat);
+//	    	newStops__stop_lat.addValue(niceString);
+//       	}
+//	    if (key.equals(key_stops__stop_north[0]) && keyNested.equals(key_stops__stop_north[1])) {
+//	      ValueList newStops__stop_lon = new ValueList(keyRef);
+//	       	listStops__stop_lon.add(newStops__stop_lon);
+//	       	newStops__stop_lon.addValue(niceString);
+//       	}
 
 	    // Embedded coordinates
 	    if (key.equals(key_stops__stop_lat[0]) && keyNested.equals(key_stops__stop_lat[1])) {
@@ -307,39 +309,41 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	       	listStops__stop_lon.add(newStops__stop_lon);
 	       	newStops__stop_lon.addValue(niceString);
        	}
-
+	    
 	    // if location of stop unknown from stop points, add location from route section
-	    if (key.equals(_key_route_link_location_x[0]) && keyNested.equals(_key_route_link_location_x[1]) && stopPointFrom.length() > 0) {
-	       	i = 0;
-	       	hot = true;
-	       	while (hot && i < listStops__stop_lat.size()) {
-	       		if (stopPointFrom.equals((listStops__stop_lat.get(i)).getKeyName()))
-	       			hot = false;
-	       		else
-	       			i++;
-	       	}
-	    	if (hot) {
-	    	  ValueList newStops__stop_lat = new ValueList(stopPointFrom);
-       			listStops__stop_lat.add(newStops__stop_lat);
-       			newStops__stop_lat.addValue(niceString);
-       		}
-	   }
-	   if (key.equals(_key_route_link_location_y[0]) && keyNested.equals(_key_route_link_location_y[1]) && stopPointFrom.length() > 0) {
-	    	i = 0;
-	    	hot = true;
-	    	while (hot && i < listStops__stop_lon.size()) {
-	    		if (stopPointFrom.equals((listStops__stop_lon.get(i)).getKeyName()))
-	    			hot = false;
-	    		else
-	    			i++;
-	    	}
-	    	if (hot) {
-	    	  ValueList newStops__stop_lon = new ValueList(stopPointFrom);
-	    		listStops__stop_lon.add(newStops__stop_lon);
-	    		newStops__stop_lon.addValue(niceString);
-	    		stopPointFrom = "";
-	    	}
-	   }
+//	    int i;
+//      boolean hot;
+//	    if (key.equals(_key_route_link_location_x[0]) && keyNested.equals(_key_route_link_location_x[1]) && stopPointFrom.length() > 0) {
+//	       	i = 0;
+//	       	hot = true;
+//	       	while (hot && i < listStops__stop_lat.size()) {
+//	       		if (stopPointFrom.equals((listStops__stop_lat.get(i)).getKeyName()))
+//	       			hot = false;
+//	       		else
+//	       			i++;
+//	       	}
+//	    	if (hot) {
+//	    	  ValueList newStops__stop_lat = new ValueList(stopPointFrom);
+//       			listStops__stop_lat.add(newStops__stop_lat);
+//       			newStops__stop_lat.addValue(niceString);
+//       		}
+//	   }
+//	   if (key.equals(_key_route_link_location_y[0]) && keyNested.equals(_key_route_link_location_y[1]) && stopPointFrom.length() > 0) {
+//	    	i = 0;
+//	    	hot = true;
+//	    	while (hot && i < listStops__stop_lon.size()) {
+//	    		if (stopPointFrom.equals((listStops__stop_lon.get(i)).getKeyName()))
+//	    			hot = false;
+//	    		else
+//	    			i++;
+//	    	}
+//	    	if (hot) {
+//	    	  ValueList newStops__stop_lon = new ValueList(stopPointFrom);
+//	    		listStops__stop_lon.add(newStops__stop_lon);
+//	    		newStops__stop_lon.addValue(niceString);
+//	    		stopPointFrom = "";
+//	    	}
+//	   }
 
 	   // Route sections (to stop point lat and lon), based on from- and to-stop points
 	   if (key.equals(_key_route_link_from[0]) && keyNested.equals(_key_route_link_from[1])&& keyNestedLocation.equals(_key_route_link_from[2])) {
@@ -351,39 +355,39 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	    	keyNestedLocation = "";
 	    	keyNested = "";
 	    }
-	    if (key.equals(_key_route_link_location_x[0]) && keyNested.equals(_key_route_link_location_x[1])) {
-	    	stopPointToLat = niceString;
-	    }
-	    if (key.equals(_key_route_link_location_y[0]) && keyNested.equals(_key_route_link_location_y[1])) {
-	    	stopPointToLon = niceString;
-	    }
+//	    if (key.equals(_key_route_link_location_x[0]) && keyNested.equals(_key_route_link_location_x[1])) {
+//	    	stopPointToLat = niceString;
+//	    }
+//	    if (key.equals(_key_route_link_location_y[0]) && keyNested.equals(_key_route_link_location_y[1])) {
+//	    	stopPointToLon = niceString;
+//	    }
 	}
 
    	@Override
    	public void clearKeys (String qName) {
     	if (inRouteSection) {
-    		if (keyNested.equals(_key_route_link_location_x[1]))
-    			keyNestedLocation = "";
+//    		if (keyNested.equals(_key_route_link_location_x[1]))
+//    			keyNestedLocation = "";
     		if (keyNestedLocation.equals(_key_route_link_from[2]))
     			keyNestedLocation = "";
     		if (keyNested.equals(_key_route_link_from[1]))
     			keyNested = "";
-    		if (qName.equals(_key_route_link_location_y[1]))
-    			keyNested = "";
+//    		if (qName.equals(_key_route_link_location_y[1]))
+//    			keyNested = "";
     	}
     	if (qName.equals(_key_route_section[0])) {
-    		if (inRouteSection) {
-    			if (stopPointToLat.length() > 0) {
-    			  ValueList newStops__stop_lat = new ValueList(stopPointTo); // last stop in route section
-    				listStops__stop_lat.add(newStops__stop_lat);
-    				newStops__stop_lat.addValue(stopPointToLat);
-    			}
-    			if (stopPointToLon.length() > 0) {
-    			  ValueList newStops__stop_lon = new ValueList(stopPointTo); // last stop in route section
-    				listStops__stop_lon.add(newStops__stop_lon);
-    				newStops__stop_lon.addValue(stopPointToLon);
-    			}
-    		}
+//    		if (inRouteSection) {
+//    			if (stopPointToLat.length() > 0) {
+//    			  ValueList newStops__stop_lat = new ValueList(stopPointTo); // last stop in route section
+//    				listStops__stop_lat.add(newStops__stop_lat);
+//    				newStops__stop_lat.addValue(stopPointToLat);
+//    			}
+//    			if (stopPointToLon.length() > 0) {
+//    			  ValueList newStops__stop_lon = new ValueList(stopPointTo); // last stop in route section
+//    				listStops__stop_lon.add(newStops__stop_lon);
+//    				newStops__stop_lon.addValue(stopPointToLon);
+//    			}
+//    		}
     		inRouteSection = !inRouteSection;
     		key = "";
     	}
