@@ -150,13 +150,16 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 		}
 
 		if (key.equals(key_routes__route_short_name[0]) && keyNested.equals(key_routes__route_short_name[1])) {
-			ValueList newRoutes__route_short_name = new ValueList(key_routes__route_short_name[1]);
-			listRoutes__route_short_name.add(newRoutes__route_short_name);
-        	newRoutes__route_short_name.addValue(niceString);
-			ValueList newRoutes__route_long_name = new ValueList(key_routes__route_long_name[1]);
-			listRoutes__route_long_name.add(newRoutes__route_long_name);
-        	newRoutes__route_long_name.addValue(""); // no long name if not different from short name
-        	keyNested = "";
+		  String routeName = niceString;
+		  boolean isShortName = routeName.length() <= 6;
+		  // We only get one length of name, if it is short we use it as a short name otherwise as a long name
+		  ValueList newRoutes__route_short_name = new ValueList(key_routes__route_short_name[1]);
+		  listRoutes__route_short_name.add(newRoutes__route_short_name);
+		  newRoutes__route_short_name.addValue((isShortName) ? routeName :"");
+		  ValueList newRoutes__route_long_name = new ValueList(key_routes__route_long_name[1]);
+		  listRoutes__route_long_name.add(newRoutes__route_long_name);
+		  newRoutes__route_long_name.addValue((!isShortName) ? routeName :"");
+		  keyNested = "";
 			newRoutes__route_type = new ValueList(key_routes__route_type[0]); // Default for _type
 			listRoutes__route_type.add(newRoutes__route_type);
 			newRoutes__route_type.addValue(handler.getDefaultRouteType());
