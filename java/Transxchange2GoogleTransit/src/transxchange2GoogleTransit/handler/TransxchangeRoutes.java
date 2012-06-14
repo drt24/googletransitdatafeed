@@ -64,27 +64,6 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 	String routeId = ""; // v1.7.3
 	String currentRouteId;
 
-	public List<ValueList> getListRoutes__route_id() {
-		return listRoutes__route_id;
-	}
-	public List<ValueList> getListRoutes__agency_id() {
-		return listRoutes__agency_id;
-	}
-	public List<ValueList> getListRoutes__route_short_name() {
-		return listRoutes__route_short_name;
-	}
-	public List<ValueList> getListRoutes__route_long_name() {
-		return listRoutes__route_long_name;
-	}
-	public List<ValueList> getListRoutes__route_desc() {
-		return listRoutes__route_desc;
-	}
-	public Map<String, String> getListRoutes__route_dest() {
-		return listRoutes__route_dest;
-	}
-	public Map<String, String> getListRoutes__route_origin() {
-		return listRoutes__route_origin;
-	}
 	public String getHeadsign(String routeId, boolean inbound) { // v1.7.3: Added inbound flag
 		if (inbound) { // v1.7.3: Reverse Origin/Destination inbound
 			if (routeId == null || listRoutes__route_origin == null || !listRoutes__route_origin.containsKey(routeId))
