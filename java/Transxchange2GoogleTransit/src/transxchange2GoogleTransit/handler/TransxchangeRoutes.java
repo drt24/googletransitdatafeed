@@ -17,12 +17,14 @@
 package transxchange2GoogleTransit.handler;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXParseException;
+
+import transxchange2GoogleTransit.Route;
 
 /*
  * This class handles the TransXChange xml input file under the aspect of
@@ -341,5 +343,42 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 		listRoutes__service_id = new ArrayList<ValueList>();
 
 		_listRouteDesc = new ArrayList<ValueList>();
-	}
+  }
+
+  public void export(Map<String, Route> routeMap) {
+    int size = listRoutes__route_id.size();
+    assert listRoutes__agency_id.size() == size;
+    assert listRoutes__route_short_name.size() == size;
+    assert listRoutes__route_long_name.size() == size;
+    assert listRoutes__route_desc.size() == size;
+    assert listRoutes__route_type.size() == size;
+    assert listRoutes__service_id.size() == size;
+    for (int i = 0; i < size; ++i) {
+      String routeId = listRoutes__route_id.get(i).getValue(0);
+      if (routeId != null && routeId.length() > 0) {
+        // TODO(drt24) verify getKeyName matches stopId
+        Route route =
+            new Route(routeId, listRoutes__agency_id.get(i).getValue(0),
+                listRoutes__route_short_name.get(i).getValue(0), listRoutes__route_long_name.get(i)
+                    .getValue(0), listRoutes__route_desc.get(i).getValue(0), listRoutes__route_dest
+                    .get(routeId), listRoutes__route_origin.get(routeId), listRoutes__route_type
+                    .get(i).getValue(0), listRoutes__service_id.get(i).getValue(0));
+        routeMap.put(routeId, route);
+      }
+    }
+    // Now clear out all these lists so that we can't use them again and so that garbage collection
+    // can happen
+    listRoutes.clear();
+    listRoutes__route_id.clear();
+    listRoutes__agency_id.clear();
+    listRoutes__route_short_name.clear();
+    listRoutes__route_long_name.clear();
+    listRoutes__route_desc.clear();
+    listRoutes__route_dest.clear();
+    listRoutes__route_origin.clear();
+    listRoutes__route_type.clear();
+    listRoutes__service_id.clear();
+    // TODO Auto-generated method stub
+
+  }
 }

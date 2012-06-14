@@ -39,6 +39,7 @@ import transxchange2GoogleTransit.Agency;
 import transxchange2GoogleTransit.Configuration;
 import transxchange2GoogleTransit.Geocoder;
 import transxchange2GoogleTransit.LatLong;
+import transxchange2GoogleTransit.Route;
 import transxchange2GoogleTransit.Stop;
 
 /*
@@ -563,41 +564,41 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	/*
 	 * Create GTFS file set from GTFS data structures except for stops
 	 */
-	public void writeOutputRoutes()
-	throws IOException
-	{
-		// routes.txt
-		if (routesOut == null) {
-	        String outfileName = routesFilename + /* "_" + serviceStartDate + */ extension;
-	        File outfile = new File(outdir, outfileName);
-	        filenames.add(outfileName);
-	        routesOut = new PrintWriter(new FileWriter(outfile));
-	        routesOut.println("route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_url,route_color,route_text_color");
-		}
-		for (int i = 0; i < this.getRoutes().getListRoutes__route_id().size(); i++) {
-			if ((((this.getRoutes().getListRoutes__route_id().get(i))).getValue(0)).length() > 0) {
-				routesOut.print((this.getRoutes().getListRoutes__route_id().get(i)).getValue(0));
-				routesOut.print(",");
-				routesOut.print((this.getRoutes().getListRoutes__agency_id().get(i)).getValue(0));
-				routesOut.print(",");
-				String routeShortname = (this.getRoutes().getListRoutes__route_short_name().get(i)).getValue(0);
-				routesOut.print(routeShortname);
-				routesOut.print(",");
-				String routeLongname = (this.getRoutes().getListRoutes__route_long_name().get(i)).getValue(0);
-				routesOut.print(routeLongname);
-				routesOut.print(",");
-				String routeDesc = (this.getRoutes().getListRoutes__route_desc().get(i)).getValue(0); // v1.7.5: Do not write route description if equal to route short or long name
-				if (routeDesc != null && !(routeDesc.equals(routeShortname) || routeDesc.equals(routeLongname)))
-					routesOut.print(routeDesc);
-				routesOut.print(",");
-				routesOut.print((this.getRoutes().getListRoutes__route_type().get(i)).getValue(0));
-				routesOut.print(","); // no route url
-				routesOut.print(","); // no route color
-				routesOut.print(","); // no route text color
-				routesOut.println();
-	        }
-        }
-	}
+  public static void writeOutputRoutes(Map<String, Route> routes) throws IOException {
+    // routes.txt
+    if (routesOut == null) {
+      String outfileName = routesFilename + /* "_" + serviceStartDate + */extension;
+      File outfile = new File(outdir, outfileName);
+      filenames.add(outfileName);
+      routesOut = new PrintWriter(new FileWriter(outfile));
+      routesOut.println("route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_url,route_color,route_text_color");
+    }
+    for (Map.Entry<String, Route> routeEntry : routes.entrySet()) {
+      String routeId = routeEntry.getKey();
+      Route route = routeEntry.getValue();
+      routesOut.print(routeId);
+      routesOut.print(",");
+      routesOut.print(route.getAgencyId());
+      routesOut.print(",");
+      String routeShortname = route.getShortName();
+      routesOut.print(routeShortname);
+      routesOut.print(",");
+      String routeLongname = route.getLongName();
+      routesOut.print(routeLongname);
+      routesOut.print(",");
+      String routeDesc = route.getDescription(); // v1.7.5: Do not write route description if equal
+                                                 // to route short or long name
+      if (routeDesc != null
+          && !(routeDesc.equals(routeShortname) || routeDesc.equals(routeLongname)))
+        routesOut.print(routeDesc);
+      routesOut.print(",");
+      routesOut.print(route.getType());
+      routesOut.print(","); // no route url
+      routesOut.print(","); // no route color
+      routesOut.print(","); // no route text color
+      routesOut.println();
+    }
+  }
 
   public static void writeOutputAgencies(Map<String, Agency> agencies) throws IOException {
     // agencies.txt
