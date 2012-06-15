@@ -41,19 +41,12 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 
 	// Parsed data
 	List<ValueList> listStoptimes__trip_id;
-	ValueList newStoptimes__trip_id;
 	List<ValueList> listStoptimes__arrival_time;
-	ValueList newStoptimes__arrival_time;
 	List<ValueList> listStoptimes__departure_time;
-	ValueList newStoptimes__departure_time;
 	List<ValueList> listStoptimes__stop_id;
-	ValueList newStoptimes__stop_id;
 	List<ValueList> listStoptimes__stop_sequence;
-	ValueList newStoptimes__stop_sequence;
 	List<ValueList> listStoptimes__pickup_type;
-	ValueList newStoptimes__pickup_type;
 	List<ValueList> listStoptimes__drop_off_type;
-	ValueList newStoptimes__drop_off_type;
 
 	// in support of: activity in VehicleJourny at timing point, e.g. pass timing point
 	static final String[] _key_trips_activity_pass = new String [] {"VehicleJourney", "JourneyPatternTimingLinkRef", "To", "Activity", "pass"};
@@ -61,20 +54,16 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	static final String[] _key_trips_activity_setdown = new String [] {"VehicleJourney", "JourneyPatternTimingLinkRef", "To", "Activity", "setDown"};
 	String _journeyPatternTimingLinkRefPass = "";
 	List<ValueList> _listTripsJourneyPatternTimingLinkRefPass;
-	ValueList newTripsJourneyPatternTimingLinkRefPass;
 	String _journeyPatternTimingLinkRefPickup = "";
 	List<ValueList> _listTripsJourneyPatternTimingLinkRefPickup;
-	ValueList newTripsJourneyPatternTimingLinkRefPickup;
 	String _journeyPatternTimingLinkRefSetdown = "";
 	List<ValueList> _listTripsJourneyPatternTimingLinkRefSetdown;
-	ValueList newTripsJourneyPatternTimingLinkRefSetdown;
 	String keyNestedActivity = "";
 
 	// in support of: override runtimes of timing links for individual vehiclejourney
 	static final String[] _key_trips_vehicle_journey_runtime = new String [] {"VehicleJourney", "JourneyPatternTimingLinkRef", "RunTime"};
 	String _journeyPatternTimingLinkRefRunTime = "";
 	List<ValueList> _listTripsTimingLinkRunTime;
-	ValueList newTripsTimingLinkRunTime;
 
 	// in support of: unroll stop times in individual trips
 	static final String[] _key_journeypattern_section = {"JourneyPatternSection"};
@@ -95,21 +84,14 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	String journeyPatternTimingLink = "";
 	String journeyPatternSection = "";
 	List<ValueList> _listTimingLinksJourneyPatternTimingLink;
-	ValueList newTimingLinksJourneyPatternTimingLink;
 	List<ValueList> _listTimingLinksJourneyPatternSection;
-	ValueList newTimingLinksJourneyPatternSection;
 	List<ValueList> _listTimingLinksFromStop;
-	ValueList newTimingLinksFromStop;
 	List<ValueList> _listTimingLinksToStop;
-	ValueList newTimingLinksToStop;
 	List<ValueList> _listTimingLinksRunTime;
-	ValueList newTimingLinksRunTime;
 
 	boolean capturedJourneyPatternTimingLinkRef = false;
 	String stopPointFrom = "";
 	String stopPointTo = "";
-
-	int qualifierIx;
 
 	static PrintWriter stop_timesOut = null;
 
@@ -172,11 +154,11 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 		// Journey pattern runtimes from and to stop points
 		if (qName.equals(_key_journeypattern_section[0])) {
 			inJourneyPatternSection = !inJourneyPatternSection;
-	        qualifierIx = atts.getIndex("id");
+	        int qualifierIx = atts.getIndex("id");
 	        journeyPatternSection = atts.getValue(qualifierIx);
 		}
 		if (inJourneyPatternSection && qName.equals(_key_journeypattern_timinglink[1])) {
-	        qualifierIx = atts.getIndex("id");
+	        int qualifierIx = atts.getIndex("id");
 	        journeyPatternTimingLink = atts.getValue(qualifierIx);
 		}
 		if (key.equals(_key_stoptimes_from[0]) && (keyNested.equals(_key_stoptimes_from[1])) && qName.equals(_key_stoptimes_from[2]))
@@ -220,26 +202,26 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	    	_journeyPatternTimingLinkRefRunTime = niceString;
 	    if (key.equals(_key_trips_activity_pass[0]) && keyNested.equals(_key_trips_activity_pass[1]) && keyNestedActivity.equals(_key_trips_activity_pass[2]) && niceString.equals(_key_trips_activity_pass[4])
 	    		&& _vehicleJourneyCode.length() > 0) {
-	    	newTripsJourneyPatternTimingLinkRefPass = new ValueList(_vehicleJourneyCode + "@" + _departureTime);
+	      ValueList newTripsJourneyPatternTimingLinkRefPass = new ValueList(_vehicleJourneyCode + "@" + _departureTime);
 	    	_listTripsJourneyPatternTimingLinkRefPass.add(newTripsJourneyPatternTimingLinkRefPass);
 	    	newTripsJourneyPatternTimingLinkRefPass.addValue(_journeyPatternTimingLinkRefPass);
 	    }
 	    if (key.equals(_key_trips_activity_pickup[0]) && keyNested.equals(_key_trips_activity_pickup[1]) && keyNestedActivity.equals(_key_trips_activity_pickup[2]) && niceString.equals(_key_trips_activity_pickup[4])
 	    		&& _vehicleJourneyCode.length() > 0) {
-	    	newTripsJourneyPatternTimingLinkRefPickup = new ValueList(_vehicleJourneyCode + "@" + _departureTime);
+	      ValueList newTripsJourneyPatternTimingLinkRefPickup = new ValueList(_vehicleJourneyCode + "@" + _departureTime);
 	    	_listTripsJourneyPatternTimingLinkRefPickup.add(newTripsJourneyPatternTimingLinkRefPickup);
 	    	newTripsJourneyPatternTimingLinkRefPickup.addValue(_journeyPatternTimingLinkRefPickup);
 	    }
 	    if (key.equals(_key_trips_activity_setdown[0]) && keyNested.equals(_key_trips_activity_setdown[1]) && keyNestedActivity.equals(_key_trips_activity_setdown[2]) && niceString.equals(_key_trips_activity_setdown[4])
 	    		&& _vehicleJourneyCode.length() > 0) {
-	    	newTripsJourneyPatternTimingLinkRefSetdown = new ValueList(_vehicleJourneyCode + "@" + _departureTime);
+	      ValueList newTripsJourneyPatternTimingLinkRefSetdown = new ValueList(_vehicleJourneyCode + "@" + _departureTime);
 	    	_listTripsJourneyPatternTimingLinkRefSetdown.add(newTripsJourneyPatternTimingLinkRefSetdown);
 	    	newTripsJourneyPatternTimingLinkRefSetdown.addValue(_journeyPatternTimingLinkRefSetdown);
 			_journeyPatternTimingLinkRefSetdown = "";
 	    }
 	    if (key.equals(_key_trips_vehicle_journey_runtime[0]) && keyNested.equals(_key_trips_vehicle_journey_runtime[1]) && keyNestedActivity.equals(_key_trips_vehicle_journey_runtime[2])
 	    		&& _vehicleJourneyCode.length() > 0) {
-	    	newTripsTimingLinkRunTime = new ValueList(_vehicleJourneyCode + "@" + _departureTime);
+	      ValueList newTripsTimingLinkRunTime = new ValueList(_vehicleJourneyCode + "@" + _departureTime);
 	    	_listTripsTimingLinkRunTime.add(newTripsTimingLinkRunTime);
 	    	newTripsTimingLinkRunTime.addValue(_journeyPatternTimingLinkRefRunTime);
 	    	newTripsTimingLinkRunTime.addValue(niceString);
@@ -267,13 +249,13 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	    	runTime = niceString;
 	    }
 	    if (key.equals(_key_stoptimes_runtime[0]) && keyNested.equals(_key_stoptimes_runtime[1]) && stopPointFrom.length() > 0) {
-	    	newTimingLinksFromStop = new ValueList(_key_stoptimes_from[1]);
+	      ValueList newTimingLinksFromStop = new ValueList(_key_stoptimes_from[1]);
 	    	_listTimingLinksFromStop.add(newTimingLinksFromStop);
 	    	newTimingLinksFromStop.addValue(stopPointFrom);
-	    	newTimingLinksToStop = new ValueList(_key_stoptimes_to[1]);
+	    	ValueList newTimingLinksToStop = new ValueList(_key_stoptimes_to[1]);
 	    	_listTimingLinksToStop.add(newTimingLinksToStop);
 	    	newTimingLinksToStop.addValue(stopPointTo);
-	    	newTimingLinksRunTime = new ValueList(stopPointFrom);
+	    	ValueList newTimingLinksRunTime = new ValueList(stopPointFrom);
 	    	_listTimingLinksRunTime.add(newTimingLinksRunTime);
 	    	newTimingLinksRunTime.addValue(niceString);
 	    	if (waitTimeToDeferred.length() > 0) {
@@ -287,10 +269,10 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	        	waitTimeFrom = "";
 	      	}
 	    	stopPointFrom = "";
-	    	newTimingLinksJourneyPatternSection = new ValueList(_key_journeypattern_section_key[0]);
+	    	ValueList newTimingLinksJourneyPatternSection = new ValueList(_key_journeypattern_section_key[0]);
 	    	_listTimingLinksJourneyPatternSection.add(newTimingLinksJourneyPatternSection);
 	    	newTimingLinksJourneyPatternSection.addValue(journeyPatternSection);
-	    	newTimingLinksJourneyPatternTimingLink = new ValueList(_key_journeypattern_timinglink_key[0]); // _key_journeypattern_timinglink[0]);
+	    	ValueList newTimingLinksJourneyPatternTimingLink = new ValueList(_key_journeypattern_timinglink_key[0]); // _key_journeypattern_timinglink[0]);
 	    	_listTimingLinksJourneyPatternTimingLink.add(newTimingLinksJourneyPatternTimingLink);
 	    	newTimingLinksJourneyPatternTimingLink.addValue(journeyPatternTimingLink);
 	    }
@@ -406,10 +388,10 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
    	            if (!pickedUp && pickupTimingLink.equals((_listTimingLinksJourneyPatternTimingLink.get(j)).getValue(0)))
    	              pickedUp = true;
    	            if (pickedUp) {
-   	              newStoptimes__trip_id = new ValueList(iterator.getKeyName());
+   	              ValueList newStoptimes__trip_id = new ValueList(iterator.getKeyName());
    	              listStoptimes__trip_id.add(newStoptimes__trip_id);
    	              newStoptimes__trip_id.addValue(journeyPatternRef);
-   	              newStoptimes__arrival_time = new ValueList(iterator.getKeyName());
+   	              ValueList newStoptimes__arrival_time = new ValueList(iterator.getKeyName());
    	              listStoptimes__arrival_time.add(newStoptimes__arrival_time);
    	              if (sequenceNumber > 1 && notPassed && !setDownReached) // Arrival time if not first stop and not a pass
    	                newStoptimes__arrival_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
@@ -438,17 +420,17 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
    	                stopTimehhmmss[1] = (stopTimeInSeconds / 60) % 60;
    	                stopTimehhmmss[2] = stopTimeInSeconds % 60;
    	              }
-   	              newStoptimes__departure_time = new ValueList(iterator.getKeyName());
+   	              ValueList newStoptimes__departure_time = new ValueList(iterator.getKeyName());
    	              listStoptimes__departure_time.add(newStoptimes__departure_time);
    	              if (notPassed && !setDownReached) // Departure time if no pass, else empty
    	                newStoptimes__departure_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
    	              else
    	                newStoptimes__departure_time.addValue("");
-   	              newStoptimes__stop_id = new ValueList(journeyPatternSectionRef);
+   	              ValueList newStoptimes__stop_id = new ValueList(journeyPatternSectionRef);
    	              listStoptimes__stop_id.add(newStoptimes__stop_id);
    	              newStoptimes__stop_id.addValue((_listTimingLinksFromStop.get(j)).getValue(0));
    	              handler.getStops().addStop((_listTimingLinksFromStop.get(j)).getValue(0));
-   	              newStoptimes__stop_sequence = new ValueList(journeyPatternSectionRef);
+   	              ValueList newStoptimes__stop_sequence = new ValueList(journeyPatternSectionRef);
    	              listStoptimes__stop_sequence.add(newStoptimes__stop_sequence);
    	              sn = new Integer(sequenceNumber);
    	              newStoptimes__stop_sequence.addValue(sn.toString());
@@ -474,10 +456,10 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
    	              stopTimehhmmss[0] = stopTimeInSeconds / 3600;
    	              stopTimehhmmss[1] = (stopTimeInSeconds / 60) % 60;
    	              stopTimehhmmss[2] = stopTimeInSeconds % 60;
-   	              newStoptimes__pickup_type = new ValueList(key_stop_times__pickup_type[0]);
+   	              ValueList newStoptimes__pickup_type = new ValueList(key_stop_times__pickup_type[0]);
    	              listStoptimes__pickup_type.add(newStoptimes__pickup_type);
    	              newStoptimes__pickup_type.addValue(key_stop_times__pickup_type[2]);
-   	              newStoptimes__drop_off_type = new ValueList(key_stop_times__drop_off_type[0]);
+   	              ValueList newStoptimes__drop_off_type = new ValueList(key_stop_times__drop_off_type[0]);
    	              listStoptimes__drop_off_type.add(newStoptimes__drop_off_type);
    	              newStoptimes__drop_off_type.addValue(key_stop_times__drop_off_type[2]);
 
@@ -495,41 +477,41 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
    	    }
    	    // Add last stop in vehicle journey
    	    if (_listTimingLinksJourneyPatternSection.size() > 0) { // && jp == _listJourneyPatternSectionRefs.size()) {
-   	      newStoptimes__trip_id = new ValueList(iterator.getKeyName());
+   	      ValueList newStoptimes__trip_id = new ValueList(iterator.getKeyName());
    	      listStoptimes__trip_id.add(newStoptimes__trip_id);
    	      newStoptimes__trip_id.addValue(journeyPatternRef);
-   	      newStoptimes__arrival_time = new ValueList(iterator.getKeyName());
+   	      ValueList newStoptimes__arrival_time = new ValueList(iterator.getKeyName());
    	      listStoptimes__arrival_time.add(newStoptimes__arrival_time);
    	      if (notPassed)
    	        newStoptimes__arrival_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
    	      else
    	        newStoptimes__arrival_time.addValue("");
-   	      newStoptimes__departure_time = new ValueList(iterator.getKeyName()); // departure time
+   	      ValueList newStoptimes__departure_time = new ValueList(iterator.getKeyName()); // departure time
    	      listStoptimes__departure_time.add(newStoptimes__departure_time);
 
    	      // Conformance with GTFS revision 20-Nov-2007: Departure time at last stop
    	      newStoptimes__departure_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
-   	      newStoptimes__stop_id = new ValueList(journeyPatternSectionRef);
+   	      ValueList newStoptimes__stop_id = new ValueList(journeyPatternSectionRef);
    	      listStoptimes__stop_id.add(newStoptimes__stop_id);
    	      newStoptimes__stop_id.addValue((_listTimingLinksToStop.get(lastStopOnPattern)).getValue(0));
    	      handler.getStops().addStop((_listTimingLinksToStop.get(lastStopOnPattern)).getValue(0));
-   	      newStoptimes__stop_sequence = new ValueList(journeyPatternSectionRef);
+   	      ValueList newStoptimes__stop_sequence = new ValueList(journeyPatternSectionRef);
    	      listStoptimes__stop_sequence.add(newStoptimes__stop_sequence);
    	      sn = new Integer(sequenceNumber);
    	      newStoptimes__stop_sequence.addValue(sn.toString());
    	      sn = null;
-   	      newStoptimes__pickup_type = new ValueList(key_stop_times__pickup_type[0]);
+   	      ValueList newStoptimes__pickup_type = new ValueList(key_stop_times__pickup_type[0]);
    	      listStoptimes__pickup_type.add(newStoptimes__pickup_type);
    	      newStoptimes__pickup_type.addValue(key_stop_times__pickup_type[2]);
-   	      newStoptimes__drop_off_type = new ValueList(key_stop_times__drop_off_type[0]);
+   	      ValueList newStoptimes__drop_off_type = new ValueList(key_stop_times__drop_off_type[0]);
    	      listStoptimes__drop_off_type.add(newStoptimes__drop_off_type);
    	      newStoptimes__drop_off_type.addValue(key_stop_times__drop_off_type[2]);
    	    }
 
-	   		prepareStopTimesOutput();
-	   		printStopTimes();
-	    }
-  }
+   	    prepareStopTimesOutput();
+   	    printStopTimes();
+   	  }
+   	}
 
   private void prepareStopTimesOutput() throws IOException {
     String outfileName = "";
