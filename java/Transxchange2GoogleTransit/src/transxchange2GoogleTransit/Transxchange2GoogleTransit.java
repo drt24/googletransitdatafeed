@@ -43,8 +43,7 @@ public class Transxchange2GoogleTransit {
 		TransxchangeHandler handler = null;
 		Configuration config = new Configuration();
 
-        System.out.println("transxchange2GTFS 1.7.5");
-        System.out.println("Please refer to LICENSE file for licensing information");
+        System.out.println("transxchange2GTFS 1.7.5. Refer to LICENSE file for licensing information");
         int foundConfigFile = -1;
         int i = 0;
         while (i < args.length && foundConfigFile == -1)
