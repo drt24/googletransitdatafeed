@@ -95,27 +95,6 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 
 	static PrintWriter stop_timesOut = null;
 
-	public List<ValueList> getListStoptimes__trip_id() {
-		return listStoptimes__trip_id;
-	}
-	public List<ValueList> getListStoptimes__arrival_time() {
-		return listStoptimes__arrival_time;
-	}
-	public List<ValueList> getListStoptimes__departure_time() {
-		return listStoptimes__departure_time;
-	}
-	public List<ValueList> getListStoptimes__stop_id() {
-		return listStoptimes__stop_id;
-	}
-	public List<ValueList> getListStoptimes__stop_sequence() {
-		return listStoptimes__stop_sequence;
-	}
-	public List<ValueList> getListStoptimes__pickup_type() {
-		return listStoptimes__pickup_type;
-	}
-	public List<ValueList> getListStoptimes__drop_off_type() {
-		return listStoptimes__drop_off_type;
-	}
 	public void closeStopTimesOutput() {
 		if (stop_timesOut == null)
 			return;
@@ -533,21 +512,21 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
   }
 
   private void printStopTimes() {
-    for (int ii = 0; ii < this.getListStoptimes__trip_id().size(); ii++) {
-      stop_timesOut.print((this.getListStoptimes__trip_id().get(ii)).getKeyName());
+    for (int ii = 0; ii < listStoptimes__trip_id.size(); ii++) {
+      stop_timesOut.print(listStoptimes__trip_id.get(ii).getKeyName());
       stop_timesOut.print(",");
-      stop_timesOut.print((this.getListStoptimes__arrival_time().get(ii)).getValue(0));
+      stop_timesOut.print(listStoptimes__arrival_time.get(ii).getValue(0));
       stop_timesOut.print(",");
-      stop_timesOut.print((this.getListStoptimes__departure_time().get(ii)).getValue(0));
+      stop_timesOut.print(listStoptimes__departure_time.get(ii).getValue(0));
       stop_timesOut.print(",");
-      stop_timesOut.print((this.getListStoptimes__stop_id().get(ii)).getValue(0));
+      stop_timesOut.print(listStoptimes__stop_id.get(ii).getValue(0));
       stop_timesOut.print(",");
-      stop_timesOut.print((this.getListStoptimes__stop_sequence().get(ii)).getValue(0));
+      stop_timesOut.print(listStoptimes__stop_sequence.get(ii).getValue(0));
       stop_timesOut.print(",");
       stop_timesOut.print(",");
-      stop_timesOut.print((this.getListStoptimes__pickup_type().get(ii)).getValue(0));
+      stop_timesOut.print(listStoptimes__pickup_type.get(ii).getValue(0));
       stop_timesOut.print(",");
-      stop_timesOut.print((this.getListStoptimes__drop_off_type().get(ii)).getValue(0));
+      stop_timesOut.print(listStoptimes__drop_off_type.get(ii).getValue(0));
       stop_timesOut.println(",");
     }
     listStoptimes__trip_id.clear();
