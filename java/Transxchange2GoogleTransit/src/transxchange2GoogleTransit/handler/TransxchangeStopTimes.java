@@ -19,7 +19,9 @@ package transxchange2GoogleTransit.handler;
 import java.io.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXParseException;
@@ -92,8 +94,13 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 	boolean capturedJourneyPatternTimingLinkRef = false;
 	String stopPointFrom = "";
 	String stopPointTo = "";
+  private static Set<String> usedStops = new HashSet<String>();
 
 	static PrintWriter stop_timesOut = null;
+
+	public static Set<String> getUsedStops() {
+	  return usedStops;
+	}
 
 	public static void closeStopTimesOutput() {
 		if (stop_timesOut == null)
@@ -516,7 +523,9 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
       stop_timesOut.print(",");
       stop_timesOut.print(listStoptimes__departure_time.get(ii).getValue(0));
       stop_timesOut.print(",");
-      stop_timesOut.print(listStoptimes__stop_id.get(ii).getValue(0));
+      String stopId = listStoptimes__stop_id.get(ii).getValue(0);
+      usedStops.add(stopId);// save which stops we actually used for later use
+      stop_timesOut.print(stopId);
       stop_timesOut.print(",");
       stop_timesOut.print(listStoptimes__stop_sequence.get(ii).getValue(0));
       stop_timesOut.print(",");

@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.logging.Logger;
@@ -208,6 +209,15 @@ public class TransxchangeHandler {
         }
 		Map<String,Agency> agencies = consolidateAgencies(); // Eliminiate possible duplicates from multiple input files in zip archive
 		Map<String,Stop> stops = consolidateStops();
+		Set<String> usedStops = TransxchangeStopTimes.getUsedStops();
+    for (String stopId : usedStops) {
+      if (!stops.containsKey(stopId)) {
+        Stop stop = config.getNaptanStop(stopId);
+        if (stop != null) {
+          stops.put(stopId, stop);
+        }
+      }
+    }
 		Map<String,Route> routes = consolidateRoutes(); // Eliminiate possible duplicates from multiple input files in zip archive
 		
 		TransxchangeHandlerEngine.writeOutputStops(stops, config);
