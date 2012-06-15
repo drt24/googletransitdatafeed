@@ -37,8 +37,10 @@ public abstract class TransxchangeDataAspect {
 	public void startElement(String uri, String name, String qName, Attributes atts)
 		throws SAXParseException
 	{
-		if (handler.getParseError().length() > 0)
-			throw new SAXParseException(handler.getParseError(), null);
+		if (handler.getParseError() != null){
+		  Exception e = handler.getParseError();
+			throw new SAXParseException(e.getMessage(), null, e);
+		}
 		niceString = "";
 	}
 

@@ -233,7 +233,7 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
 						}
 					}
 				} catch (Exception e) {
-					handler.setParseError(e.getMessage());
+					handler.setParseError(e);
 				}
         	}
         } else {
@@ -558,7 +558,7 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
 					calendarDatesOperationDay = gcOperationDay.getTime();
 				}
 			} catch (Exception e) {
-				handler.setParseError(e.getMessage());
+				handler.setParseError(e);
 			}
 		}
 	}

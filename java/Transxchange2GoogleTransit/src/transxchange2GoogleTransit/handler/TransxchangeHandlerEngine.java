@@ -60,7 +60,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	TransxchangeCalendarDates calendarDates;
 
 	// Parse comments
-	static String parseError = "";
+	static Exception parseError = null;
 	static String parseInfo = "";
 
 	private static final String stopsFilename = "stops";
@@ -132,9 +132,6 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	public TransxchangeCalendarDates getCalendarDates() {
 		return calendarDates;
 	}
-	public void setParseError(String txt) {
-		parseError = txt;
-	}
 	public String getStopfilecolumnseparator() {
 		return config.getStopfileColumnSeparator();
 	}
@@ -175,7 +172,10 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	public File getQualifiedOutputDirectory() {
     return config.getQualifiedOutputDirectory();
   }
-  public String getParseError() {
+  public void setParseError(Exception exception) {
+  	parseError = exception;
+  }
+  public Exception getParseError() {
 		return parseError;
 	}
 
