@@ -492,18 +492,15 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
    	  }
    	}
 
-  private void prepareStopTimesOutput() throws IOException {
-    String outfileName = "";
-    File outfile = null;
-    String outdir = handler.getRootDirectory() + handler.getWorkDirectory();
-
+  private static void prepareStopTimesOutput(Configuration config) throws IOException {
     if (stop_timesOut == null) {
-      outfileName = TransxchangeHandlerEngine.stop_timesFilename + /* "_" + serviceStartDate + */TransxchangeHandlerEngine.extension;
+      String outfileName = TransxchangeHandlerEngine.stop_timesFilename + /* "_" + serviceStartDate + */TransxchangeHandlerEngine.extension;
       TransxchangeHandlerEngine.addFilename(outfileName);
       if (handler.isSkipEmptyService()) {
         outfileName = TransxchangeHandlerEngine.stop_timesFilename + "_tmp"+ /* "_" + serviceStartDate + */TransxchangeHandlerEngine.extension;
       }
-      outfile = new File(outdir + /* "/" + serviceStartDate + */"/" + outfileName);
+      File outdir = config.getQualifiedOutputDirectory();
+      File outfile = new File(outdir + /* "/" + serviceStartDate + */"/" + outfileName);
       stop_timesOut = new PrintWriter(new FileWriter(outfile));
       if (!handler.isSkipEmptyService()) {
         stop_timesOut.println("trip_id,arrival_time,departure_time,stop_id,stop_sequence,stop_headsign,pickup_type,drop_off_type,shape_dist_traveled");

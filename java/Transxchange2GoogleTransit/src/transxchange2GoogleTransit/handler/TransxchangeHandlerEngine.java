@@ -168,9 +168,6 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		return config.getStopColumns();
 	}
 
-	public String getRootDirectory() {
-		return config.getRootDirectory();
-	}
 	public String getWorkDirectory() {
 		return config.getOutputDirectory();
 	}
@@ -341,10 +338,10 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	/*
 	 * Prepare GTFS file set files
 	 */
-	protected static void prepareOutput(String outputDirectory)
+	protected static void prepareOutput(File outputDirectory)
 	throws IOException
 	{
-		outdir = new File(outputDirectory);
+		outdir = outputDirectory;
 		filenames = new ArrayList<String>();
 
 		// Delete existing GTFS files in output directory
@@ -692,7 +689,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	/**
 	 * Close GTFS file set from GTFS data structures
 	 */
-	public static String closeOutput(String rootDirectory, String workDirectory)
+	public static String closeOutput(String workDirectory)
 	throws IOException
 	{
   

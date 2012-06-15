@@ -158,13 +158,11 @@ public class TransxchangeHandler {
    * Create GTFS file set from GTFS data structures
    */
 	public String writeOutput(Configuration config) throws IOException{
-	  String rootDirectory = config.getRootDirectory();
-	  String workDirectory = config.getOutputDirectory();
 		TransxchangeHandlerEngine.closeStopTimes();
 
         // if empty service skipping requested: Filter out trips that do not refer to an active service
 		if (config.skipEmptyService()) {
-    		File outdir = new File(config.getRootDirectory() + config.getOutputDirectory());
+    		File outdir = config.getQualifiedOutputDirectory();
     		String infileName = TransxchangeHandlerEngine.stop_timesFilename + "_tmp" + /* "_" + serviceStartDate + */ TransxchangeHandlerEngine.extension;
         	File infile = new File(outdir, infileName);
         	String outfileName = TransxchangeHandlerEngine.stop_timesFilename + /* "_" + serviceStartDate + */ TransxchangeHandlerEngine.extension;
@@ -215,7 +213,7 @@ public class TransxchangeHandler {
 		TransxchangeHandlerEngine.writeOutputStops(stops, config);
 		TransxchangeHandlerEngine.writeOutputAgencies(agencies);
 		TransxchangeHandlerEngine.writeOutputRoutes(routes);
-		return TransxchangeHandlerEngine.closeOutput(rootDirectory, workDirectory);
+		return TransxchangeHandlerEngine.closeOutput(config.getOutputDirectory());
 	}
 	
 

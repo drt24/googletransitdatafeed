@@ -1,5 +1,6 @@
 package transxchange2GoogleTransit;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +24,7 @@ public class Configuration {
   String lang = "";
   String phone = "";
   String rootDirectory = "";
-  String outputDirectory = null;
+  String outputDirectory = "";
   String stopFile = null;
   String inputFileName = null;
 
@@ -276,6 +277,7 @@ public class Configuration {
    * @return the rootDirectory
    * @see #getQualifiedOutputDirectory()
    */
+  @Deprecated
   public String getRootDirectory() {
     return rootDirectory;
   }
@@ -330,7 +332,7 @@ public class Configuration {
     this.inputFileName = inputFileName;
   }
 
-  public String getQualifiedOutputDirectory() {
-    return rootDirectory + outputDirectory;
+  public File getQualifiedOutputDirectory() {
+    return new File(rootDirectory + outputDirectory);
   }
 }
