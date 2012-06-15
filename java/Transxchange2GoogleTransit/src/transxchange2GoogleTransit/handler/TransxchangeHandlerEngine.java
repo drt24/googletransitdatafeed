@@ -685,14 +685,14 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		calendarDates = null;
 	}
 
-	public void closeStopTimes() {
-		stopTimes.closeStopTimesOutput();
+	public static void closeStopTimes() {
+		TransxchangeStopTimes.closeStopTimesOutput();
 	}
 
-	/*
+	/**
 	 * Close GTFS file set from GTFS data structures
 	 */
-	public String closeOutput(String rootDirectory, String workDirectory)
+	public static String closeOutput(String rootDirectory, String workDirectory)
 	throws IOException
 	{
   

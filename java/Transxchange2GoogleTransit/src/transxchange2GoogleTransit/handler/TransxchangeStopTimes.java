@@ -95,7 +95,7 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 
 	static PrintWriter stop_timesOut = null;
 
-	public void closeStopTimesOutput() {
+	public static void closeStopTimesOutput() {
 		if (stop_timesOut == null)
 			return;
 		stop_timesOut.close();

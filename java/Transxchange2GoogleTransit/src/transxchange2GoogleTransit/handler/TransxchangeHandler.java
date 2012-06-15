@@ -53,7 +53,6 @@ import transxchange2GoogleTransit.Stop;
 public class TransxchangeHandler {
 
   private static Logger log = Logger.getLogger(TransxchangeHandler.class.getCanonicalName());
-	static TransxchangeHandlerEngine parseHandler = null;
 	static List<TransxchangeHandlerEngine> parseHandlers = null;
 
 	String agencyOverride = null;
@@ -126,7 +125,7 @@ public class TransxchangeHandler {
 			if (zipinput)
 				enumer = zipfile.entries();
 			do {
-				parseHandler = new TransxchangeHandlerEngine(config);
+			  TransxchangeHandlerEngine parseHandler = new TransxchangeHandlerEngine(config);
 				
 				if (agencyOverride != null && agencyOverride.length() > 0)
 					parseHandler.setAgencyOverride(agencyOverride);
@@ -161,11 +160,11 @@ public class TransxchangeHandler {
 	public String writeOutput(Configuration config) throws IOException{
 	  String rootDirectory = config.getRootDirectory();
 	  String workDirectory = config.getOutputDirectory();
-		parseHandler.closeStopTimes();
+		TransxchangeHandlerEngine.closeStopTimes();
 
         // if empty service skipping requested: Filter out trips that do not refer to an active service
-		if (parseHandler.isSkipEmptyService()) {
-    		File outdir = new File(parseHandler.getRootDirectory() + parseHandler.getWorkDirectory());
+		if (config.skipEmptyService()) {
+    		File outdir = new File(config.getRootDirectory() + config.getOutputDirectory());
     		String infileName = TransxchangeHandlerEngine.stop_timesFilename + "_tmp" + /* "_" + serviceStartDate + */ TransxchangeHandlerEngine.extension;
         	File infile = new File(outdir, infileName);
         	String outfileName = TransxchangeHandlerEngine.stop_timesFilename + /* "_" + serviceStartDate + */ TransxchangeHandlerEngine.extension;
@@ -216,7 +215,7 @@ public class TransxchangeHandler {
 		TransxchangeHandlerEngine.writeOutputStops(stops, config);
 		TransxchangeHandlerEngine.writeOutputAgencies(agencies);
 		TransxchangeHandlerEngine.writeOutputRoutes(routes);
-		return parseHandler.closeOutput(rootDirectory, workDirectory);
+		return TransxchangeHandlerEngine.closeOutput(rootDirectory, workDirectory);
 	}
 	
 
