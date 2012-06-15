@@ -171,113 +171,108 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
 	}
 
    	@Override
-	public void endElement (String uri, String name, String qName) {
+   	public void endElement (String uri, String name, String qName) {
 
-		String service;
+   	  if (niceString == null || niceString.length() > 0) {
 
-		if (niceString == null || niceString.length() > 0) {
+   	    if (key.equals(_key_calendar_dates_start[0]) && keyNested.equals(_key_calendar_dates_start[1]) && (keyOperationDays.equals(_key_calendar_dates_start[2]) || keyOperationDays.equals(_key_calendar_no_dates_end[2])) && keyOperationDaysStart.equals(_key_calendar_dates_start[3]))
+   	      calendarDateOperationDayStart = niceString;
+   	    if (key.equals(_key_calendar_dates_end[0]) && keyNested.equals(_key_calendar_dates_end[1]) && (keyOperationDays.equals(_key_calendar_dates_end[2]) || keyOperationDays.equals(_key_calendar_no_dates_end[2])) && keyOperationDaysStart.equals(_key_calendar_dates_end[3])) {
+   	      try {
+   	        SimpleDateFormat sdfIn = new SimpleDateFormat("yyyy-MM-dd", Locale.US); // US - determined by location of Google Labs, not transit operator
+   	        sdfIn.setCalendar(Calendar.getInstance());
+   	        Date calendarDatesOperationDay = sdfIn.parse(calendarDateOperationDayStart);
+   	        Date calendarDateOperationDayEnd = sdfIn.parse(niceString);
+   	        GregorianCalendar gcOperationDay = new GregorianCalendar();
+   	        gcOperationDay.setTime(calendarDatesOperationDay);
+   	        String service = handler.getCalendar().getService();
+   	        if (service.length() == 0) { // Out-of-line OperatingProfile? E.g. special operations days for a single vehicle journey as opposed for a service.
+   	          if (listCalendar_OOL_start_date == null)
+   	            listCalendar_OOL_start_date = new ArrayList<ValueList>(); // If previously found OOL dates were read and reset some place else, recreate list
+   	          if (listCalendar_OOL_end_date == null)
+   	            listCalendar_OOL_end_date = new ArrayList<ValueList>();
+   	          if (listCalendar_OOL_exception_type == null)
+   	            listCalendar_OOL_exception_type = new ArrayList<ValueList>();
+   	          ValueList newCalendar_OOL_start_date = new ValueList(_key_calendar_dates_start[0]);
+   	          listCalendar_OOL_start_date.add(newCalendar_OOL_start_date);
+   	          newCalendar_OOL_start_date.addValue(TransxchangeDataAspect.formatDate(gcOperationDay.get(Calendar.YEAR), gcOperationDay.get(Calendar.MONTH) + 1, gcOperationDay.get(Calendar.DAY_OF_MONTH)));
+   	          gcOperationDay.setTime(calendarDateOperationDayEnd);
+   	          ValueList newCalendar_OOL_end_date = new ValueList(_key_calendar_dates_end[0]);
+   	          listCalendar_OOL_end_date.add(newCalendar_OOL_end_date);
+   	          newCalendar_OOL_end_date.addValue(TransxchangeDataAspect.formatDate(gcOperationDay.get(Calendar.YEAR), gcOperationDay.get(Calendar.MONTH) + 1, gcOperationDay.get(Calendar.DAY_OF_MONTH)));
+   	          ValueList newCalendarDates__OOL_exception_type = new ValueList(_key_calendar_no_dates_start[0]);
+   	          listCalendar_OOL_exception_type.add(newCalendarDates__OOL_exception_type);
+   	          if (dayOfNoOperation)
+   	            newCalendarDates__OOL_exception_type.addValue(_key_calendar_no_dates_start[4]);
+   	          else
+   	            newCalendarDates__OOL_exception_type.addValue(_key_calendar_dates_start[4]);
+   	        } else {
+   	          while (calendarDatesOperationDay.compareTo(calendarDateOperationDayEnd) <= 0) {
+   	            ValueList newCalendarDates__service_id = new ValueList(_key_calendar_dates_start[0]);
+   	            listCalendarDates__service_id.add(newCalendarDates__service_id);
+   	            newCalendarDates__service_id.addValue(service);
+   	            ValueList newCalendarDates__date = new ValueList(_key_calendar_dates_start[2]);
+   	            listCalendarDates__date.add(newCalendarDates__date);
+   	            newCalendarDates__date.addValue(TransxchangeDataAspect.formatDate(gcOperationDay.get(Calendar.YEAR), gcOperationDay.get(Calendar.MONTH) + 1, gcOperationDay.get(Calendar.DAY_OF_MONTH)));
+   	            ValueList newCalendarDates__exception_type = new ValueList(_key_calendar_dates_start[2]);
+   	            listCalendarDates__exception_type.add(newCalendarDates__exception_type);
+   	            if (dayOfNoOperation)
+   	              newCalendarDates__exception_type.addValue(_key_calendar_no_dates_start[4]);
+   	            else
+   	              newCalendarDates__exception_type.addValue(_key_calendar_dates_start[4]);
+   	            gcOperationDay.add(Calendar.DAY_OF_YEAR, 1);
+   	            calendarDatesOperationDay = gcOperationDay.getTime();
+   	          }
+   	        }
+   	      } catch (Exception e) {
+   	        handler.setParseError(e);
+   	      }
+   	    }
+   	  } else {
 
-			if (key.equals(_key_calendar_dates_start[0]) && keyNested.equals(_key_calendar_dates_start[1]) && (keyOperationDays.equals(_key_calendar_dates_start[2]) || keyOperationDays.equals(_key_calendar_no_dates_end[2])) && keyOperationDaysStart.equals(_key_calendar_dates_start[3]))
-				calendarDateOperationDayStart = niceString;
-			if (key.equals(_key_calendar_dates_end[0]) && keyNested.equals(_key_calendar_dates_end[1]) && (keyOperationDays.equals(_key_calendar_dates_end[2]) || keyOperationDays.equals(_key_calendar_no_dates_end[2])) && keyOperationDaysStart.equals(_key_calendar_dates_end[3])) {
-				try {
-					SimpleDateFormat sdfIn = new SimpleDateFormat("yyyy-MM-dd", Locale.US); // US - determined by location of Google Labs, not transit operator
-					sdfIn.setCalendar(Calendar.getInstance());
-					Date calendarDatesOperationDay = sdfIn.parse(calendarDateOperationDayStart);
-					Date calendarDateOperationDayEnd = sdfIn.parse(niceString);
-					GregorianCalendar gcOperationDay = new GregorianCalendar();
-					gcOperationDay.setTime(calendarDatesOperationDay);
-					service = handler.getCalendar().getService();
-					if (service.length() == 0) { // Out-of-line OperatingProfile? E.g. special operations days for a single vehicle journey as opposed for a service.
-						if (listCalendar_OOL_start_date == null)
-							listCalendar_OOL_start_date = new ArrayList<ValueList>(); // If previously found OOL dates were read and reset some place else, recreate list
-						if (listCalendar_OOL_end_date == null)
-							listCalendar_OOL_end_date = new ArrayList<ValueList>();
-						if (listCalendar_OOL_exception_type == null)
-							listCalendar_OOL_exception_type = new ArrayList<ValueList>();
-						ValueList newCalendar_OOL_start_date = new ValueList(_key_calendar_dates_start[0]);
-						listCalendar_OOL_start_date.add(newCalendar_OOL_start_date);
-						newCalendar_OOL_start_date.addValue(TransxchangeDataAspect.formatDate(gcOperationDay.get(Calendar.YEAR), gcOperationDay.get(Calendar.MONTH) + 1, gcOperationDay.get(Calendar.DAY_OF_MONTH)));
-						gcOperationDay.setTime(calendarDateOperationDayEnd);
-						ValueList newCalendar_OOL_end_date = new ValueList(_key_calendar_dates_end[0]);
-						listCalendar_OOL_end_date.add(newCalendar_OOL_end_date);
-						newCalendar_OOL_end_date.addValue(TransxchangeDataAspect.formatDate(gcOperationDay.get(Calendar.YEAR), gcOperationDay.get(Calendar.MONTH) + 1, gcOperationDay.get(Calendar.DAY_OF_MONTH)));
-						ValueList newCalendarDates__OOL_exception_type = new ValueList(_key_calendar_no_dates_start[0]);
-						listCalendar_OOL_exception_type.add(newCalendarDates__OOL_exception_type);
-						if (dayOfNoOperation)
-							newCalendarDates__OOL_exception_type.addValue(_key_calendar_no_dates_start[4]);
-						else
-							newCalendarDates__OOL_exception_type.addValue(_key_calendar_dates_start[4]);
-					} else {
-						while (calendarDatesOperationDay.compareTo(calendarDateOperationDayEnd) <= 0) {
-						  ValueList newCalendarDates__service_id = new ValueList(_key_calendar_dates_start[0]);
-							listCalendarDates__service_id.add(newCalendarDates__service_id);
-							newCalendarDates__service_id.addValue(service);
-							ValueList newCalendarDates__date = new ValueList(_key_calendar_dates_start[2]);
-							listCalendarDates__date.add(newCalendarDates__date);
-							newCalendarDates__date.addValue(TransxchangeDataAspect.formatDate(gcOperationDay.get(Calendar.YEAR), gcOperationDay.get(Calendar.MONTH) + 1, gcOperationDay.get(Calendar.DAY_OF_MONTH)));
-							ValueList newCalendarDates__exception_type = new ValueList(_key_calendar_dates_start[2]);
-							listCalendarDates__exception_type.add(newCalendarDates__exception_type);
-							if (dayOfNoOperation)
-								newCalendarDates__exception_type.addValue(_key_calendar_no_dates_start[4]);
-							else
-								newCalendarDates__exception_type.addValue(_key_calendar_dates_start[4]);
-							gcOperationDay.add(Calendar.DAY_OF_YEAR, 1);
-							calendarDatesOperationDay = gcOperationDay.getTime();
-						}
-					}
-				} catch (Exception e) {
-					handler.setParseError(e);
-				}
-        	}
-        } else {
+   	    // v1.6.3: Roll out years covered by the service
+   	    TransxchangeCalendar calendar = handler.getCalendar();
+   	    int startYear = calendar.getStartYear();
+   	    int endYear = calendar.getEndYear();
+   	    if (startYear != -1 && endYear != -1 && endYear >= startYear && yearsList.size() == 0) {
+   	      for (int year = startYear; year <= endYear; year++)
+   	        if (!years.containsKey(year)) {
+   	          years.put(year, createHolidays(year));
+   	          yearsList.add(year);
+   	        }
+   	    }
 
-        	// v1.6.3: Roll out years covered by the service
-        	TransxchangeCalendar calendar = handler.getCalendar();
-        	int startYear = calendar.getStartYear();
-        	int endYear = calendar.getEndYear();
-        	if (startYear != -1 && endYear != -1 && endYear >= startYear && yearsList.size() == 0) {
-        		for (int i = startYear; i <= endYear; i++)
-        			if (!years.containsKey(i)) {
-        				years.put(i, createHolidays(i));
-        				yearsList.add(i);
-        		}
-    		}
+   	    String service = calendar.getService();
 
-        	service = handler.getCalendar().getService();
+   	    // v.1.7.4: Bug fix: correctly dereference service ID if not determined in global call above
+   	    if (service == null || service.length() == 0) {
+   	      List<ValueList> serviceIds = calendar.getListCalendar__service_id();
+   	      service = "";
+   	      if (serviceIds.size() > 0) {
+   	        service = serviceIds.get(0).getValue(0);
+   	      }
+   	    }
 
-        	// v.1.7.4: Bug fix: correctly dereference service ID if not determined in global call above
-        	if (service == null || service.length() == 0) {
-	    		List<ValueList> serviceIds = calendar.getListCalendar__service_id();
-	    		service = "";
-	    		if (serviceIds.size() > 0) {
-	    			ValueList values = serviceIds.get(0);
-	    			service = values.getValue(0);
-	    		}
-    		}
+   	    if (!service.equals("")) {
+   	      Map<String, String> holidays;
+   	      for (int year : yearsList) {
+   	        holidays = years.get(year);
+   	        // Non Operating Holidays
+   	        if (key.equals(_key_calendar_bankholiday_nooperation_all[0]) && keyNested.equals(_key_calendar_bankholiday_nooperation_all[1]) && keyOperationDaysBank.equals(_key_calendar_bankholiday_nooperation_all[2]))
+   	          createBankHolidaysAll(service, holidays, _key_calendar_bankholiday_nooperation_all[4]);
 
-    		if (!service.equals("")) {
-	    		Map<String, String> holidays;
-	        	Iterator<Integer> i;
-	        	i = yearsList.iterator();
-	        	while (i.hasNext()) {
-	        		holidays = years.get(i.next());
-	        		// Non Operating Holidays
-	            	if (key.equals(_key_calendar_bankholiday_nooperation_all[0]) && keyNested.equals(_key_calendar_bankholiday_nooperation_all[1]) && keyOperationDaysBank.equals(_key_calendar_bankholiday_nooperation_all[2]))
-	            		createBankHolidaysAll(service, holidays, _key_calendar_bankholiday_nooperation_all[4]);
-
-	            	// Operating Holidays
-	            	if (key.equals(_key_calendar_bankholiday_operation_all[0]) && keyNested.equals(_key_calendar_bankholiday_operation_all[1])
-	            			&& keyOperationDaysBank.equals(_key_calendar_bankholiday_operation_all[2])
-	        			&& keyOperationDaysType.equals(_key_calendar_bankholiday_operation_all[3]))
-	            		createBankHolidaysAll(service, holidays, _key_calendar_bankholiday_operation_all[4]);
-	            	else
-		           		if (key.equals(_key_calendar_bankholiday_operation_spring[0]) && keyNested.equals(_key_calendar_bankholiday_operation_spring[1]) && keyOperationDaysBank.equals(_key_calendar_bankholiday_operation_spring[2]))
-		           			createBankHoliday(service, qName, holidays, _key_calendar_bankholiday_nooperation_all[4]);
-	        	}
-        	}
-        }
-	}
+   	        // Operating Holidays
+   	        if (key.equals(_key_calendar_bankholiday_operation_all[0]) && keyNested.equals(_key_calendar_bankholiday_operation_all[1])
+   	            && keyOperationDaysBank.equals(_key_calendar_bankholiday_operation_all[2])
+   	            && keyOperationDaysType.equals(_key_calendar_bankholiday_operation_all[3]))
+   	          createBankHolidaysAll(service, holidays, _key_calendar_bankholiday_operation_all[4]);
+   	        else
+   	          if (key.equals(_key_calendar_bankholiday_operation_spring[0]) && keyNested.equals(_key_calendar_bankholiday_operation_spring[1]) && keyOperationDaysBank.equals(_key_calendar_bankholiday_operation_spring[2]))
+   	            createBankHoliday(service, qName, holidays, _key_calendar_bankholiday_nooperation_all[4]);
+   	      }
+   	    }
+   	  }
+   	}
 
    	@Override
 	public void clearKeys (String qName) {
