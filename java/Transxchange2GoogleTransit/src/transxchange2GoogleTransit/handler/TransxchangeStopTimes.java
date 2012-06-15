@@ -492,14 +492,14 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
    	  }
    	}
 
-  private static void prepareStopTimesOutput(Configuration config) throws IOException {
+  private void prepareStopTimesOutput() throws IOException {
     if (stop_timesOut == null) {
       String outfileName = TransxchangeHandlerEngine.stop_timesFilename + /* "_" + serviceStartDate + */TransxchangeHandlerEngine.extension;
       TransxchangeHandlerEngine.addFilename(outfileName);
       if (handler.isSkipEmptyService()) {
         outfileName = TransxchangeHandlerEngine.stop_timesFilename + "_tmp"+ /* "_" + serviceStartDate + */TransxchangeHandlerEngine.extension;
       }
-      File outdir = config.getQualifiedOutputDirectory();
+      File outdir = handler.getQualifiedOutputDirectory();
       File outfile = new File(outdir + /* "/" + serviceStartDate + */"/" + outfileName);
       stop_timesOut = new PrintWriter(new FileWriter(outfile));
       if (!handler.isSkipEmptyService()) {

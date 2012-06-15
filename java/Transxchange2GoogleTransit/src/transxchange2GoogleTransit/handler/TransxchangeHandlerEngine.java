@@ -172,7 +172,10 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		return config.getOutputDirectory();
 	}
 
-	public String getParseError() {
+	public File getQualifiedOutputDirectory() {
+    return config.getQualifiedOutputDirectory();
+  }
+  public String getParseError() {
 		return parseError;
 	}
 
