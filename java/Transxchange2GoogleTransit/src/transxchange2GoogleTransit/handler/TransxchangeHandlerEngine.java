@@ -758,4 +758,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
     this();
     this.config = config;
   }
+  public int getRouteShortNameMaxSize() {
+    return config.getRouteShortNameMaxSize();
+  }
 }

@@ -151,7 +151,7 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
 
 		if (key.equals(key_routes__route_short_name[0]) && keyNested.equals(key_routes__route_short_name[1])) {
 		  String routeName = niceString;
-		  boolean isShortName = routeName.length() <= 6;
+		  boolean isShortName = routeName.length() <= handler.getRouteShortNameMaxSize();
 		  // We only get one length of name, if it is short we use it as a short name otherwise as a long name
 		  ValueList newRoutes__route_short_name = new ValueList(key_routes__route_short_name[1]);
 		  listRoutes__route_short_name.add(newRoutes__route_short_name);

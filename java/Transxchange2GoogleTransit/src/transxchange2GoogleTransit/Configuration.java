@@ -27,6 +27,10 @@ public class Configuration {
   String outputDirectory = "";
   String stopFile = null;
   String inputFileName = null;
+  /**
+   * The maximum size of a route name before it is put in route_long_name rather than route_short_name
+   */
+  int routeShortNameMaxSize = 6;
 
   public Configuration() {
   }
@@ -334,5 +338,9 @@ public class Configuration {
 
   public File getQualifiedOutputDirectory() {
     return new File(rootDirectory + outputDirectory);
+  }
+
+  public int getRouteShortNameMaxSize() {
+    return routeShortNameMaxSize;
   }
 }
