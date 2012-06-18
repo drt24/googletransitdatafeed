@@ -1,8 +1,10 @@
 package transxchange2GoogleTransit;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipFile;
 
 public class Configuration {
   boolean useAgencyShortName = false;
@@ -14,7 +16,7 @@ public class Configuration {
   String stopfileColumnSeparator = ",";
   int naptanHelperStopColumn = -1;
   /**
-   * atco code to name of stop to display to user 
+   * atco code to name of stop to display to user
    */
   Map<String, Stop> naptanStops = null;
   Map<String, String> agencyMap = null;
@@ -28,9 +30,14 @@ public class Configuration {
   String stopFile = null;
   String inputFileName = null;
   /**
-   * The maximum size of a route name before it is put in route_long_name rather than route_short_name
+   * The maximum size of a route name before it is put in route_long_name rather than
+   * route_short_name
    */
   int routeShortNameMaxSize = 6;
+  /**
+   * The set of input streams to parse
+   */
+  StreamSet inputStreamSet;
 
   public Configuration() {
   }
@@ -55,6 +62,8 @@ public class Configuration {
     outputDirectory = toCopy.outputDirectory;
     stopFile = toCopy.stopFile;
     inputFileName = toCopy.inputFileName;
+    routeShortNameMaxSize = toCopy.routeShortNameMaxSize;
+    inputStreamSet = toCopy.inputStreamSet;
   }
 
   /**
@@ -179,7 +188,7 @@ public class Configuration {
   }
 
   public Stop getNaptanStop(String atcoCode) {
-    if (null == naptanStops){
+    if (null == naptanStops) {
       return null;
     } else {
       return naptanStops.get(atcoCode);
@@ -324,7 +333,9 @@ public class Configuration {
 
   /**
    * @return the inputFileName
+   * @deprecated Use {@link #getInputStreams()}
    */
+  @Deprecated
   public String getInputFileName() {
     return inputFileName;
   }
@@ -336,11 +347,38 @@ public class Configuration {
     this.inputFileName = inputFileName;
   }
 
+  public void setInputStreams(StreamSet streams) {
+    this.inputStreamSet = streams;
+  }
+
   public File getQualifiedOutputDirectory() {
     return new File(rootDirectory + outputDirectory);
   }
 
   public int getRouteShortNameMaxSize() {
     return routeShortNameMaxSize;
+  }
+
+  /**
+   * Get the set of input streams to parse
+   * 
+   * @return the input streams to parse constructed either from {@link #inputStreamSet} or from
+   *         {@link #inputFileName} by interpreting it depending on its .xml or .zip extension
+   * @throws IOException
+   */
+  public StreamSet getInputStreams() throws IOException {
+    if (inputStreamSet != null) {
+      return inputStreamSet;
+    } else if (inputFileName != null) {
+      if (inputFileName.endsWith(".xml")) {
+        return new FileSet(new File(inputFileName));
+      } else if (inputFileName.endsWith(".zip")) {
+        return new ZipFileSet(new ZipFile(inputFileName));
+      } else {
+        throw new IOException("Input file does not end in .xml or .zip: " + inputFileName);
+      }
+    } else {
+      throw new IOException("No input file or set of input files specified");
+    }
   }
 }

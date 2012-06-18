@@ -30,9 +30,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
-import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -53,7 +50,6 @@ import transxchange2GoogleTransit.Stop;
  */
 public class TransxchangeHandler {
 
-  private static Logger log = Logger.getLogger(TransxchangeHandler.class.getCanonicalName());
 	static List<TransxchangeHandlerEngine> parseHandlers = null;
 
 	String agencyOverride = null;
@@ -98,62 +94,42 @@ public class TransxchangeHandler {
 	  parse(config);
 	}
 
-	public void parse(Configuration config) throws ParserConfigurationException, SAXException{
-		ZipFile zipfile = null;
-		boolean zipinput = true; // Handle zip files
-		boolean processing = true;
-		java.util.Enumeration<? extends ZipEntry> enumer = null;
+  public void parse(Configuration config) throws ParserConfigurationException, SAXException {
+    try {
+      // Prepare output files
+      TransxchangeHandlerEngine.prepareOutput(config.getQualifiedOutputDirectory());
 
-		// Open infile, zip or single xml
-		try { // Try to open filename as zip file
-			zipfile = new ZipFile(config.getInputFileName());
-		} catch (IOException e) {
-			zipinput = false; // Opening file as zip file crashed; assume it is a single XML file
-		}
+      // Read stopfile
+      String stopFile = config.getStopFile();
+      if (stopFile != null && stopFile.length() > 0)
+        TransxchangeStops.readStopfile(stopFile, config.getStopColumns());
 
-		try {
+      // Roll single as well as zipped infiles into a unified data structure for later transparent
+      // processing (stops only, rest goes straight to output files)
+      parseHandlers = new ArrayList<TransxchangeHandlerEngine>();
 
-			// Prepare output files
-			TransxchangeHandlerEngine.prepareOutput(config.getQualifiedOutputDirectory());
+      for (InputStream stream : config.getInputStreams()) {
 
-			// Read stopfile
-			String stopFile = config.getStopFile();
-			if (stopFile != null && stopFile.length() > 0)
-				TransxchangeStops.readStopfile(stopFile, config.getStopColumns());
+        TransxchangeHandlerEngine parseHandler = new TransxchangeHandlerEngine(config);
 
-			// Roll single as well as zipped infiles into a unified data structure for later transparent processing (stops only, rest goes straight to output files)
-			parseHandlers = new ArrayList<TransxchangeHandlerEngine>();
-			if (zipinput)
-				enumer = zipfile.entries();
-			do {
-			  TransxchangeHandlerEngine parseHandler = new TransxchangeHandlerEngine(config);
-				
-				if (agencyOverride != null && agencyOverride.length() > 0)
-					parseHandler.setAgencyOverride(agencyOverride);
+        if (agencyOverride != null && agencyOverride.length() > 0)
+          parseHandler.setAgencyOverride(agencyOverride);
 
-				SAXParserFactory parserFactory = SAXParserFactory.newInstance();
-				SAXParser parser = parserFactory.newSAXParser();
+        SAXParserFactory parserFactory = SAXParserFactory.newInstance();
+        SAXParser parser = parserFactory.newSAXParser();
 
-				if (zipinput) {
-					if (processing = enumer.hasMoreElements()) {
-						ZipEntry zipentry = (ZipEntry)enumer.nextElement();
-						log.info(zipentry.getName());
-						InputStream in = zipfile.getInputStream(zipentry);
-						parser.parse(in, parseHandler);
-						parseHandler.writeOutputSansAgenciesStopsRoutes(); // Dump data structure with exception of stops which need later consolidation over all input files
-						parseHandler.clearDataSansAgenciesStopsRoutes(); // No need to keep the data structures
-					}
-				} else {
-					parser.parse(new File(config.getInputFileName()), parseHandler);
-					parseHandler.writeOutputSansAgenciesStopsRoutes(); // Dump data structure with exception of stops which need later consolidation over all input files
-					processing = false;
-				}
-				parseHandlers.add(parseHandler);
-			} while (processing);
-		} catch (IOException e) {
-        	System.err.println("TransxchangeHandler Parse Exception: " + e.getMessage());
-		}
-	}
+        parser.parse(stream, parseHandler);
+        // Dump data structure with exception of stops which need later consolidation over all input
+        // files
+        parseHandler.writeOutputSansAgenciesStopsRoutes();
+        parseHandler.clearDataSansAgenciesStopsRoutes(); // No need to keep the data structures
+
+        parseHandlers.add(parseHandler);
+      }
+    } catch (IOException e) {
+      System.err.println("TransxchangeHandler Parse Exception: " + e.getMessage());
+    }
+  }
 
 	/**
    * Create GTFS file set from GTFS data structures
