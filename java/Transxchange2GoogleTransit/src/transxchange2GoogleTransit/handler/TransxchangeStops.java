@@ -133,14 +133,14 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 		return listStops__stop_country;
 	}
 
-	public void addStop(String stopId) {
+	public static void addStop(String stopId) {
 		if (stopId == null || stopId.length() == 0)
 			return;
 		if (stops == null)
 			stops = new HashMap<String, String>();
 		stops.put(stopId, "0");
 	}
-	public boolean hasStop(String testId) {
+	public static boolean hasStop(String testId) {
 		if (stops == null || testId == null || testId.length() == 0)
 			return false;
 		if (!stops.containsKey(testId))
@@ -149,17 +149,20 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 			return false;
 		return true;
 	}
-	public void flagStop(String stopId) {
+	public static void flagStop(String stopId) {
 		if (stops == null || stopId == null || stopId.length() == 0)
 			return;
 		stops.put(stopId, "1");
 	}
-	public void flagAllStops(String flag) {
+	public static void flagAllStops(String flag) {
 		if (stops == null || flag == null)
 			return;
 		for (String key : stops.keySet()) {
 			stops.put(key, flag);
 		}
+	}
+	public static void clearStops() {
+	  stops.clear();
 	}
 
    	@Override
@@ -416,7 +419,6 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 	    String stopId;
 	    boolean hot;
 	    String indicator, locality, stopname, naptanPick;
-	    Integer index;
 
 	    // Backfill missing stop coordinates with default lat/lon
 	    for (i = 0; i < listStops__stop_id.size(); i++) {
@@ -494,7 +496,7 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 		    		if (columnValues[j] != null) {
 		    			if (stopname.length() > 0)
 		    				stopname += handler.getStopfilecolumnseparator(); // ",";
-		    			index = (Integer)stopIx.get(stopId);
+		    			Integer index = (Integer)stopIx.get(stopId);
 		    			if (index == null) {
 		    				if (stopname.length() == 0)
 		    					stopname += "OpenRequired";//FIXME BUG, don't do that

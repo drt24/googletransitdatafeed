@@ -50,15 +50,6 @@ import transxchange2GoogleTransit.Stop;
 public class TransxchangeHandlerEngine extends DefaultHandler {
 
   private static Logger log = Logger.getLogger(TransxchangeHandlerEngine.class.getCanonicalName());
-	// GTFS structures
-	TransxchangeAgency agencies;
-	TransxchangeStops stops;
-	TransxchangeRoutes routes;
-	TransxchangeTrips trips;
-	TransxchangeStopTimes stopTimes;
-	TransxchangeCalendar calendar;
-	TransxchangeCalendarDates calendarDates;
-
 	// Parse comments
 	static Exception parseError = null;
 	static String parseInfo = "";
@@ -86,7 +77,16 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 	static List<String> filenames = null;
 	static File outdir = new File("");
 
-	Map<String, String> calendarServiceIds = null;
+	// GTFS structures
+  TransxchangeAgency agencies;
+  TransxchangeStops stops;
+  TransxchangeRoutes routes;
+  TransxchangeTrips trips;
+  TransxchangeStopTimes stopTimes;
+  TransxchangeCalendar calendar;
+  TransxchangeCalendarDates calendarDates;
+
+  Map<String, String> calendarServiceIds = null;
 	Map<String, String> calendarDatesServiceIds = null;
 	Map<String, String> tripServiceIds = null;
   private Configuration config;
@@ -689,57 +689,58 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 		TransxchangeStopTimes.closeStopTimesOutput();
 	}
 
-	/**
-	 * Close GTFS file set from GTFS data structures
-	 */
-	public static String closeOutput(String workDirectory)
-	throws IOException
-	{
-  
-	  // Close out PrintWriter's
-	  stopsOut.close();
-	  agenciesOut.close();
-	  routesOut.close();
-	  tripsOut.close();
-	  //		stop_timesOut.close();
-	  calendarsOut.close();
-	  if (calendarDatesOut != null) // calendar_dates is optional; might not have been created
-	    calendarDatesOut.close();
+  /**
+   * Close GTFS file set from GTFS data structures
+   */
+  public static String closeOutput(String workDirectory) throws IOException {
 
-	  stopsOut = null;
-	  agenciesOut = null;
-	  routesOut = null;
-	  tripsOut = null;
-	  //		stop_timesOut = null;
-	  calendarsOut = null;
-	  calendarDatesOut = null;
+    // Close out PrintWriter's
+    stopsOut.close();
+    agenciesOut.close();
+    routesOut.close();
+    tripsOut.close();
+    // stop_timesOut.close();
+    calendarsOut.close();
+    if (calendarDatesOut != null) // calendar_dates is optional; might not have been created
+      calendarDatesOut.close();
 
-		// Compress the files
-        ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(new File(outdir, gtfsZipfileName)));
-        byte[] buf = new byte[1024]; // Create a buffer for reading the files
-        for (int i = 0; i < filenames.size(); i++) {
-            FileInputStream in = new FileInputStream(new File(outdir, filenames.get(i)));
+    stopsOut = null;
+    agenciesOut = null;
+    routesOut = null;
+    tripsOut = null;
+    // stop_timesOut = null;
+    calendarsOut = null;
+    calendarDatesOut = null;
 
-            // Add ZIP entry to output stream.
-            zipOut.putNextEntry(new ZipEntry(filenames.get(i)));
+    // Compress the files
+    ZipOutputStream zipOut =
+        new ZipOutputStream(new FileOutputStream(new File(outdir, gtfsZipfileName)));
+    byte[] buf = new byte[1024]; // Create a buffer for reading the files
+    for (int i = 0; i < filenames.size(); i++) {
+      FileInputStream in = new FileInputStream(new File(outdir, filenames.get(i)));
 
-            // Transfer bytes from the file to the ZIP file
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                zipOut.write(buf, 0, len);
-            }
+      // Add ZIP entry to output stream.
+      zipOut.putNextEntry(new ZipEntry(filenames.get(i)));
 
-            // Complete the entry
-            zipOut.closeEntry();
-            in.close();
-        }
+      // Transfer bytes from the file to the ZIP file
+      int len;
+      while ((len = in.read(buf)) > 0) {
+        zipOut.write(buf, 0, len);
+      }
 
-        // Complete the ZIP file
-        zipOut.close();
+      // Complete the entry
+      zipOut.closeEntry();
+      in.close();
+    }
 
-        // Return path and name of GTFS zip file
-        return workDirectory + /* "/" + serviceStartDate + */ "/" + "google_transit.zip";
-	}
+    // Complete the ZIP file
+    zipOut.close();
+    // Clear filenames
+    filenames = null;
+
+    // Return path and name of GTFS zip file
+    return workDirectory + /* "/" + serviceStartDate + */"/" + "google_transit.zip";
+  }
 
 	/*
 	 * Initialize GTFS data structures

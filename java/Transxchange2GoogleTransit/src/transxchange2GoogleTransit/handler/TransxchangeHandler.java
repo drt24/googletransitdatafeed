@@ -167,7 +167,7 @@ public class TransxchangeHandler {
     					inStop = st.nextToken();
     					if (parser.hasCalendarDatesServiceId(inService) || parser.hasCalendarServiceId(inService)) {
     						stop_timesOut.println(line);
-        					parser.getStops().flagStop(inStop); // Flag as included in service for later rollout in skiporphanstop
+    						TransxchangeStops.flagStop(inStop); // Flag as included in service for later rollout in skiporphanstop
         				}
     				}
     			}
@@ -180,7 +180,7 @@ public class TransxchangeHandler {
 			while (parsers.hasNext()) {
 				TransxchangeHandlerEngine parser = (TransxchangeHandlerEngine)parsers.next();
 				if (parser != null)
-					parser.getStops().flagAllStops("1");
+				  TransxchangeStops.flagAllStops("1");
 			}
         }
 		Map<String,Agency> agencies = consolidateAgencies(); // Eliminiate possible duplicates from multiple input files in zip archive
@@ -194,11 +194,14 @@ public class TransxchangeHandler {
         }
       }
     }
+    usedStops.clear();// reset
 		Map<String,Route> routes = consolidateRoutes(); // Eliminiate possible duplicates from multiple input files in zip archive
 		
 		TransxchangeHandlerEngine.writeOutputStops(stops, config);
 		TransxchangeHandlerEngine.writeOutputAgencies(agencies);
 		TransxchangeHandlerEngine.writeOutputRoutes(routes);
+		parseHandlers = null;// Help GC
+		TransxchangeStops.clearStops();
 		return TransxchangeHandlerEngine.closeOutput(config.getOutputDirectory());
 	}
 	

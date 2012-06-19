@@ -415,7 +415,7 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
    	              ValueList newStoptimes__stop_id = new ValueList(journeyPatternSectionRef);
    	              listStoptimes__stop_id.add(newStoptimes__stop_id);
    	              newStoptimes__stop_id.addValue((_listTimingLinksFromStop.get(j)).getValue(0));
-   	              handler.getStops().addStop((_listTimingLinksFromStop.get(j)).getValue(0));
+   	              TransxchangeStops.addStop((_listTimingLinksFromStop.get(j)).getValue(0));
    	              ValueList newStoptimes__stop_sequence = new ValueList(journeyPatternSectionRef);
    	              listStoptimes__stop_sequence.add(newStoptimes__stop_sequence);
    	              sn = new Integer(sequenceNumber);
@@ -480,7 +480,7 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
    	      ValueList newStoptimes__stop_id = new ValueList(journeyPatternSectionRef);
    	      listStoptimes__stop_id.add(newStoptimes__stop_id);
    	      newStoptimes__stop_id.addValue((_listTimingLinksToStop.get(lastStopOnPattern)).getValue(0));
-   	      handler.getStops().addStop((_listTimingLinksToStop.get(lastStopOnPattern)).getValue(0));
+   	      TransxchangeStops.addStop((_listTimingLinksToStop.get(lastStopOnPattern)).getValue(0));
    	      ValueList newStoptimes__stop_sequence = new ValueList(journeyPatternSectionRef);
    	      listStoptimes__stop_sequence.add(newStoptimes__stop_sequence);
    	      sn = new Integer(sequenceNumber);

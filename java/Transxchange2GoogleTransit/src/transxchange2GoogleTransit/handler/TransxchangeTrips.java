@@ -70,16 +70,6 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	String _journeyPatternRef = "";
 	String _vehicleJourneyRef = "";
 
-    int qualifierIx;
-	int i;
-	boolean found;
-	List<ValueList> oolStart;
-	List<ValueList> calendarServices;
-	int frequency;
-	int[] departureTimehhmmss = {-1, -1, -1};
-	int[] endTimehhmmss = {-1, -1, -1};
-	int departureTimeInSeconds;
-
 	public List<ValueList> getListTrips__route_id() {
 		return listTrips__route_id;
 	}
@@ -166,7 +156,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 		if (key.equals(_key_trips_journeypatternref2[0]) && qName.equals(_key_trips_journeypatternref2[1]))
 			keyNested = _key_trips_journeypatternref2[1];
 		if (qName.equals(key_trips__trip_headsign[0])) {
-	        qualifierIx = atts.getIndex("id");
+	        int qualifierIx = atts.getIndex("id");
 	        _journeyPattern = atts.getValue(qualifierIx);
 			key = key_trips__trip_headsign[0];
 		}
@@ -194,14 +184,14 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 	    		  * Find out if out-of-line calendar dates where picked up earlier and assign to current VehicleJourney
 	    		  */
 	    		 String tripId;
-	    		 oolStart = handler.getCalendarDates().getListOOLDates_start();
+	    		 List<ValueList> oolStart = handler.getCalendarDates().getListOOLDates_start();
 //	    		 List oolEnd = handler.getCalendarDates().getListOOLDates_end();
 
 	    		 if (oolStart != null) {
 	    			 // found out-of-line dates
-	    			 calendarServices = handler.getCalendar().getListCalendar__service_id();
-	    			 i = 0;
-	    			 found = false;
+	    			 List<ValueList> calendarServices = handler.getCalendar().getListCalendar__service_id();
+	    			 int i = 0;
+	    			 boolean found = false;
 
 	    			 // find matching service in calendar data structure. This assumes the service has already been defined in XML file. This is normally the case
 	    			 while (i < calendarServices.size() && !found) {
@@ -275,20 +265,16 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
         if (key.equals(_key_trips_frequency[0]) && keyNested.equals(_key_trips_frequency[1])) {
         	_scheduledFrequency = niceString;
         	// Unroll transxchange:vehicle journeys with frequency to GTFS: descrete trips. In the first few versions of GTFS, there did not exist frequency.txt
-        	frequency = 0;
-        	departureTimehhmmss[0] = -1;
-        	departureTimehhmmss[1] = -1;
-        	departureTimehhmmss[2] = -1;
-			endTimehhmmss[0] = -1;
-			endTimehhmmss[1] = -1;
-			endTimehhmmss[2] = -1;
+        	int frequency = 0;
+        	int[] departureTimehhmmss = {-1, -1, -1};
+        	int[] endTimehhmmss = {-1, -1, -1};
 
         	readTransxchangeTime(departureTimehhmmss, _departureTime);
         	readTransxchangeTime(endTimehhmmss, _endTime);
         	frequency = readTransxchangeFrequency(_scheduledFrequency);
         	hot = (frequency > 0);
         	while (hot) {
-        		departureTimeInSeconds = departureTimehhmmss[2] + departureTimehhmmss[1] * 60 + departureTimehhmmss[0] * 3600;
+        		int departureTimeInSeconds = departureTimehhmmss[2] + departureTimehhmmss[1] * 60 + departureTimehhmmss[0] * 3600;
         		departureTimeInSeconds += frequency;
         		departureTimehhmmss[0] = departureTimeInSeconds / 3600;
         		departureTimehhmmss[1] = (departureTimeInSeconds / 60) % 60;
@@ -453,36 +439,36 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
 		ValueList iterator;
 
 		System.out.println("*** Trips");
-		for (i = 0; i < listTrips__trip_id.size(); i++) {
+		for (int i = 0; i < listTrips__trip_id.size(); i++) {
 		    iterator = listTrips__trip_id.get(i);
 		    iterator.dumpValues();
 		}
-		for (i = 0; i < _listJourneyPatternDestinationDisplays.size(); i++) {
+		for (int i = 0; i < _listJourneyPatternDestinationDisplays.size(); i++) {
 		    iterator = _listJourneyPatternDestinationDisplays.get(i);
 		    iterator.dumpValues();
 		}
 		// v1.7.3
-		for (i = 0; i < _listJourneyPatternDirections.size(); i++) {
+		for (int i = 0; i < _listJourneyPatternDirections.size(); i++) {
 		    iterator = _listJourneyPatternDirections.get(i);
 		    iterator.dumpValues();
 		}
-		for (i = 0; i < _listJourneyPatternRouteRef.size(); i++) {
+		for (int i = 0; i < _listJourneyPatternRouteRef.size(); i++) {
 		    iterator = _listJourneyPatternRouteRef.get(i);
 		    iterator.dumpValues();
 		}
-	  	for (i = 0; i < _listJourneyPatternSectionRefs.size(); i++) {
+    for (int i = 0; i < _listJourneyPatternSectionRefs.size(); i++) {
 		    iterator = _listJourneyPatternSectionRefs.get(i);
 		    iterator.dumpValues();
 		}
-		for (i = 0; i < listTrips__route_id.size(); i++) {
+		for (int i = 0; i < listTrips__route_id.size(); i++) {
 		    iterator = listTrips__route_id.get(i);
 		    iterator.dumpValues();
 		}
-		for (i = 0; i < listTrips__service_id.size(); i++) {
+		for (int i = 0; i < listTrips__service_id.size(); i++) {
 		    iterator = listTrips__service_id.get(i);
 		    iterator.dumpValues();
 		}
-		for (i = 0; i < _listJourneyPatternRef.size(); i++) {
+		for (int i = 0; i < _listJourneyPatternRef.size(); i++) {
 		    iterator = _listJourneyPatternRef.get(i);
 		    iterator.dumpValues();
 		}
