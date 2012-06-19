@@ -41,6 +41,7 @@ import transxchange2GoogleTransit.Geocoder;
 import transxchange2GoogleTransit.LatLong;
 import transxchange2GoogleTransit.Route;
 import transxchange2GoogleTransit.Stop;
+import transxchange2GoogleTransit.handler.TransxchangeCalendarDates.EXCEPTION;
 
 /*
  * This class extends DefaultHandler to parse a TransXChange v2.1 xml file,
@@ -497,12 +498,12 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
         	}
         	calendarDatesServiceIds = new HashMap<String, String>();
         	String calendarDateServiceId;
-        	String calendarDateExceptionType;
+        	EXCEPTION calendarDateExceptionType;
         	HashMap<String, String> calendarExceptions = new HashMap<String, String>();
         	for (int i = 0; i < this.getCalendarDates().getListCalendarDates__service_id().size(); i++) {
         		calendarDateServiceId = (this.getCalendarDates().getListCalendarDates__service_id().get(i)).getValue(0);
-        		calendarDateExceptionType = (this.getCalendarDates().getListCalendarDates__exception_type().get(i)).getValue(0);
-        		if (this.hasCalendarServiceId(calendarDateServiceId) || !calendarDateExceptionType.equals("2") || !config.skipEmptyService()) {
+        		calendarDateExceptionType = this.getCalendarDates().getListCalendarDates__exception_type().get(i);
+        		if (this.hasCalendarServiceId(calendarDateServiceId) || !calendarDateExceptionType.equals(EXCEPTION.REMOVE) || !config.skipEmptyService()) {
         			outLine = calendarDateServiceId + "," +
         				(this.getCalendarDates().getListCalendarDates__date().get(i)).getValue(0) + "," +
         				calendarDateExceptionType;
