@@ -5,8 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * Support iterating over the input streams from a set of files
@@ -19,7 +19,7 @@ public class FileSet implements StreamSet {
 
     private Iterator<File> fileIterator;
 
-    public FileIterator(List<File> fileList) {
+    public FileIterator(Collection<File> fileList) {
       this.fileIterator = fileList.iterator();
     }
 
@@ -46,7 +46,7 @@ public class FileSet implements StreamSet {
 
   }
 
-  private final List<File> fileList;
+  private final Collection<File> fileList;
 
   public FileSet(File file) throws FileNotFoundException {
     if (!file.canRead()) {
@@ -56,7 +56,7 @@ public class FileSet implements StreamSet {
     fileList.add(file);
   }
 
-  public FileSet(List<File> files) throws FileNotFoundException {
+  public FileSet(Collection<File> files) throws FileNotFoundException {
     for (File file : files) {
       if (!file.canRead()) {
         throw new FileNotFoundException("File not readable: " + file);
