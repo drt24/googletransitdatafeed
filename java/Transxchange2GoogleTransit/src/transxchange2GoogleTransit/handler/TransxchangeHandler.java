@@ -52,6 +52,7 @@ public class TransxchangeHandler {
 
 	static List<TransxchangeHandlerEngine> parseHandlers = null;
 
+	private Map<String,Stop> stops = new TreeMap<String,Stop>();
 	String agencyOverride = null;
 
 
@@ -121,6 +122,7 @@ public class TransxchangeHandler {
         parser.parse(stream, parseHandler);
         // Dump data structure with exception of stops which need later consolidation over all input
         // files
+        parseHandler.getStops().export(stops);// saves on memory
         parseHandler.writeOutputSansAgenciesStopsRoutes();
         parseHandler.clearDataSansAgenciesStopsRoutes(); // No need to keep the data structures
 
@@ -184,7 +186,6 @@ public class TransxchangeHandler {
 			}
         }
 		Map<String,Agency> agencies = consolidateAgencies(); // Eliminiate possible duplicates from multiple input files in zip archive
-		Map<String,Stop> stops = consolidateStops();
 		Set<String> usedStops = TransxchangeStopTimes.getUsedStops();
     for (String stopId : usedStops) {
       if (!stops.containsKey(stopId)) {
@@ -203,20 +204,6 @@ public class TransxchangeHandler {
 		parseHandlers = null;// Help GC
 		TransxchangeStops.clearStops();
 		return TransxchangeHandlerEngine.closeOutput(config.getOutputDirectory());
-	}
-	
-
-  /**
-	 * Eliminate possible duplicates from multiple input files in zip archive
-	 */
-	public Map<String,Stop> consolidateStops() {
-	  // Use TreeMap so that we get output sorted by key
-		Map<String,Stop> stopsMap = new TreeMap<String,Stop>();//map of atco_code to Stop
-
-		for (TransxchangeHandlerEngine parser : parseHandlers){
-		  parser.getStops().export(stopsMap);
-		}
-		return stopsMap;
 	}
 
 	/**
