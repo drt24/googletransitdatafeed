@@ -38,12 +38,13 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import transxchange2GoogleTransit.Agency;
+import transxchange2GoogleTransit.CalendarDate;
 import transxchange2GoogleTransit.Configuration;
+import transxchange2GoogleTransit.EXCEPTION;
 import transxchange2GoogleTransit.Geocoder;
 import transxchange2GoogleTransit.LatLong;
 import transxchange2GoogleTransit.Route;
 import transxchange2GoogleTransit.Stop;
-import transxchange2GoogleTransit.handler.TransxchangeCalendarDates.EXCEPTION;
 
 /*
  * This class extends DefaultHandler to parse a TransXChange v2.1 xml file,
@@ -490,7 +491,7 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
 
         // calendar_dates.txt
         // Create file only if there are exceptions or additions
-        if (this.getCalendarDates().getListCalendarDates__service_id().size() > 0) {
+        if (this.getCalendarDates().getCalendarDates().size() > 0) {
         	if (calendarDatesOut == null) {
             	outfileName = calendar_datesFilename + /* "_" + serviceStartDate + */ extension;
             	outfile = new File(outdir, outfileName);
@@ -499,31 +500,19 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
             	calendarDatesOut.println("service_id,date,exception_type");
         	}
         	calendarDatesServiceIds = new HashMap<String, String>();
-        	String calendarDateServiceId;
-        	EXCEPTION calendarDateExceptionType;
-        	HashMap<String, String> calendarExceptions = new HashMap<String, String>();
-        	for (int i = 0; i < this.getCalendarDates().getListCalendarDates__service_id().size(); i++) {
-        		calendarDateServiceId = (this.getCalendarDates().getListCalendarDates__service_id().get(i)).getValue(0);
-        		calendarDateExceptionType = this.getCalendarDates().getListCalendarDates__exception_type().get(i);
-        		if (this.hasCalendarServiceId(calendarDateServiceId) || !calendarDateExceptionType.equals(EXCEPTION.REMOVE) || !config.skipEmptyService()) {
-        			outLine = calendarDateServiceId + "," +
-        				(this.getCalendarDates().getListCalendarDates__date().get(i)).getValue(0) + "," +
-        				calendarDateExceptionType;
-        			if (!calendarExceptions.containsKey(outLine)) {
-//	        		calendarDatesOut.print(calendarDateServiceId);
-//	        		calendarDatesOut.print(",");
-//	        		calendarDatesOut.print((this.getCalendarDates().getListCalendarDates__date().get(i)).getValue(0));
-//	        		calendarDatesOut.print(",");
-//	        		calendarDatesOut.println(calendarDateExceptionType);
-	        			calendarDatesOut.println(outLine);
-	        			calendarExceptions.put(outLine, "");
-        			}
+      for (CalendarDate calendarDate : this.getCalendarDates().getCalendarDates()) {
+        String calendarDateServiceId = calendarDate.getServiceId();
+        EXCEPTION calendarDateExceptionType = calendarDate.getException();
+        if (hasCalendarServiceId(calendarDateServiceId)
+            || !calendarDateExceptionType.equals(EXCEPTION.REMOVE) || !skipEmptyService) {
 
-	        		if (skipEmptyService)
-	        			calendarDatesServiceIds.put(calendarDateServiceId, calendarDateServiceId);
-            	}
-        	}
+          calendarDatesOut.println(csvProof(calendarDateServiceId) + "," + csvProof(calendarDate.getDate()) + "," + calendarDateExceptionType);
+
+          if (skipEmptyService)
+            calendarDatesServiceIds.put(calendarDateServiceId, calendarDateServiceId);
         }
+      }
+    }
 
         // trips.txt
 		if (tripsOut == null) {
