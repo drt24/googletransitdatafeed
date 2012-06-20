@@ -23,6 +23,8 @@ import java.util.List;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXParseException;
 
+import transxchange2GoogleTransit.Util;
+
 /*
  * This class handles the TransXChange xml input file under the aspect of
  * 	calendar dates associates with services
@@ -210,14 +212,14 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 				if (inOperatingPeriod)
 					serviceStartDate = niceString;
 				listCalendar__start_date.add(newCalendar__start_date);
-				newCalendar__start_date.addValue(readTransxchangeDate(serviceStartDate));
+				newCalendar__start_date.addValue(Util.readTransxchangeDate(serviceStartDate));
 			}
 			if (key.equals(key_calendar__end_date[0]) && keyNested.equals(key_calendar__end_date[1])) {
 			  ValueList newCalendar__end_date = new ValueList(key_calendar__end_date[1]);
 				if (inOperatingPeriod)
 					serviceEndDate = niceString;
 				listCalendar__end_date.add(newCalendar__end_date);
-				newCalendar__end_date.addValue(readTransxchangeDate(serviceEndDate));
+				newCalendar__end_date.addValue(Util.readTransxchangeDate(serviceEndDate));
 			}
 		    if (key.equals(_key_operatingperiod[0]) && qName.equals(_key_operatingperiod[1]))
 		    	inOperatingPeriod = false;
@@ -462,16 +464,16 @@ public class TransxchangeCalendar extends TransxchangeDataAspect {
 		}
 
 		// Add quotes as needed
-		csvProofList(listCalendar__service_id);
- 	    csvProofList(listCalendar__monday);
- 	    csvProofList(listCalendar__tuesday);
- 	    csvProofList(listCalendar__wednesday);
- 	    csvProofList(listCalendar__thursday);
- 	    csvProofList(listCalendar__friday);
- 	    csvProofList(listCalendar__saturday);
- 	    csvProofList(listCalendar__sunday);
- 	    csvProofList(listCalendar__start_date);
- 	    csvProofList(listCalendar__end_date);
+		Util.csvProofList(listCalendar__service_id);
+ 	    Util.csvProofList(listCalendar__monday);
+ 	    Util.csvProofList(listCalendar__tuesday);
+ 	    Util.csvProofList(listCalendar__wednesday);
+ 	    Util.csvProofList(listCalendar__thursday);
+ 	    Util.csvProofList(listCalendar__friday);
+ 	    Util.csvProofList(listCalendar__saturday);
+ 	    Util.csvProofList(listCalendar__sunday);
+ 	    Util.csvProofList(listCalendar__start_date);
+ 	    Util.csvProofList(listCalendar__end_date);
 	}
 
    	@Override

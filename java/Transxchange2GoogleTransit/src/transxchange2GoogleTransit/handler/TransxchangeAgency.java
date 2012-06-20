@@ -97,12 +97,6 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 	}
 
   @Override
-  public void completeData() {
-    // Add quotes if needed
-    // TODO(drt24) need to cvsproof #agencyIdName
-  }
-
-  @Override
   public void dumpValues() {
     System.out.println("*** Agency");
     for (Map.Entry<String, String> agencyEntry : agencyIdName.entrySet()) {

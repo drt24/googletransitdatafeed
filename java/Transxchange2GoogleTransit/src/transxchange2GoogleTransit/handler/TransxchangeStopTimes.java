@@ -26,6 +26,8 @@ import java.util.Set;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXParseException;
 
+import transxchange2GoogleTransit.Util;
+
 /*
  * This class handles the TransXChange xml input file under the aspect of
  * 	stop times in trips
@@ -358,7 +360,7 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
    	          jterator = _listTimingLinksJourneyPatternSection.get(j);
    	          if (jterator.getValue(0).equals(journeyPatternSectionRef)) {
    	            if (sequenceNumber == 1)
-   	              readTransxchangeTime(stopTimehhmmss, (listTrips__trip_id.get(i)).getValue(0));
+   	              Util.readTransxchangeTime(stopTimehhmmss, (listTrips__trip_id.get(i)).getValue(0));
    	            hot = true;
    	            k = 0; // Find out if this stop is being passed
    	            listSizeInner = _listTripsJourneyPatternTimingLinkRefPass.size();
@@ -380,17 +382,17 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
    	              ValueList newStoptimes__arrival_time = new ValueList(iterator.getKeyName());
    	              listStoptimes__arrival_time.add(newStoptimes__arrival_time);
    	              if (sequenceNumber > 1 && notPassed && !setDownReached) // Arrival time if not first stop and not a pass
-   	                newStoptimes__arrival_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
+   	                newStoptimes__arrival_time.addValue(Util.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
    	              else {
 
    	                // Conformance with GTFS revision 20-Nov-2007: If first stop, arrival time = departure time
    	                if (sequenceNumber == 1)
-   	                  newStoptimes__arrival_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
+   	                  newStoptimes__arrival_time.addValue(Util.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
    	                else
    	                  newStoptimes__arrival_time.addValue("");
    	              }
    	              if ((_listTimingLinksRunTime.get(j)).getValue(1) != null) { // add wait time #1 ?
-   	                waitTimeAdd = readTransxchangeFrequency((_listTimingLinksRunTime.get(j)).getValue(1));
+   	                waitTimeAdd = Util.readTransxchangeFrequency((_listTimingLinksRunTime.get(j)).getValue(1));
    	                stopTimeInSeconds = stopTimehhmmss[2] + stopTimehhmmss[1] * 60 + stopTimehhmmss[0] * 3600;
    	                stopTimeInSeconds += waitTimeAdd;
    	                stopTimehhmmss[0] = stopTimeInSeconds / 3600;
@@ -399,7 +401,7 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
 
    	              }
    	              if ((_listTimingLinksRunTime.get(j)).getValue(2) != null) { // add wait time # 2 ?
-   	                waitTimeAdd = readTransxchangeFrequency((_listTimingLinksRunTime.get(j)).getValue(2));
+   	                waitTimeAdd = Util.readTransxchangeFrequency((_listTimingLinksRunTime.get(j)).getValue(2));
    	                stopTimeInSeconds = stopTimehhmmss[2] + stopTimehhmmss[1] * 60 + stopTimehhmmss[0] * 3600;
    	                stopTimeInSeconds += waitTimeAdd;
    	                stopTimehhmmss[0] = stopTimeInSeconds / 3600;
@@ -409,7 +411,7 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
    	              ValueList newStoptimes__departure_time = new ValueList(iterator.getKeyName());
    	              listStoptimes__departure_time.add(newStoptimes__departure_time);
    	              if (notPassed && !setDownReached) // Departure time if no pass, else empty
-   	                newStoptimes__departure_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
+   	                newStoptimes__departure_time.addValue(Util.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
    	              else
    	                newStoptimes__departure_time.addValue("");
    	              ValueList newStoptimes__stop_id = new ValueList(journeyPatternSectionRef);
@@ -434,9 +436,9 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
    	                  l++;
    	              }
    	              if (timingLinkOverrideFound)
-   	                runTimeAdd = readTransxchangeFrequency((_listTripsTimingLinkRunTime.get(l)).getValue(1));
+   	                runTimeAdd = Util.readTransxchangeFrequency((_listTripsTimingLinkRunTime.get(l)).getValue(1));
    	              else
-   	                runTimeAdd = readTransxchangeFrequency((_listTimingLinksRunTime.get(j)).getValue(0));
+   	                runTimeAdd = Util.readTransxchangeFrequency((_listTimingLinksRunTime.get(j)).getValue(0));
    	              stopTimeInSeconds = stopTimehhmmss[2] + stopTimehhmmss[1] * 60 + stopTimehhmmss[0] * 3600;
    	              stopTimeInSeconds += runTimeAdd;
    	              stopTimehhmmss[0] = stopTimeInSeconds / 3600;
@@ -469,14 +471,14 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
    	      ValueList newStoptimes__arrival_time = new ValueList(iterator.getKeyName());
    	      listStoptimes__arrival_time.add(newStoptimes__arrival_time);
    	      if (notPassed)
-   	        newStoptimes__arrival_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
+   	        newStoptimes__arrival_time.addValue(Util.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
    	      else
    	        newStoptimes__arrival_time.addValue("");
    	      ValueList newStoptimes__departure_time = new ValueList(iterator.getKeyName()); // departure time
    	      listStoptimes__departure_time.add(newStoptimes__departure_time);
 
    	      // Conformance with GTFS revision 20-Nov-2007: Departure time at last stop
-   	      newStoptimes__departure_time.addValue(TransxchangeDataAspect.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
+   	      newStoptimes__departure_time.addValue(Util.formatTime(stopTimehhmmss[0], stopTimehhmmss[1]));
    	      ValueList newStoptimes__stop_id = new ValueList(journeyPatternSectionRef);
    	      listStoptimes__stop_id.add(newStoptimes__stop_id);
    	      newStoptimes__stop_id.addValue((_listTimingLinksToStop.get(lastStopOnPattern)).getValue(0));
@@ -547,13 +549,13 @@ public class TransxchangeStopTimes extends TransxchangeDataAspect {
    	@Override
 	public void completeData() {
   	    // Add quotes if needed
-  	    csvProofList(listStoptimes__trip_id);
-  	    csvProofList(listStoptimes__arrival_time);
-  	    csvProofList(listStoptimes__departure_time);
-  	    csvProofList(listStoptimes__stop_id);
-  	    csvProofList(listStoptimes__stop_sequence);
-  	    csvProofList(listStoptimes__pickup_type);
-  	    csvProofList(listStoptimes__drop_off_type);
+  	    Util.csvProofList(listStoptimes__trip_id);
+  	    Util.csvProofList(listStoptimes__arrival_time);
+  	    Util.csvProofList(listStoptimes__departure_time);
+  	    Util.csvProofList(listStoptimes__stop_id);
+  	    Util.csvProofList(listStoptimes__stop_sequence);
+  	    Util.csvProofList(listStoptimes__pickup_type);
+  	    Util.csvProofList(listStoptimes__drop_off_type);
 	}
 
    	@Override

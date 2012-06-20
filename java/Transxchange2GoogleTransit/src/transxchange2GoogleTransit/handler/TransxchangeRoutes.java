@@ -25,6 +25,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXParseException;
 
 import transxchange2GoogleTransit.Route;
+import transxchange2GoogleTransit.Util;
 
 /*
  * This class handles the TransXChange xml input file under the aspect of
@@ -268,13 +269,13 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
    	@Override
 	public void completeData() {
   	    // Add quotes if needed
-  	    csvProofList(listRoutes__route_id);
-  	    csvProofList(listRoutes__route_short_name);
-  	    csvProofList(listRoutes__route_long_name);
-  	    csvProofList(listRoutes__route_desc);
+  	    Util.csvProofList(listRoutes__route_id);
+  	    Util.csvProofList(listRoutes__route_short_name);
+  	    Util.csvProofList(listRoutes__route_long_name);
+  	    Util.csvProofList(listRoutes__route_desc);
 //  	    csvProofList(listRoutes__route_dest);
 //	    	csvProofList(listRoutes__route_origin);
-  	    csvProofList(listRoutes__route_type);
+  	    Util.csvProofList(listRoutes__route_type);
 	}
 
    	@Override

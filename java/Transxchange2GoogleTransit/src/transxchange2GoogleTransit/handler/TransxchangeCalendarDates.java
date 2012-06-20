@@ -402,9 +402,9 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
 		long easterMonday = easterSunday + 24 * 60 * 60 * 1000; // One day after Easter Sunday
 		Calendar easterHoliday = Calendar.getInstance();
 		easterHoliday.setTimeInMillis(easterFriday);
-		bankHolidays.put("GoodFriday", TransxchangeDataAspect.formatDate(easterHoliday.get(Calendar.YEAR), easterHoliday.get(Calendar.MONTH), easterHoliday.get(Calendar.DAY_OF_MONTH)));
+		bankHolidays.put("GoodFriday", Util.formatDate(easterHoliday.get(Calendar.YEAR), easterHoliday.get(Calendar.MONTH), easterHoliday.get(Calendar.DAY_OF_MONTH)));
 		easterHoliday.setTimeInMillis(easterMonday);
-		bankHolidays.put("EasterMonday", TransxchangeDataAspect.formatDate(easterHoliday.get(Calendar.YEAR), easterHoliday.get(Calendar.MONTH), easterHoliday.get(Calendar.DAY_OF_MONTH)));
+		bankHolidays.put("EasterMonday", Util.formatDate(easterHoliday.get(Calendar.YEAR), easterHoliday.get(Calendar.MONTH), easterHoliday.get(Calendar.DAY_OF_MONTH)));
 
 		// MayDay: First Monday in May
 		Calendar mayDayHoliday = Calendar.getInstance();
@@ -435,7 +435,7 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
 			break;
 		}
 		mayDayHoliday.setTimeInMillis(mayDay);
-		bankHolidays.put("MayDay", TransxchangeDataAspect.formatDate(mayDayHoliday.get(Calendar.YEAR),
+		bankHolidays.put("MayDay", Util.formatDate(mayDayHoliday.get(Calendar.YEAR),
 			mayDayHoliday.get(Calendar.MONTH) + 1, // Java starts counting months at 0
 			mayDayHoliday.get(Calendar.DAY_OF_MONTH)));
 
@@ -468,7 +468,7 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
 			break;
 		}
 		springBankHoliday.setTimeInMillis(springBank);
-		bankHolidays.put("SpringBank", TransxchangeDataAspect.formatDate(springBankHoliday.get(Calendar.YEAR),
+		bankHolidays.put("SpringBank", Util.formatDate(springBankHoliday.get(Calendar.YEAR),
 			springBankHoliday.get(Calendar.MONTH) + 1, // Java starts counting months at 0
 			springBankHoliday.get(Calendar.DAY_OF_MONTH)));
 
@@ -501,7 +501,7 @@ public class TransxchangeCalendarDates extends TransxchangeDataAspect {
 			break;
 		}
 		lateSummerHoliday.setTimeInMillis(summerHoliday);
-		bankHolidays.put("LateSummerBankHolidayNotScotland", TransxchangeDataAspect.formatDate(lateSummerHoliday.get(Calendar.YEAR),
+		bankHolidays.put("LateSummerBankHolidayNotScotland", Util.formatDate(lateSummerHoliday.get(Calendar.YEAR),
 			lateSummerHoliday.get(Calendar.MONTH) + 1, // Java starts counting months at 0
 			lateSummerHoliday.get(Calendar.DAY_OF_MONTH)));
 

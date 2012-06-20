@@ -22,6 +22,8 @@ import java.util.List;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXParseException;
 
+import transxchange2GoogleTransit.Util;
+
 /*
  * This class handles the TransXChange xml input file under the aspect of
  * 	trips
@@ -269,9 +271,9 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
         	int[] departureTimehhmmss = {-1, -1, -1};
         	int[] endTimehhmmss = {-1, -1, -1};
 
-        	readTransxchangeTime(departureTimehhmmss, _departureTime);
-        	readTransxchangeTime(endTimehhmmss, _endTime);
-        	frequency = readTransxchangeFrequency(_scheduledFrequency);
+        	Util.readTransxchangeTime(departureTimehhmmss, _departureTime);
+        	Util.readTransxchangeTime(endTimehhmmss, _endTime);
+        	frequency = Util.readTransxchangeFrequency(_scheduledFrequency);
         	hot = (frequency > 0);
         	while (hot) {
         		int departureTimeInSeconds = departureTimehhmmss[2] + departureTimehhmmss[1] * 60 + departureTimehhmmss[0] * 3600;
@@ -286,7 +288,7 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
         				if (departureTimehhmmss[1] > endTimehhmmss[1])
         					hot = false;
         		if (hot) {
-        			_departureTime = TransxchangeDataAspect.formatTime(departureTimehhmmss[0], departureTimehhmmss[1]);
+        			_departureTime = Util.formatTime(departureTimehhmmss[0], departureTimehhmmss[1]);
         			new TripStructure().createTripStructure();
         		}
         	}
@@ -425,13 +427,13 @@ public class TransxchangeTrips extends TransxchangeDataAspect {
    	@Override
 	public void completeData() {
   	    // Add quotes if needed
-  	    csvProofList(listTrips__route_id);
-  	    csvProofList(listTrips__service_id);
-  	    csvProofList(listTrips__trip_id);
-  	    csvProofList(listTrips__trip_headsign);
- 	    csvProofList(listTrips__direction_id); // v1.7.3
- 	    csvProofList(listTrips__routeref); // v1.7.3
-  	    csvProofList(listTrips__block_id);
+  	    Util.csvProofList(listTrips__route_id);
+  	    Util.csvProofList(listTrips__service_id);
+  	    Util.csvProofList(listTrips__trip_id);
+  	    Util.csvProofList(listTrips__trip_headsign);
+ 	    Util.csvProofList(listTrips__direction_id); // v1.7.3
+ 	    Util.csvProofList(listTrips__routeref); // v1.7.3
+  	    Util.csvProofList(listTrips__block_id);
 	}
 
    	@Override

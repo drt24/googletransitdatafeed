@@ -32,6 +32,7 @@ import org.xml.sax.SAXParseException;
 
 import transxchange2GoogleTransit.LatLong;
 import transxchange2GoogleTransit.Stop;
+import transxchange2GoogleTransit.Util;
 
 /*
  * This class handles the TransXChange xml input file under the aspect of
@@ -509,21 +510,6 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 		    	}
 		    	stopNameVL.setValue(0, stopname);
 		    }
-	}
-
-   	@Override
-	public void completeData() {
-  	    // Add quotes if needed
-  	    csvProofList(listStops__stop_id);
-  	    csvProofList(listStops__stop_name);
-  	    csvProofList(listStops__stop_desc);
-  	    csvProofList(listStops__stop_lat);
-  	    csvProofList(listStops__stop_lon);
-  	    csvProofList(listStops__stop_street);
-  	    csvProofList(listStops__stop_city);
-  	    csvProofList(listStops__stop_postcode);
-  	    csvProofList(listStops__stop_region);
- 	    csvProofList(listStops__stop_country);
 	}
 
    	@Override

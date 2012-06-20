@@ -16,6 +16,8 @@
 
 package transxchange2GoogleTransit.handler;
 
+import static transxchange2GoogleTransit.Util.csvProof;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -613,11 +615,11 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
     for (Map.Entry<String, Agency> agencyEntry : agencies.entrySet()) {
       String agencyId = agencyEntry.getKey();
       Agency agency = agencyEntry.getValue();
-      agenciesOut.print(agencyId);
+      agenciesOut.print(csvProof(agencyId));
       agenciesOut.print(",");
-      agenciesOut.print(agency.getName());
+      agenciesOut.print(csvProof(agency.getName()));
       agenciesOut.print(",");
-      agenciesOut.print(agency.getUrl());
+      agenciesOut.print(csvProof(agency.getUrl()));
       agenciesOut.print(",");
       agenciesOut.print(agency.getTimeZone());
       agenciesOut.print(",");
@@ -655,20 +657,22 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
               log.info("Geocoding stop (id / name): " + stopId + " / " + stopName);
               Geocoder.geocodeMissingStop(stopName);
             } catch (Exception e) {
-              System.err.println("Geocoding exception: " + e.getMessage() + " for stop: " + stopName);
+              System.err.println("Geocoding exception: " + e.getMessage() + " for stop: "
+                  + stopName);
             }
           }
         }
+      }
 
-        stopsOut.print(stopId);
+        stopsOut.print(csvProof(stopId));
         stopsOut.print(",");
-        stopsOut.print(stopName);
+        stopsOut.print(csvProof(stopName));
         stopsOut.print(",");
-        stopsOut.print(stop.getDescription());
+        stopsOut.print(csvProof(stop.getDescription()));
         stopsOut.print(",");
-        stopsOut.print(coordinates.latitude);
+        stopsOut.print(csvProof(coordinates.latitude));
         stopsOut.print(",");
-        stopsOut.print(coordinates.longitude);
+        stopsOut.print(csvProof(coordinates.longitude));
         stopsOut.print(","); // no zone id
         stopsOut.print(","); // no stop URL
         stopsOut.println();
