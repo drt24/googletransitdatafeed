@@ -631,11 +631,13 @@ public class TransxchangeHandlerEngine extends DefaultHandler {
     for (Map.Entry<String, Stop> stopEntry : stops.entrySet()) {
       String stopId = stopEntry.getKey();
       Stop stop = stopEntry.getValue();
-      //if (!config.skipOrphanStops()) {// TODO(drt24) what is this supposed to do?
-        String stopName = stop.getName();
-        LatLong coordinates = stop.getPosition();
+      // if (!config.skipOrphanStops()) {// TODO(drt24) what is this supposed to do?
+      String stopName = stop.getName();
+      LatLong coordinates = stop.getPosition();
 
-        if (coordinates.notSet()){
+      if (coordinates.notSet()) {
+        coordinates = TransxchangeStops.getStopPosition(stopId);
+        if (coordinates.notSet()) {
           Stop nStop = config.getNaptanStop(stopId);
           if (null != nStop) {
             coordinates = nStop.getPosition();

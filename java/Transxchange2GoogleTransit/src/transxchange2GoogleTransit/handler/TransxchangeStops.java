@@ -22,9 +22,11 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.xml.sax.Attributes;
@@ -32,7 +34,6 @@ import org.xml.sax.SAXParseException;
 
 import transxchange2GoogleTransit.LatLong;
 import transxchange2GoogleTransit.Stop;
-import transxchange2GoogleTransit.Util;
 
 /*
  * This class handles the TransXChange xml input file under the aspect of
@@ -41,14 +42,14 @@ import transxchange2GoogleTransit.Util;
 public class TransxchangeStops extends TransxchangeDataAspect{
 
 	// xml keys and output field fillers
-	static final String[] key_stops__stop_id = new String[] {"StopPoints", "AtcoCode", "OpenRequired"}; // GTFS required
-	static final String[] key_stops__stop_id2 = new String[] {"StopPoints", "StopPointRef", "OpenRequired"}; // GTFS required
-	static final String[] key_stops__stop_name = new String[] {"StopPoints", "CommonName", "OpenRequired"}; // GTFS required
+	static final String[] key_stops__stop_id = new String[] {"StopPoints", "AtcoCode", ""}; // GTFS required
+	static final String[] key_stops__stop_id2 = new String[] {"StopPoints", "StopPointRef", ""}; // GTFS required
+	static final String[] key_stops__stop_name = new String[] {"StopPoints", "CommonName", ""}; // GTFS required
 	static final String[] key_stops__stop_desc = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
-	static final String[] key_stops__stop_east = new String[] {"StopPoints", "Easting", "OpenRequired"};
-	static final String[] key_stops__stop_north = new String[] {"StopPoints", "Northing", "OpenRequired"};
-	static final String[] key_stops__stop_lat = new String[] {"StopPoints", "Latitude", "OpenRequired"}; // GTFS required
-	static final String[] key_stops__stop_lon = new String[] {"StopPoints", "Longitude", "OpenRequired"}; // GTFS required
+	static final String[] key_stops__stop_east = new String[] {"StopPoints", "Easting", ""};
+	static final String[] key_stops__stop_north = new String[] {"StopPoints", "Northing", ""};
+	static final String[] key_stops__stop_lat = new String[] {"StopPoints", "Latitude", ""}; // GTFS required
+	static final String[] key_stops__stop_lon = new String[] {"StopPoints", "Longitude", ""}; // GTFS required
 	static final String[] key_stops__stop_street = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
 	static final String[] key_stops__stop_city = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
 	static final String[] key_stops__stop_region = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
@@ -89,50 +90,28 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 
 	static final String[] _key_stops_alternative_descriptor = new String[] {"StopPoints", "AlternativeDescriptors", "CommonName"};
 
-	String keyRef = "";
+	String keyRef = null;
 
 	// Parsed data
-	List<ValueList> listStops__stop_id;
-	List<ValueList> listStops__stop_name;
-	List<ValueList> listStops__stop_desc;
-	List<ValueList> listStops__stop_lat;
-	List<ValueList> listStops__stop_lon;
-	List<ValueList> listStops__stop_street;
-	List<ValueList> listStops__stop_city;
-	List<ValueList> listStops__stop_postcode;
-	List<ValueList> listStops__stop_region;
-	List<ValueList> listStops__stop_country;
+	private Set<String> stopIds;
+	private Map<String,String> stopIdName;
+	private Map<String,LatLong> stopIdToLatLong;
 
-	public List<ValueList> getListStops__stop_id() {
-		return listStops__stop_id;
-	}
-	public List<ValueList> getListStops__stop_name() {
-		return listStops__stop_name;
-	}
-	public List<ValueList> getListStops__stop_desc() {
-		return listStops__stop_desc;
-	}
-	public List<ValueList> getListStops__stop_lat() {
-		return listStops__stop_lat;
-	}
-	public List<ValueList> getListStops__stop_lon() {
-		return listStops__stop_lon;
-	}
-	public List<ValueList> getListStops__stop_street() {
-		return listStops__stop_street;
-	}
-	public List<ValueList> getListStops__stop_city() {
-		return listStops__stop_city;
-	}
-	public List<ValueList> getListStops__stop_postcode() {
-		return listStops__stop_postcode;
-	}
-	public List<ValueList> getListStops__stop_region() {
-		return listStops__stop_region;
-	}
-	public List<ValueList> getListStops__stop_country() {
-		return listStops__stop_country;
-	}
+  public static LatLong getStopPosition(String stopId) {
+    String latitude;
+    if (lat != null) {
+      latitude = lat.get(stopId);
+    } else {
+      latitude = null;
+    }
+    String longitude;
+    if (lon != null) {
+      longitude = lon.get(stopId);
+    } else {
+      longitude = null;
+    }
+    return new LatLong(latitude, longitude);
+  }
 
 	public static void addStop(String stopId) {
 		if (stopId == null || stopId.length() == 0)
@@ -238,134 +217,87 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 			keyNested = _key_stops_alternative_descriptor[1];
 	}
 
-   	@Override
-	public void endElement (String uri, String name, String qName) {
-		
+  @Override
+  public void endElement(String uri, String name, String qName) {
 
-	    if (niceString == null || niceString.length() == 0)
-	    	return;
+    if (niceString == null || niceString.length() == 0)
+      return;
 
-	    if (key.equals(key_stops__stop_id[0]) && keyNested.equals(key_stops__stop_id[1])) {
-	      ValueList newStops__stop_id = new ValueList(key_stops__stop_id[0]);
-	    	listStops__stop_id.add(newStops__stop_id);
-	    	newStops__stop_id.addValue(niceString);
-	    	keyRef = niceString;
-	    }
-	    if (key.equals(key_stops__stop_id2[0]) && keyNested.equals(key_stops__stop_id2[1])) {
-	      ValueList newStops__stop_id = new ValueList(key_stops__stop_id2[0]);
-	    	listStops__stop_id.add(newStops__stop_id);
-	    	newStops__stop_id.addValue(niceString);
-	    	keyRef = niceString;
-	    }
-	    if (key.equals(key_stops__stop_name[0]) && keyNested.equals(key_stops__stop_name[1])) {
-	      ValueList newStops__stop_name = new ValueList(keyRef);
-	    	listStops__stop_name.add(newStops__stop_name);
-	    	newStops__stop_name.addValue(niceString);
-	    	ValueList newStops__stop_desc = new ValueList(keyRef); // Default for _desc
-	    	listStops__stop_desc.add(newStops__stop_desc);
-	    	newStops__stop_desc.addValue(key_stops__stop_desc[2]);
-	    	ValueList newStops__stop_street = new ValueList(keyRef); // Default for _street
-	    	listStops__stop_street.add(newStops__stop_street);
-	    	newStops__stop_street.addValue(key_stops__stop_street[2]);
-	    	ValueList newStops__stop_city = new ValueList(keyRef); // Default for _city
-	    	listStops__stop_city.add(newStops__stop_city);
-	    	newStops__stop_city.addValue(key_stops__stop_city[2]);
-	    	ValueList newStops__stop_postcode = new ValueList(keyRef); // Default for _postcode
-	    	listStops__stop_postcode.add(newStops__stop_postcode);
-	    	newStops__stop_postcode.addValue(key_stops__stop_postcode[2]);
-	    	ValueList newStops__stop_region = new ValueList(keyRef); // Default for _region
-	    	listStops__stop_region.add(newStops__stop_region);
-	    	newStops__stop_region.addValue(key_stops__stop_region[2]);
-	    	ValueList newStops__stop_country = new ValueList(keyRef); // Default for _country
-	    	listStops__stop_country.add(newStops__stop_country);
-	    	newStops__stop_country.addValue(key_stops__stop_country[2]);
-	    }
-	    if (key.equals(_key_stops__stop_locality[0]) && keyNested.equals(_key_stops__stop_locality[1])) {
-	    	_newStops__stop_locality = new ValueList(keyRef);
-	    	_listStops__stop_locality.add(_newStops__stop_locality);
-	    	_newStops__stop_locality.addValue(niceString);
-	    }
-	    if (key.equals(_key_stops__stop_indicator[0]) && keyNested.equals(_key_stops__stop_indicator[1])) {
-	    	_newStops__stop_indicator = new ValueList(keyRef);
-	    	_listStops__stop_indicator.add(_newStops__stop_indicator);
-	    	_newStops__stop_indicator.addValue(niceString);
-	    }
-	    //TODO(drt24) Wrong: easting and northing need to be converted to latitude and longitude, they can't be used as is
-//	    if (key.equals(key_stops__stop_east[0]) && keyNested.equals(key_stops__stop_east[1])) {
-//	    	ValueList newStops__stop_lat = new ValueList(keyRef);
-//	    	listStops__stop_lat.add(newStops__stop_lat);
-//	    	newStops__stop_lat.addValue(niceString);
-//       	}
-//	    if (key.equals(key_stops__stop_north[0]) && keyNested.equals(key_stops__stop_north[1])) {
-//	      ValueList newStops__stop_lon = new ValueList(keyRef);
-//	       	listStops__stop_lon.add(newStops__stop_lon);
-//	       	newStops__stop_lon.addValue(niceString);
-//       	}
+    if (key.equals(key_stops__stop_id[0]) && keyNested.equals(key_stops__stop_id[1])) {
+      stopIds.add(niceString);
+      keyRef = niceString;
+      return;
+    }
+    if (key.equals(key_stops__stop_id2[0]) && keyNested.equals(key_stops__stop_id2[1])) {
+      stopIds.add(niceString);
+      keyRef = niceString;
+      return;
+    }
+    if (key.equals(key_stops__stop_name[0]) && keyNested.equals(key_stops__stop_name[1])) {
+      assert keyRef != null;
+      stopIdName.put(keyRef, niceString);
+      return;
+    }
+    if (key.equals(_key_stops__stop_locality[0]) && keyNested.equals(_key_stops__stop_locality[1])) {
+      assert keyRef != null;
+      _newStops__stop_locality = new ValueList(keyRef);
+      _listStops__stop_locality.add(_newStops__stop_locality);
+      _newStops__stop_locality.addValue(niceString);
+      return;
+    }
+    if (key.equals(_key_stops__stop_indicator[0])
+        && keyNested.equals(_key_stops__stop_indicator[1])) {
+      assert keyRef != null;
+      _newStops__stop_indicator = new ValueList(keyRef);
+      _listStops__stop_indicator.add(_newStops__stop_indicator);
+      _newStops__stop_indicator.addValue(niceString);
+      return;
+    }
+    // TODO(drt24) We could try extracting latitude and longitude by conversion of easting and
+    // northing
 
-	    // Embedded coordinates
-	    if (key.equals(key_stops__stop_lat[0]) && keyNested.equals(key_stops__stop_lat[1])) {
-	      ValueList newStops__stop_lat = new ValueList(keyRef);
-	    	listStops__stop_lat.add(newStops__stop_lat);
-	    	newStops__stop_lat.addValue(niceString);
-       	}
-	    if (key.equals(key_stops__stop_lon[0]) && keyNested.equals(key_stops__stop_lon[1])) {
-	      ValueList newStops__stop_lon = new ValueList(keyRef);
-	       	listStops__stop_lon.add(newStops__stop_lon);
-	       	newStops__stop_lon.addValue(niceString);
-       	}
-	    
-	    // if location of stop unknown from stop points, add location from route section
-//	    int i;
-//      boolean hot;
-//	    if (key.equals(_key_route_link_location_x[0]) && keyNested.equals(_key_route_link_location_x[1]) && stopPointFrom.length() > 0) {
-//	       	i = 0;
-//	       	hot = true;
-//	       	while (hot && i < listStops__stop_lat.size()) {
-//	       		if (stopPointFrom.equals((listStops__stop_lat.get(i)).getKeyName()))
-//	       			hot = false;
-//	       		else
-//	       			i++;
-//	       	}
-//	    	if (hot) {
-//	    	  ValueList newStops__stop_lat = new ValueList(stopPointFrom);
-//       			listStops__stop_lat.add(newStops__stop_lat);
-//       			newStops__stop_lat.addValue(niceString);
-//       		}
-//	   }
-//	   if (key.equals(_key_route_link_location_y[0]) && keyNested.equals(_key_route_link_location_y[1]) && stopPointFrom.length() > 0) {
-//	    	i = 0;
-//	    	hot = true;
-//	    	while (hot && i < listStops__stop_lon.size()) {
-//	    		if (stopPointFrom.equals((listStops__stop_lon.get(i)).getKeyName()))
-//	    			hot = false;
-//	    		else
-//	    			i++;
-//	    	}
-//	    	if (hot) {
-//	    	  ValueList newStops__stop_lon = new ValueList(stopPointFrom);
-//	    		listStops__stop_lon.add(newStops__stop_lon);
-//	    		newStops__stop_lon.addValue(niceString);
-//	    		stopPointFrom = "";
-//	    	}
-//	   }
+    // Embedded coordinates
+    if (key.equals(key_stops__stop_lat[0]) && keyNested.equals(key_stops__stop_lat[1])) {
+      assert keyRef != null;
+      LatLong ll = stopIdToLatLong.get(keyRef);
+      if (ll != null) {
+        ll = new LatLong(niceString, ll.longitude);
+      } else {
+        ll = new LatLong(niceString, null);
+      }
+      stopIdToLatLong.put(keyRef, ll);
+      return;
+    }
+    if (key.equals(key_stops__stop_lon[0]) && keyNested.equals(key_stops__stop_lon[1])) {
+      assert keyRef != null;
+      LatLong ll = stopIdToLatLong.get(keyRef);
+      if (ll != null) {
+        ll = new LatLong(ll.latitude, niceString);
+      } else {
+        ll = new LatLong(null, niceString);
+      }
+      stopIdToLatLong.put(keyRef, ll);
+      return;
+    }
 
-	   // Route sections (to stop point lat and lon), based on from- and to-stop points
-	   if (key.equals(_key_route_link_from[0]) && keyNested.equals(_key_route_link_from[1])&& keyNestedLocation.equals(_key_route_link_from[2])) {
-	    	stopPointFrom = niceString;
-	    	keyNestedLocation = "";
-	   }
-	   if (key.equals(_key_route_link_to[0]) && keyNested.equals(_key_route_link_to[1])&& keyNestedLocation.equals(_key_route_link_to[2])) {
-	      	stopPointTo = niceString;
-	    	keyNestedLocation = "";
-	    	keyNested = "";
-	    }
-//	    if (key.equals(_key_route_link_location_x[0]) && keyNested.equals(_key_route_link_location_x[1])) {
-//	    	stopPointToLat = niceString;
-//	    }
-//	    if (key.equals(_key_route_link_location_y[0]) && keyNested.equals(_key_route_link_location_y[1])) {
-//	    	stopPointToLon = niceString;
-//	    }
-	}
+    // Route sections (to stop point lat and lon), based on from- and to-stop points
+    if (key.equals(_key_route_link_from[0]) && keyNested.equals(_key_route_link_from[1])
+        && keyNestedLocation.equals(_key_route_link_from[2])) {
+      stopPointFrom = niceString;
+      keyNestedLocation = "";
+      return;
+    }
+    if (key.equals(_key_route_link_to[0]) && keyNested.equals(_key_route_link_to[1])
+        && keyNestedLocation.equals(_key_route_link_to[2])) {
+      stopPointTo = niceString;
+      keyNestedLocation = "";
+      keyNested = "";
+      return;
+    }
+    if (key_stops__stop_id[0].equals(qName)) {
+      keyRef = null;
+    }
+  }
 
    	@Override
    	public void clearKeys (String qName) {
@@ -415,45 +347,19 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 
    	@Override
 	public void endDocument() {
-	    int i, j;
-	    ValueList iterator, jterator;
-	    String stopId;
-	    boolean hot;
-	    String indicator, locality, stopname, naptanPick;
-
-	    // Backfill missing stop coordinates with default lat/lon
-	    for (i = 0; i < listStops__stop_id.size(); i++) {
-	    	iterator = listStops__stop_id.get(i);
-	    	stopId = iterator.getValue(0);
-	    	j = 0;
-	    	hot = true;
-	    	while (hot && j < listStops__stop_lat.size()) {
-	    		jterator = listStops__stop_lat.get(j);
-	    		if (jterator.getKeyName().equals(stopId))
-	    			hot = false;
-	    		else
-	    			j++;
-	    	}
-	    	if (hot) {
-	    	  ValueList newStops__stop_lat = new ValueList(stopId);
-	    	  listStops__stop_lat.add(i, newStops__stop_lat);
-	    	  newStops__stop_lat.addValue(getLat(stopId));
-	    	  ValueList newStops__stop_lon = new ValueList(stopId);
-	    	  listStops__stop_lon.add(i, newStops__stop_lon);
-	    	  newStops__stop_lon.addValue(getLon(stopId));
-	    	}
-	    }
+	    ValueList jterator;
+	    String indicator, locality, naptanPick;
 
 	    // Roll stop locality and indicator into stopname
     	List<String> stopColumns = handler.getStopColumns();
     	if (stopColumns == null)
     		if (handler.getNaptanHelperStopColumn() == -1)
-			    for (i = 0; i < listStops__stop_name.size(); i++) {
+			    for (Map.Entry<String, String> idName : stopIdName.entrySet()) {
 			    	indicator = "";
 			    	locality = "";
-			    	ValueList stopNameVL = listStops__stop_name.get(i);
-			    	stopId = stopNameVL.getKeyName();
-			    	j = 0; // Find locality
+			    	String stopName = idName.getValue();
+			    	String stopId = idName.getKey();
+			    	int j = 0; // Find locality
 			    	jterator = null;
 			    	while (j < _listStops__stop_locality.size()) {
 			    		jterator = _listStops__stop_locality.get(j);
@@ -475,124 +381,54 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 			    			j++;
 			    	}			    		
 
-			    	if (locality.length() > 0 && stopNameVL != null) // Prefix locality
-			    		stopNameVL.setValue(0, locality + ", " + stopNameVL.getValue(0));
-			    	if (indicator.length() > 0 && stopNameVL != null) // Postfix indicator
-			        	stopNameVL.setValue(0, stopNameVL.getValue(0) + ", "+ indicator);
+			    	if (locality.length() > 0 && stopName != null) // Prefix locality
+			    		stopName = locality + ", " + stopName;
+			    	if (indicator.length() > 0 && stopName != null) // Postfix indicator
+			        	stopName = stopName + ", "+ indicator;
+			    	stopIdName.put(stopId,stopName);
 			    }
     		else
-			    for (i = 0; i < listStops__stop_name.size(); i++) {
-			    	ValueList stopNameVL = listStops__stop_name.get(i);
-			    	stopId = stopNameVL.getKeyName();
-			    	stopNameVL.setValue(0, handler.getNaPTANStopName(stopId));
+			    for (String stopId : stopIdName.keySet()) {
+			    	stopIdName.put(stopId, handler.getNaPTANStopName(stopId));
 			    }
     	else
-		    for (i = 0; i < listStops__stop_name.size(); i++) {
+		    for (Map.Entry<String, String> idName : stopIdName.entrySet()) {
 //		    	iterator = listStops__stop_id.get(i);
 //		    	stopId = iterator.getValue(0);
-		    	ValueList stopNameVL = listStops__stop_name.get(i);
-		    	stopId = stopNameVL.getKeyName();
-		    	stopname = "";
-		    	for (j = 0; j < 30; j++) {
+		      String stopId = idName.getKey();
+		    	String stopName = "";
+		    	for (int j = 0; j < 30; j++) {
 		    		if (columnValues[j] != null) {
-		    			if (stopname.length() > 0)
-		    				stopname += handler.getStopfilecolumnseparator(); // ",";
+		    			if (stopName.length() > 0)
+		    				stopName += handler.getStopfilecolumnseparator(); // ",";
 		    			Integer index = (Integer)stopIx.get(stopId);
-		    			if (index == null) {
-		    				if (stopname.length() == 0)
-		    					stopname += "OpenRequired";//FIXME BUG, don't do that
-		    			} else {
+		    			if (index != null) {
 		    				naptanPick = (String) columnValues[j].get((Integer)stopIx.get(stopId));
 		    				naptanPick = naptanPick.replaceAll("\"", "");
-		    				stopname += naptanPick;
+		    				stopName += naptanPick;
 			    		}
 		    		}
 		    	}
-		    	stopNameVL.setValue(0, stopname);
+		    	stopIdName.put(stopId, stopName);
 		    }
 	}
 
    	@Override
 	public void dumpValues() {
-		int i;
-		ValueList iterator;
-
 	    System.out.println("*** Stops");
-	    for (i = 0; i < listStops__stop_id.size(); i++) {
-	    	iterator = listStops__stop_id.get(i);
-	    	iterator.dumpValues();
+	    for (Map.Entry<String, String> idName : stopIdName.entrySet()){
+	      System.out.println(idName.getKey() + ": " + idName.getValue());
 	    }
-	    for (i = 0; i < listStops__stop_name.size(); i++) {
-	    	iterator = listStops__stop_name.get(i);
-	    	iterator.dumpValues();
+	    for (Map.Entry<String, LatLong> entry : stopIdToLatLong.entrySet()){
+	      System.out.println(entry.getKey() + ": " + entry.getValue());
 	    }
-	    for (i = 0; i < listStops__stop_lat.size(); i++) {
-	    	iterator = listStops__stop_lat.get(i);
-	    	iterator.dumpValues();
-	    }
-	    for (i = 0; i < listStops__stop_lon.size(); i++) {
-	    	iterator = listStops__stop_lon.get(i);
-	    	iterator.dumpValues();
-	    }
-
 	}
 
-	private String getLat(String stop) {
-		if (lat == null || !lat.containsKey(stop)){
-		  Stop nStop = handler.getStop(stop);
-		  if (nStop != null){
-		    return nStop.getPosition().latitude;
-		  }
-			return null;
-		} else {
-		  return lat.get(stop);
-		}
-	}
-
-	private String getLon(String stop) {
-	  if (lon == null || !lon.containsKey(stop)){
-      Stop nStop = handler.getStop(stop);
-      if (nStop != null){
-        return nStop.getPosition().longitude;
-      }
-      return null;
-    } else {
-      return lon.get(stop);
-    }
-	}
-
-/*	private static int findColumn(String headline, String code) {
-		if (headline == null || code == null)
-			return -1;
-
-		StringTokenizer st = new StringTokenizer(headline, ",");
-		String token;
-		int counter = 0;
-		boolean found = false;
-		while (!found && st.hasMoreTokens()) {
-			token = st.nextToken();
-			if (token.equals(code))
-				found = true;
-			else
-				counter++;
-		}
-		if (!found)
-			return -1;
-		return counter;
-	}
-*/
 	public TransxchangeStops(TransxchangeHandlerEngine owner) {
 		super(owner);
-		listStops__stop_id = new ArrayList<ValueList>();
-		listStops__stop_name = new ArrayList<ValueList>();
-		listStops__stop_desc = new ArrayList<ValueList>();
-		listStops__stop_lat = new ArrayList<ValueList>();
-		listStops__stop_lon = new ArrayList<ValueList>();
-		listStops__stop_street = new ArrayList<ValueList>();
-		listStops__stop_city = new ArrayList<ValueList>();
-		listStops__stop_postcode = new ArrayList<ValueList>();
-		listStops__stop_region = new ArrayList<ValueList>();
-		listStops__stop_country = new ArrayList<ValueList>();
+		stopIds = new HashSet<String>();
+		stopIdName = new HashMap<String,String>();
+		stopIdToLatLong = new HashMap<String,LatLong>();
 
 		_listStops__stop_locality = new ArrayList<ValueList>();
 		_listStops__stop_indicator = new ArrayList<ValueList>();
@@ -692,37 +528,21 @@ public class TransxchangeStops extends TransxchangeDataAspect{
   }
 
   public void export(Map<String, Stop> stopsMap) {
-    int size = listStops__stop_id.size();
-    assert (listStops__stop_name.size() == size);
-    assert (listStops__stop_desc.size() == size);
-    assert (listStops__stop_lat.size() == size);
-    assert (listStops__stop_lon.size() == size);
-    assert (listStops__stop_street.size() == size);
-    assert (listStops__stop_city.size() == size);
-    assert (listStops__stop_postcode.size() == size);
-    assert (listStops__stop_region.size() == size);
-    assert (listStops__stop_country.size() == size);
-    for (int i = 0; i < size; ++i) {
-      String stopId = listStops__stop_id.get(i).getValue(0);
-      if (stopId != null && stopId.length() > 0){
-        // TODO(drt24) verify getKeyName matches stopId
-        Stop stop =
-            new Stop(stopId, listStops__stop_name.get(i).getValue(0), new LatLong(listStops__stop_lat
-                .get(i).getValue(0), listStops__stop_lon.get(i).getValue(0)));
+
+    for (String stopId : stopIds) {
+      if (stopId != null && stopId.length() > 0) {
+        LatLong ll = stopIdToLatLong.get(stopId);
+        if (ll == null) {
+          ll = new LatLong(null, null);// the not set location
+        }
+        Stop stop = new Stop(stopId, stopIdName.get(stopId), ll);
         stopsMap.put(stopId, stop);
       }
     }
     // Now clear out all these lists so that we can't use them again and so that garbage collection
     // can happen
-    listStops__stop_id.clear();
-    listStops__stop_name.clear();
-    listStops__stop_desc.clear();
-    listStops__stop_lat.clear();
-    listStops__stop_lon.clear();
-    listStops__stop_street.clear();
-    listStops__stop_city.clear();
-    listStops__stop_postcode.clear();
-    listStops__stop_region.clear();
-    listStops__stop_country.clear();
+    stopIds.clear();
+    stopIdName.clear();
+    stopIdToLatLong.clear();
   }
 }
