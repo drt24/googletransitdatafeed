@@ -42,55 +42,37 @@ import transxchange2GoogleTransit.Stop;
 public class TransxchangeStops extends TransxchangeDataAspect{
 
 	// xml keys and output field fillers
-	static final String[] key_stops__stop_id = new String[] {"StopPoints", "AtcoCode", ""}; // GTFS required
-	static final String[] key_stops__stop_id2 = new String[] {"StopPoints", "StopPointRef", ""}; // GTFS required
-	static final String[] key_stops__stop_name = new String[] {"StopPoints", "CommonName", ""}; // GTFS required
-	static final String[] key_stops__stop_desc = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
-	static final String[] key_stops__stop_east = new String[] {"StopPoints", "Easting", ""};
-	static final String[] key_stops__stop_north = new String[] {"StopPoints", "Northing", ""};
-	static final String[] key_stops__stop_lat = new String[] {"StopPoints", "Latitude", ""}; // GTFS required
-	static final String[] key_stops__stop_lon = new String[] {"StopPoints", "Longitude", ""}; // GTFS required
-	static final String[] key_stops__stop_street = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
-	static final String[] key_stops__stop_city = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
-	static final String[] key_stops__stop_region = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
-	static final String[] key_stops__stop_postcode = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
-	static final String[] key_stops__stop_country = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
+	private static final String[] key_stops__stop_id = new String[] {"StopPoints", "AtcoCode", ""}; // GTFS required
+	private static final String[] key_stops__stop_id2 = new String[] {"StopPoints", "StopPointRef", ""}; // GTFS required
+	private static final String[] key_stops__stop_name = new String[] {"StopPoints", "CommonName", ""}; // GTFS required
+	private static final String[] key_stops__stop_east = new String[] {"StopPoints", "Easting", ""};
+	private static final String[] key_stops__stop_north = new String[] {"StopPoints", "Northing", ""};
+	private static final String[] key_stops__stop_lat = new String[] {"StopPoints", "Latitude", ""}; // GTFS required
+	private static final String[] key_stops__stop_lon = new String[] {"StopPoints", "Longitude", ""}; // GTFS required
 
-	static final String [] _key_stops__stop_locality = new String[] {"StopPoints", "LocalityName"};
-	List<ValueList> _listStops__stop_locality;
-	ValueList _newStops__stop_locality;
-	static final String [] _key_stops__stop_indicator = new String[] {"StopPoints", "Indicator"};
-	List<ValueList> _listStops__stop_indicator;
-	ValueList _newStops__stop_indicator;
+	private static final String [] _key_stops__stop_locality = new String[] {"StopPoints", "LocalityName"};
+	private List<ValueList> _listStops__stop_locality;
+	private ValueList _newStops__stop_locality;
+	private static final String [] _key_stops__stop_indicator = new String[] {"StopPoints", "Indicator"};
+	private List<ValueList> _listStops__stop_indicator;
+	private ValueList _newStops__stop_indicator;
 
-	static final String[] _key_route_section = {"RouteSection"};
-	static final String[] _key_route_link_from = new String [] {"RouteLink", "From", "StopPointRef"};
-	static final String[] _key_route_link_to = new String [] {"RouteLink", "To", "StopPointRef"};
-	//static final String[] _key_route_link_location_x = new String [] {"RouteLink", "Easting-removed!"}; // v1.7.5. Do not pick up Easting/Northing from route links any longer
-	//static final String[] _key_route_link_location_y = new String [] {"RouteLink", "Northing-removed!"}; // v1.7.5
-	boolean inRouteSection = false;
-	String keyNestedLocation = "";
-	String stopPointFrom = "";
-	String stopPointTo = "";
-	//String stopPointToLat = ""; // Store current lat of stop-to to maintain lat of last stop in route link
-	//String stopPointToLon = ""; // same for lon
+	private static Map<String, String> lat = null;
+	private static Map<String, String> lon = null;
+	private static Map<String, Integer> stopIx = null;
 
-	static Map<String, String> lat = null;
-	static Map<String, String> lon = null;
-	static Map<String, Integer> stopIx = null;
+	private static Map<String, String> stops = null;
 
-	static Map<String, String> stops = null;
-
-	static Map<String, Integer> stopColumnIxs = null;
-	static List[] columnValues = {null, null, null, null, null, null, null, null, null, null,
+	private static Map<String, Integer> stopColumnIxs = null;
+	private static List[] columnValues = {null, null, null, null, null, null, null, null, null, null,
 		null, null, null, null, null, null, null, null, null, null,
 		null, null, null, null, null, null, null, null, null, null,
 		null, null, null, null, null, null, null, null, null, null,
 		null, null, null, null, null, null, null, null, null, null};
 
-	static final String[] _key_stops_alternative_descriptor = new String[] {"StopPoints", "AlternativeDescriptors", "CommonName"};
+	private static final String[] _key_stops_alternative_descriptor = new String[] {"StopPoints", "AlternativeDescriptors", "CommonName"};
 
-	String keyRef = null;
+	private String keyRef = null;
 
 	// Parsed data
 	private Set<String> stopIds;
@@ -190,28 +172,6 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 			keyNested = _key_stops__stop_indicator[1];
 		}
 
-		// Route sections (to helper structures)
-		// From and to stop points
-		if (qName.equals(_key_route_section[0]))
-			inRouteSection = !inRouteSection;
-		if (key.equals(_key_route_link_from[0]) && (keyNested.equals(_key_route_link_from[1]) || keyNested.equals(_key_route_link_to[1])) && qName.equals(_key_route_link_from[2])) {
-			keyNestedLocation = _key_route_link_from[2];
-		}
-		if (key.equals(_key_route_link_to[0]) && qName.equals(_key_route_link_to[1])) {
-			keyNested = _key_route_link_to[1];
-		}
-		if (key.equals(_key_route_link_from[0]) && qName.equals(_key_route_link_from[1])) {
-			keyNested = _key_route_link_from[1];
-		}
-//		if (key.equals(_key_route_link_location_x[0]) && qName.equals(_key_route_link_location_x[1])) {
-//			keyNested = _key_route_link_location_x[1];
-//		}
-//		if (key.equals(_key_route_link_location_y[0]) && qName.equals(_key_route_link_location_y[1])) {
-//			keyNested = _key_route_link_location_y[1];
-//		}
-		if (qName.equals(_key_route_link_from[0])) 	// this also covers route_link_location_x and _y
-			key = _key_route_link_from[0];
-
 		//  Alternative description
 		if (key.equals(_key_stops_alternative_descriptor[0]) && qName.equals(_key_stops_alternative_descriptor[1]))
 			keyNested = _key_stops_alternative_descriptor[1];
@@ -279,21 +239,6 @@ public class TransxchangeStops extends TransxchangeDataAspect{
       stopIdToLatLong.put(keyRef, ll);
       return;
     }
-
-    // Route sections (to stop point lat and lon), based on from- and to-stop points
-    if (key.equals(_key_route_link_from[0]) && keyNested.equals(_key_route_link_from[1])
-        && keyNestedLocation.equals(_key_route_link_from[2])) {
-      stopPointFrom = niceString;
-      keyNestedLocation = "";
-      return;
-    }
-    if (key.equals(_key_route_link_to[0]) && keyNested.equals(_key_route_link_to[1])
-        && keyNestedLocation.equals(_key_route_link_to[2])) {
-      stopPointTo = niceString;
-      keyNestedLocation = "";
-      keyNested = "";
-      return;
-    }
     if (key_stops__stop_id[0].equals(qName)) {
       keyRef = null;
     }
@@ -301,32 +246,6 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 
    	@Override
    	public void clearKeys (String qName) {
-    	if (inRouteSection) {
-//    		if (keyNested.equals(_key_route_link_location_x[1]))
-//    			keyNestedLocation = "";
-    		if (keyNestedLocation.equals(_key_route_link_from[2]))
-    			keyNestedLocation = "";
-    		if (keyNested.equals(_key_route_link_from[1]))
-    			keyNested = "";
-//    		if (qName.equals(_key_route_link_location_y[1]))
-//    			keyNested = "";
-    	}
-    	if (qName.equals(_key_route_section[0])) {
-//    		if (inRouteSection) {
-//    			if (stopPointToLat.length() > 0) {
-//    			  ValueList newStops__stop_lat = new ValueList(stopPointTo); // last stop in route section
-//    				listStops__stop_lat.add(newStops__stop_lat);
-//    				newStops__stop_lat.addValue(stopPointToLat);
-//    			}
-//    			if (stopPointToLon.length() > 0) {
-//    			  ValueList newStops__stop_lon = new ValueList(stopPointTo); // last stop in route section
-//    				listStops__stop_lon.add(newStops__stop_lon);
-//    				newStops__stop_lon.addValue(stopPointToLon);
-//    			}
-//    		}
-    		inRouteSection = !inRouteSection;
-    		key = "";
-    	}
     	if (key.equals(key_stops__stop_id[0]))
     		keyNested = "";
     	if (qName.equals(key_stops__stop_id[0]))
@@ -393,14 +312,12 @@ public class TransxchangeStops extends TransxchangeDataAspect{
 			    }
     	else
 		    for (Map.Entry<String, String> idName : stopIdName.entrySet()) {
-//		    	iterator = listStops__stop_id.get(i);
-//		    	stopId = iterator.getValue(0);
 		      String stopId = idName.getKey();
 		    	String stopName = "";
 		    	for (int j = 0; j < 30; j++) {
 		    		if (columnValues[j] != null) {
 		    			if (stopName.length() > 0)
-		    				stopName += handler.getStopfilecolumnseparator(); // ",";
+		    				stopName += handler.getStopfilecolumnseparator();
 		    			Integer index = (Integer)stopIx.get(stopId);
 		    			if (index != null) {
 		    				naptanPick = (String) columnValues[j].get((Integer)stopIx.get(stopId));
