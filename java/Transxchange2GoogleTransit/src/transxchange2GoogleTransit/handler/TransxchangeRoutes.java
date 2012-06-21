@@ -361,7 +361,5 @@ public class TransxchangeRoutes extends TransxchangeDataAspect {
     listRoutes__route_origin.clear();
     listRoutes__route_type.clear();
     listRoutes__service_id.clear();
-    // TODO Auto-generated method stub
-
   }
 }

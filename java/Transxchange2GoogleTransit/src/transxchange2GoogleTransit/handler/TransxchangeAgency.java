@@ -34,10 +34,6 @@ public class TransxchangeAgency extends TransxchangeDataAspect {
 	static final String key_agency__agency_id = "Operator"; // GTFS required
 	static final String key_agency__agency_lid = "LicensedOperator"; // GTFS required
 	static String key_agency__agency_name = "OperatorNameOnLicence"; // GTFS required
-	//static final String[] key_agency__agency_url = new String[] {"EmailAddress", "", "OpenRequired"}; // GTFS required
-	//static final String[] key_agency__agency_timezone = new String[] {"__transxchange2GTFS_drawDefault", "", ""}; // GTFS required
-	//static final String[] key_agency__agency_lang = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
-	//static final String[] key_agency__agency_phone = new String[] {"__transxchange2GTFS_drawDefault", "", ""};
 	//TODO(drt24) It is actually possible to extract a phone number
 
 	// Parsed data
